@@ -190,8 +190,48 @@ describe('PropertyFormComponentProvider', () => {
 
     await waitFor(() => expect(mockCreateProperty).toHaveBeenCalledTimes(1))
     expect(mockPrepareProperty).toHaveBeenCalledTimes(1)
-    expect(mockUpdateSuggestion).toHaveBeenCalledTimes(1)
+    // docs/performance-creation-modification-annonces-reels.md, point 2 : la mise à jour de
+    // suggestions/data (updateOrCreateSuggestion) est retirée de la mutation finale — elle ne
+    // doit plus jamais être appelée par ce chemin, la redirection ne l'attend plus.
+    expect(mockUpdateSuggestion).not.toHaveBeenCalled()
     expect(mockPush).toHaveBeenCalledTimes(1)
+  })
+
+  it('redirige dès la résolution de createProperty, sans attendre une suggestion pendante', async () => {
+    // Volontairement jamais résolue : si le provider attendait encore cette promesse, ce test
+    // resterait bloqué jusqu'au timeout de Jest.
+    mockUpdateSuggestion.mockReturnValue(new Promise(() => {}))
+
+    render(
+      <PropertyFormComponentProvider>
+        <SubmitHarness />
+      </PropertyFormComponentProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dernière étape' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publier' }))
+
+    await waitFor(() => expect(mockPush).toHaveBeenCalledTimes(1))
+    expect(mockUpdateSuggestion).not.toHaveBeenCalled()
+  })
+
+  it('une erreur d\'écriture principale empêche toujours le toast de succès et la redirection', async () => {
+    mockCreateProperty.mockRejectedValue(new Error('Firestore indisponible'))
+
+    render(
+      <PropertyFormComponentProvider>
+        <SubmitHarness />
+      </PropertyFormComponentProvider>,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dernière étape' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Publier' }))
+
+    await waitFor(() =>
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' })),
+    )
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(mockToast).not.toHaveBeenCalledWith(expect.objectContaining({ variant: 'success' }))
   })
 
   it('conserve l annonce et demande une connexion au visiteur', async () => {

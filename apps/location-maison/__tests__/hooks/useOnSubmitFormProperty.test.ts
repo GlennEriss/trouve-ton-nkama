@@ -1,29 +1,18 @@
 import { renderHook } from '@testing-library/react'
 
-const mockCreateFile = jest.fn()
-const mockCreateProvince = jest.fn()
-const mockCreateCity = jest.fn()
-const mockCreateStreet = jest.fn()
+const mockUploadPropertyImages = jest.fn()
 const currentUser = { user: { uid: 'announcer-1' } }
 
 jest.mock('@/hooks/use-current-user', () => ({
   useCurrentUser: () => currentUser,
 }))
 
+// La conversion Blob -> File et la concurrence bornée sont testées au niveau de
+// uploadPropertyImages (__tests__/db/file.db.test.ts) — voir
+// docs/performance-creation-modification-annonces-reels.md, point 4. Ce hook se contente de
+// lui déléguer l'upload et de fusionner le résultat avec les images déjà uploadées.
 jest.mock('@/db/file.db', () => ({
-  createFile: (...args: unknown[]) => mockCreateFile(...args),
-}))
-
-jest.mock('@/db/province.db', () => ({
-  createProvince: (...args: unknown[]) => mockCreateProvince(...args),
-}))
-
-jest.mock('@/db/city.db', () => ({
-  createCity: (...args: unknown[]) => mockCreateCity(...args),
-}))
-
-jest.mock('@/db/street.db', () => ({
-  createStreet: (...args: unknown[]) => mockCreateStreet(...args),
+  uploadPropertyImages: (...args: unknown[]) => mockUploadPropertyImages(...args),
 }))
 
 import { useOnSubmitFormProperty } from '@/hooks/useOnSubmitFormProperty'
@@ -86,15 +75,13 @@ describe('useOnSubmitFormProperty', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     currentUser.user = { uid: 'announcer-1' }
-    mockCreateProvince.mockResolvedValue('province-1')
-    mockCreateCity.mockResolvedValue('city-1')
-    mockCreateStreet.mockResolvedValue('street-1')
-    mockCreateFile
-      .mockResolvedValueOnce({ fileURL: 'https://cdn.test/new-1.jpg', filePATH: 'property/new-1.jpg' })
-      .mockResolvedValueOnce({ fileURL: 'https://cdn.test/new-2.jpg', filePATH: 'property/new-2.jpg' })
+    mockUploadPropertyImages.mockResolvedValue([
+      { fileURL: 'https://cdn.test/new-1.jpg', filePATH: 'property/new-1.jpg' },
+      { fileURL: 'https://cdn.test/new-2.jpg', filePATH: 'property/new-2.jpg' },
+    ])
   })
 
-  it('conserve les images existantes selectionnees et uploade les nouveaux fichiers', async () => {
+  it('conserve les images existantes selectionnees et delegue les nouveaux fichiers a uploadPropertyImages', async () => {
     const existing = [
       { fileURL: 'https://cdn.test/keep.jpg', filePATH: 'property/keep.jpg' },
       { fileURL: 'https://cdn.test/remove.jpg', filePATH: 'property/remove.jpg' },
@@ -113,10 +100,8 @@ describe('useOnSubmitFormProperty', () => {
       images: [existing[0].fileURL, file, blob],
     }))
 
-    expect(mockCreateFile).toHaveBeenCalledTimes(2)
-    expect(mockCreateFile).toHaveBeenNthCalledWith(1, file, 'announcer-1', 'property')
-    expect(mockCreateFile.mock.calls[1][0]).toBeInstanceOf(File)
-    expect(mockCreateFile.mock.calls[1][0].name).toBe('image_1.jpeg')
+    expect(mockUploadPropertyImages).toHaveBeenCalledTimes(1)
+    expect(mockUploadPropertyImages).toHaveBeenCalledWith([file, blob], 'announcer-1', 'property')
     expect(property.images).toEqual([
       { fileURL: 'https://cdn.test/new-1.jpg', filePATH: 'property/new-1.jpg' },
       { fileURL: 'https://cdn.test/new-2.jpg', filePATH: 'property/new-2.jpg' },
@@ -126,17 +111,25 @@ describe('useOnSubmitFormProperty', () => {
     expect(clearStorage).toHaveBeenCalledTimes(1)
   })
 
-  it('retire les coordonnees techniques et les coordonnees nulles du document final', async () => {
+  // Depuis docs/performance-creation-modification-annonces-reels.md (point 1) : les
+  // coordonnées techniques ne sont plus retirées du document — la synchronisation
+  // géographique (Cloud Function onPropertyLocationSync) tourne désormais côté serveur,
+  // hors du chemin critique, et a besoin de ces points de référence pour reproduire les
+  // documents province/ville/rue. Seules longitude/latitude (position exacte du bien),
+  // nulles par défaut, sont toujours retirées quand elles valent 0.
+  it('conserve les coordonnees techniques de hierarchie, retire seulement une position nulle', async () => {
     const { result } = renderHook(() => useOnSubmitFormProperty(baseProperty, [], false))
 
     const property = await result.current.onSubmit(validData())
 
-    expect(property).not.toHaveProperty('provinceLon')
-    expect(property).not.toHaveProperty('provinceLat')
-    expect(property).not.toHaveProperty('cityLon')
-    expect(property).not.toHaveProperty('cityLat')
-    expect(property).not.toHaveProperty('streetLon')
-    expect(property).not.toHaveProperty('streetLat')
+    expect(property).toMatchObject({
+      provinceLon: 9.45,
+      provinceLat: 0.39,
+      cityLon: 9.46,
+      cityLat: 0.40,
+      streetLon: 9.47,
+      streetLat: 0.41,
+    })
     expect(property).not.toHaveProperty('longitude')
     expect(property).not.toHaveProperty('latitude')
     expect(property.isLocExact).toBe(false)
@@ -154,50 +147,6 @@ describe('useOnSubmitFormProperty', () => {
     expect(property.longitude).toBe(9.47)
     expect(property.latitude).toBe(0.41)
     expect(property.isLocExact).toBe(true)
-  })
-
-  it('cree province, ville et rue avec les identifiants parents', async () => {
-    const { result } = renderHook(() => useOnSubmitFormProperty(baseProperty, [], false))
-
-    await result.current.onSubmit(validData())
-
-    expect(mockCreateProvince).toHaveBeenCalledWith({
-      name: 'Estuaire',
-      country: 'Gabon',
-      countryCode: 'GA',
-      longitude: 9.45,
-      latitude: 0.39,
-    })
-    expect(mockCreateCity).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'Libreville',
-      provinceId: 'province-1',
-      provinceName: 'Estuaire',
-      longitude: 9.46,
-      latitude: 0.40,
-    }))
-    expect(mockCreateStreet).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'Akébé Poteau',
-      cityId: 'city-1',
-      provinceId: 'province-1',
-      longitude: 9.47,
-      latitude: 0.41,
-    }))
-  })
-
-  it('continue la preparation si la creation d une localisation echoue', async () => {
-    mockCreateProvince.mockRejectedValue(new Error('offline'))
-    mockCreateCity.mockRejectedValue(new Error('offline'))
-    mockCreateStreet.mockRejectedValue(new Error('offline'))
-    const { result } = renderHook(() => useOnSubmitFormProperty(baseProperty, [], false))
-
-    const property = await result.current.onSubmit(validData())
-
-    expect(property.title).toBe('Studio lumineux à Akébé')
-    expect(mockCreateCity).toHaveBeenCalledWith(expect.objectContaining({ provinceId: null }))
-    expect(mockCreateStreet).toHaveBeenCalledWith(expect.objectContaining({
-      cityId: null,
-      provinceId: null,
-    }))
   })
 
   it('ne vide pas le brouillon pendant une modification', async () => {
@@ -220,7 +169,7 @@ describe('useOnSubmitFormProperty', () => {
 
     // Le parcours IA facture un crédit avant d'appeler ce hook : ré-uploader ici ferait payer
     // deux fois la même image et rouvrirait la fenêtre de panne que ce paramètre supprime.
-    expect(mockCreateFile).not.toHaveBeenCalled()
+    expect(mockUploadPropertyImages).not.toHaveBeenCalled()
     expect(property.images).toEqual(preUploaded)
   })
 })

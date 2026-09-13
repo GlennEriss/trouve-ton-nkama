@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation"
 import { useCurrentUser } from "@/hooks/use-current-user"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createProperty, updateProperty } from "@/db/property.db"
-import { updateOrCreateSuggestion } from "@/db/suggestion.db"
 import { useOnSubmitFormProperty } from "@/hooks/useOnSubmitFormProperty"
 import { usePropertyFormSchema } from "@/hooks/usePropertyFormSchema"
 import { useFormPropertyType } from "@/hooks/useFormPropertyType"
@@ -240,9 +239,12 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     const mutation = useMutation({
         mutationKey: [queryKeys.properties],
         mutationFn: async (data: Property) => {
-            const province = data.province
-            const city = data.city
-            const street = data.street
+            // La mise à jour de suggestions/data (updateOrCreateSuggestion) a été retirée
+            // d'ici : elle est redondante avec useLocationSync (déjà synchronisé pendant la
+            // saisie) et ne devait plus retarder la confirmation d'une écriture réussie —
+            // voir docs/performance-creation-modification-annonces-reels.md, point 2. Une
+            // future consolidation de suggestions/data (ou son remplacement par les
+            // collections hiérarchiques) sera traitée séparément, côté serveur.
             if (id) {
                 const updated = await updateProperty(id, data)
                 if (!updated) {
@@ -257,21 +259,6 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 const propertyCreate = { ...data, id: idP }
                 setPropertyPreview(propertyCreate as Property)
             }
-            try {
-                await withTimeout(
-                    updateOrCreateSuggestion({ province, city, street }),
-                    8_000,
-                    'Mise à jour des suggestions'
-                )
-            } catch (error) {
-                logger.warn('Suggestion update skipped after timeout/failure', {
-                    error,
-                    province,
-                    city,
-                    street,
-                })
-            }
-            //return data
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [queryKeys.properties] })

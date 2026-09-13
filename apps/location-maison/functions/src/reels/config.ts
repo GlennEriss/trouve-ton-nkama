@@ -19,7 +19,20 @@ export const REEL_THUMBNAIL_TIMESTAMP_SECONDS = 1;
 // est bien renseigné localement pendant le déploiement (`--project` cible) : on l'utilise.
 const REGION_BY_PROJECT: Record<string, string> = {
   'location-maison-prod-167da': 'us-east1',
-  'location-maison-dev': 'europe-west1',
+  // Bucket dev déplacé de europe-west1 vers un nouveau bucket us-central1
+  // (location-maison-dev-us) : le compte de facturation attaché au projet dev
+  // avait été fermé, et un bucket hors régions US ne bénéficie d'aucun palier
+  // gratuit sur le plan Blaze pour Cloud Storage, d'où le storage/quota-exceeded
+  // permanent malgré un bucket de quelques dizaines de Mo.
+  'location-maison-dev': 'us-central1',
+};
+
+// Bucket explicite par projet : sans ça, le trigger onObjectFinalized écoute le bucket "par
+// défaut" du projet, qui reste l'ancien bucket europe-west1 même après la création du nouveau
+// bucket us-central1 (créer un bucket ne change pas quel bucket est "par défaut"). Absent pour
+// prod : garde le comportement existant (bucket par défaut du projet), inchangé.
+const BUCKET_BY_PROJECT: Record<string, string> = {
+  'location-maison-dev': 'location-maison-dev-us',
 };
 
 export const TRANSCODE_FUNCTION_OPTIONS = {
@@ -34,4 +47,5 @@ export const TRANSCODE_FUNCTION_OPTIONS = {
   timeoutSeconds: 540,
   cpu: 2,
   region: REGION_BY_PROJECT[process.env.GCLOUD_PROJECT ?? ''] ?? 'us-east1',
+  bucket: BUCKET_BY_PROJECT[process.env.GCLOUD_PROJECT ?? ''],
 } as const;

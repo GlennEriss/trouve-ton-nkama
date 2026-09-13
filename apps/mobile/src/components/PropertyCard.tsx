@@ -5,6 +5,7 @@ import type { PropertyListItem } from '../api/property';
 import { useFavoriteIds, addFavorite, removeFavorite } from '../hooks/useFavoriteIds';
 import { requireAuthOrRedirect } from '../lib/authGuard';
 import { getImageUrl } from '../lib/propertyImage';
+import { formatListingZones } from '../lib/listingZones';
 import { colors } from '../theme/colors';
 
 function formatPrice(price?: number): string {
@@ -50,7 +51,15 @@ export function PropertyCard({ property, onPress, width = 200 }: { property: Pro
         </TouchableOpacity>
       </View>
       <Text style={styles.title} numberOfLines={1}>{property.title}</Text>
-      <Text style={styles.location} numberOfLines={1}>{[property.city, property.province].filter(Boolean).join(', ')}</Text>
+      <Text style={styles.location} numberOfLines={1}>
+        {/* Zones multiples (Mode, etc.) : cities remplace city+province — province placeholder
+            perdrait son sens à côté de plusieurs villes. Immobilier (pas de `cities`) et Mode
+            pré-migration : comportement inchangé, voir docs/marketplace-multi-categories/
+            08-zones-multiples-mode.md. */}
+        {property.cities && property.cities.length > 1
+          ? formatListingZones(property)
+          : [property.city, property.province].filter(Boolean).join(', ')}
+      </Text>
     </TouchableOpacity>
   );
 }

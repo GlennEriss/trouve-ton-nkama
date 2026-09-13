@@ -8,6 +8,7 @@ import type {
   CreateCategoryListingInput,
   CreateCategoryListingResult,
 } from "@/modules/category-listing/domain/types";
+import { MAX_LISTING_ZONES, normalizeCityNames, type LocationZone } from "@/modules/category-listing/domain/zones";
 import type { CategoryAttributeSchemaField } from "@/modules/category-management/domain/types";
 import { createCategoryListingDocument, listCategoryListingDocuments } from "@/modules/category-listing/infrastructure/category-listing.repository";
 
@@ -102,15 +103,31 @@ export async function createCategoryListing(
     throw new Error("CATEGORY_LISTING_IMAGES_REQUIRED");
   }
 
-  const city = input.city.trim();
-  if (city.length < 2 || city.length > 80) {
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Au moins une ville, chacune 2-80 caractères, dédupliquées
+  // et plafonnées à MAX_LISTING_ZONES.
+  const cities = normalizeCityNames(input.cities ?? []);
+  if (cities.length === 0) {
     throw new Error("CATEGORY_LISTING_INVALID_CITY");
+  }
+  if (cities.some((city) => city.length < 2 || city.length > 80)) {
+    throw new Error("CATEGORY_LISTING_INVALID_CITY");
+  }
+  if (input.cities.length > MAX_LISTING_ZONES) {
+    throw new Error("CATEGORY_LISTING_TOO_MANY_CITIES");
   }
 
   const province = getProvinceByName(input.province.trim());
   if (!province) {
     throw new Error("CATEGORY_LISTING_INVALID_PROVINCE");
   }
+
+  const zones: LocationZone[] = cities.map((city) => ({
+    city,
+    province: province.name,
+    latitude: province.lat,
+    longitude: province.lng,
+  }));
 
   const announcerUid = input.announcerUid.trim();
   const announcer = await findPlatformUserByUid(announcerUid);
@@ -141,10 +158,7 @@ export async function createCategoryListing(
     title,
     description,
     price: input.price,
-    province: province.name,
-    city,
-    latitude: province.lat,
-    longitude: province.lng,
+    zones,
     images: input.images,
     contact,
     whatsappContact: input.whatsappContact?.trim() || undefined,

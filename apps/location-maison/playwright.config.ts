@@ -37,6 +37,9 @@ if (reuseExistingServer) {
 
 export default defineConfig({
   testDir: './__tests__/e2e',
+  // Purge les comptes Firebase Auth e2e créés pendant le run (voir le fichier pour
+  // le détail) — un teardown global attrape aussi les specs qui plantent avant leur afterAll.
+  globalTeardown: './__tests__/e2e/helpers/global-teardown.ts',
   timeout: 30 * 1000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

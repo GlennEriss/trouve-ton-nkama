@@ -42,6 +42,12 @@ describe('buildCategoryListingDraftPrompt', () => {
     expect(prompt).toContain('"occasion" (D\'occasion) : true/false')
   })
 
+  it('instruit de lister toutes les villes mentionnées, pas seulement la première', () => {
+    const prompt = buildCategoryListingDraftPrompt('Robe wax taille M', [vetements])
+    expect(prompt).toContain('PLUSIEURS villes')
+    expect(prompt).toContain('"cities"')
+  })
+
   it('affiche "(aucun)" quand une catégorie n\'a pas d\'attributeSchema', () => {
     const prompt = buildCategoryListingDraftPrompt('Sac à main', [accessoires])
     expect(prompt).toContain('id "accessoires" — Mode > Accessoires')
@@ -63,7 +69,7 @@ describe('parseCategoryListingDraftResponse', () => {
       title: 'Robe wax élégante',
       description: 'Robe portée deux fois.',
       price: 18000,
-      city: 'Libreville',
+      cities: ['Libreville'],
       attributes: { taille: 'M', marque: 'Tissage Wax', prixNeuf: 25000, occasion: true },
     })
 
@@ -74,7 +80,7 @@ describe('parseCategoryListingDraftResponse', () => {
       title: 'Robe wax élégante',
       description: 'Robe portée deux fois.',
       price: 18000,
-      city: 'Libreville',
+      cities: ['Libreville'],
       attributes: { taille: 'M', marque: 'Tissage Wax', prixNeuf: 25000, occasion: true },
     })
   })
@@ -85,7 +91,7 @@ describe('parseCategoryListingDraftResponse', () => {
       title: 'Sac',
       description: 'Sac en cuir',
       price: 5000,
-      city: null,
+      cities: [],
       attributes: {},
     }) + '\n```\nMerci !'
 
@@ -190,13 +196,50 @@ describe('parseCategoryListingDraftResponse', () => {
     }
   })
 
-  it('renvoie city null quand absente ou vide, sinon trim', () => {
-    const raw = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', city: '  Port-Gentil  ' })
+  it('renvoie cities vide quand absent, sinon trim de chaque ville', () => {
+    const raw = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', cities: ['  Port-Gentil  '] })
     const draft = parseCategoryListingDraftResponse(raw, categories)
-    expect(draft.city).toBe('Port-Gentil')
+    expect(draft.cities).toEqual(['Port-Gentil'])
 
-    const rawEmpty = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', city: '   ' })
-    expect(parseCategoryListingDraftResponse(rawEmpty, categories).city).toBeNull()
+    const rawEmpty = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', cities: [] })
+    expect(parseCategoryListingDraftResponse(rawEmpty, categories).cities).toEqual([])
+
+    const rawAbsent = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd' })
+    expect(parseCategoryListingDraftResponse(rawAbsent, categories).cities).toEqual([])
+  })
+
+  it('extrait plusieurs villes, dédupliquées (insensible à la casse)', () => {
+    const raw = JSON.stringify({
+      categoryId: 'accessoires',
+      title: 't',
+      description: 'd',
+      cities: ['Libreville', 'Franceville', 'libreville'],
+    })
+    const draft = parseCategoryListingDraftResponse(raw, categories)
+    expect(draft.cities).toEqual(['Libreville', 'Franceville'])
+  })
+
+  it('plafonne le nombre de villes extraites', () => {
+    const raw = JSON.stringify({
+      categoryId: 'accessoires',
+      title: 't',
+      description: 'd',
+      cities: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+    })
+    const draft = parseCategoryListingDraftResponse(raw, categories)
+    expect(draft.cities).toEqual(['A', 'B', 'C', 'D', 'E'])
+  })
+
+  it('tolère encore l\'ancien format singulier "city" si Gemini l\'utilise malgré le prompt', () => {
+    const raw = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', city: 'Oyem' })
+    const draft = parseCategoryListingDraftResponse(raw, categories)
+    expect(draft.cities).toEqual(['Oyem'])
+  })
+
+  it('ignore un "cities" mal formé (pas un tableau) plutôt que de planter', () => {
+    const raw = JSON.stringify({ categoryId: 'accessoires', title: 't', description: 'd', cities: 'Libreville' })
+    const draft = parseCategoryListingDraftResponse(raw, categories)
+    expect(draft.cities).toEqual([])
   })
 
   it('tronque le titre à 120 caractères et la description à 3000', () => {

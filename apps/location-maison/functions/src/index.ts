@@ -47,6 +47,10 @@ export { expireStalePromotions } from './promotions/expire-promotions';
 // Surveillance du quota de recherche Algolia (cycle de facturation du 9 au 8)
 export { monitorAlgoliaSearchQuota } from './search/algolia-quota-monitor';
 
+// Synchronisation géographique hors chemin critique de publication (voir
+// docs/performance-creation-modification-annonces-reels.md, point 1)
+export { onPropertyLocationSync } from './location/location-sync.trigger';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});

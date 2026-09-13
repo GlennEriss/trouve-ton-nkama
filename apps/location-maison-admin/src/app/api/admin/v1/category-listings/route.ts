@@ -35,7 +35,9 @@ const bodySchema = z
     description: z.string().trim().min(10).max(3000),
     price: z.coerce.number().positive(),
     province: z.string().trim().min(1),
-    city: z.string().trim().min(2).max(80),
+    // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+    // 08-zones-multiples-mode.md. Au moins une ville, au plus MAX_LISTING_ZONES (5).
+    cities: z.array(z.string().trim().min(2).max(80)).min(1).max(5),
     images: z
       .array(
         z.object({
@@ -69,7 +71,8 @@ const ERROR_MAP: Record<string, { status: number; apiCode: "VALIDATION_ERROR" | 
   },
   CATEGORY_LISTING_INVALID_PRICE: { status: 400, apiCode: "VALIDATION_ERROR", message: "Prix invalide." },
   CATEGORY_LISTING_IMAGES_REQUIRED: { status: 400, apiCode: "VALIDATION_ERROR", message: "Au moins une image est requise." },
-  CATEGORY_LISTING_INVALID_CITY: { status: 400, apiCode: "VALIDATION_ERROR", message: "Ville invalide." },
+  CATEGORY_LISTING_INVALID_CITY: { status: 400, apiCode: "VALIDATION_ERROR", message: "Ville invalide (au moins une, 2 à 80 caractères chacune)." },
+  CATEGORY_LISTING_TOO_MANY_CITIES: { status: 400, apiCode: "VALIDATION_ERROR", message: "Trop de zones (5 maximum)." },
   CATEGORY_LISTING_INVALID_PROVINCE: { status: 400, apiCode: "VALIDATION_ERROR", message: "Province invalide." },
   CATEGORY_LISTING_ANNOUNCER_NOT_FOUND: { status: 404, apiCode: "NOT_FOUND", message: "Annonceur introuvable." },
   CATEGORY_LISTING_ANNOUNCER_ROLE_REQUIRED: {

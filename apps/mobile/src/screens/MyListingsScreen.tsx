@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Linking, StyleSheet, Text, TouchableOpacit
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { listMyListings, moderationLabel, type MyListingItem } from '../api/myListings';
+import { formatListingZones } from '../lib/listingZones';
 
 const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://www.tonnkama.com';
 
@@ -19,7 +20,10 @@ function ListingRow({ item }: { item: MyListingItem }) {
           <Text style={styles.badgeText}>{moderationLabel(item.moderationStatus)}</Text>
         </View>
       </View>
-      <Text style={styles.rowMeta}>{item.city} · {item.status === 'FOR_RENT' ? 'Location' : 'Vente'}</Text>
+      <Text style={styles.rowMeta}>
+        {item.cities && item.cities.length > 1 ? formatListingZones(item) : item.city} ·{' '}
+        {item.status === 'FOR_RENT' ? 'Location' : 'Vente'}
+      </Text>
       <Text style={styles.rowPrice}>{formatPrice(item.price)}</Text>
       {item.state === 'ARCHIVED' && <Text style={styles.archivedText}>Archivée</Text>}
     </View>

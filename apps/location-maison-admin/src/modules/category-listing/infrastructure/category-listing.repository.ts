@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { getFirebaseAdminDb } from "@/lib/firebase/firebase-admin";
 import type { CategoryListingAttributeValue } from "@/modules/category-listing/domain/types";
+import { buildZonesPatch, type LocationZone } from "@/modules/category-listing/domain/zones";
 
 const COLLECTION = "properties";
 
@@ -12,10 +13,9 @@ export async function createCategoryListingDocument(input: {
   title: string;
   description: string;
   price: number;
-  province: string;
-  city: string;
-  latitude: number;
-  longitude: number;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Toujours au moins une zone (validé par le service appelant).
+  zones: LocationZone[];
   images: Array<{ fileURL: string; filePATH: string }>;
   contact: string;
   whatsappContact?: string;
@@ -25,6 +25,7 @@ export async function createCategoryListingDocument(input: {
 }) {
   const db = getFirebaseAdminDb();
   const ref = db.collection(COLLECTION).doc();
+  const zonesPatch = buildZonesPatch(input.zones);
 
   await ref.set({
     title: input.title,
@@ -35,12 +36,9 @@ export async function createCategoryListingDocument(input: {
     categoryPath: input.categoryPath,
     attributes: input.attributes,
     street: "",
-    city: input.city,
-    province: input.province,
+    ...zonesPatch,
     country: "Gabon",
     countryCode: "GA",
-    latitude: input.latitude,
-    longitude: input.longitude,
     isLocExact: false,
     locationSource: "UNVERIFIED",
     contact: input.contact,
@@ -77,6 +75,10 @@ export type CategoryListingSummary = {
   rejectionReason: string | null;
   city: string;
   province: string;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Absent sur une annonce créée avant ce champ ; `city`
+  // ci-dessus reste alors la seule zone (rétrocompatibilité).
+  cities: string[];
   createdBy: string;
   createdAt: string | null;
   primaryImageUrl: string | null;
@@ -119,6 +121,7 @@ export async function listCategoryListingDocuments(): Promise<CategoryListingSum
       rejectionReason: typeof data.rejectionReason === "string" ? data.rejectionReason : null,
       city: typeof data.city === "string" ? data.city : "",
       province: typeof data.province === "string" ? data.province : "",
+      cities: Array.isArray(data.cities) ? data.cities.filter((c: unknown): c is string => typeof c === "string") : [],
       createdBy: typeof data.createdBy === "string" ? data.createdBy : "",
       createdAt:
         data.createdAt && typeof data.createdAt.toDate === "function" ? data.createdAt.toDate().toISOString() : null,

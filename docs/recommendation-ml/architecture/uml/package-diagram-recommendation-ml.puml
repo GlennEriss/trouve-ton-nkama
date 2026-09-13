@@ -1,0 +1,33 @@
+@startuml
+title Recommandation ML - packages MVP
+package presentation {
+  [Recommendation API]
+  [Events API]
+}
+package application {
+  [Recommend Listings]
+  [Record Event]
+  [Publish Model]
+}
+package domain {
+  [Candidate Policy]
+  [Feature Definitions]
+  [Ranking Policy]
+  [Experiment Policy]
+}
+package infrastructure {
+  [Algolia Adapter]
+  [Firestore Repository]
+  [BigQuery Repository]
+  [Model Artifact Loader]
+}
+
+presentation --> application
+application --> domain
+application --> infrastructure
+infrastructure ..> domain
+note bottom of domain
+  Ne dépend d'aucun SDK externe.
+end note
+@enduml
+

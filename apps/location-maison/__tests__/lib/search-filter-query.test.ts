@@ -91,10 +91,23 @@ describe('public search filters', () => {
     expect(filters).not.toContain('area <=')
     expect(filters).not.toContain('nbrRooms >=')
     expect(filters).not.toContain('nbrRooms <=')
-    // Génériques : restent appliqués pour Mode.
-    expect(filters).toContain('city:"Libreville"')
+    // Génériques : restent appliqués pour Mode. `city` interroge `cities` (tableau, zones
+    // multiples) hors scope immobilier — voir docs/marketplace-multi-categories/
+    // 08-zones-multiples-mode.md §5.
+    expect(filters).toContain('cities:"Libreville"')
+    expect(filters).not.toContain('city:"Libreville"')
     expect(filters).toContain('price <= 10000')
     expect(filters).toContain('categoryPath.lvl0:"Mode"')
+  })
+
+  it('filtre "city" interroge cities (tableau) hors scope immobilier, city (singulier) en scope immobilier', () => {
+    const immobilier = buildPublicSearchFilters(new URLSearchParams({ city: 'Libreville' }))
+    expect(immobilier).toContain('city:"Libreville"')
+    expect(immobilier).not.toContain('cities:"Libreville"')
+
+    const mode = buildPublicSearchFilters(new URLSearchParams({ category: 'Mode', city: 'Franceville' }))
+    expect(mode).toContain('cities:"Franceville"')
+    expect(mode).not.toContain('city:"Franceville"')
   })
 
   it('applique les filtres immobilier-only quand category est vide ou "Immobilier"', () => {

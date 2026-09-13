@@ -19,6 +19,7 @@ jeu n'est pas arbitré.
 | [05-publication-et-reels.md](./05-publication-et-reels.md) | Sortir des 14 form builders ; ce que deviennent les réels |
 | [06-monetisation.md](./06-monetisation.md) | Comment cette catégorie gagne de l'argent — l'objectif n'est pas de faire du gratuit |
 | [07-lots-et-sequencement.md](./07-lots-et-sequencement.md) | L'ordre de bataille, avec critère de sortie par lot |
+| [08-zones-multiples-mode.md](./08-zones-multiples-mode.md) | Une annonce Mode peut-elle couvrir plusieurs villes (Libreville ET Franceville...) ? Analyse d'impact + proposition, post-lancement (retour vendeurs réels) |
 
 ## Décisions déjà prises (hors de ces documents)
 

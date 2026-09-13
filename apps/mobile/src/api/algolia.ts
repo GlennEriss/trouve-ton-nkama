@@ -62,7 +62,11 @@ export function buildFilters(filters: SearchFilters): string {
     clauses.push(`province:"${escapeAlgoliaFilterValue(filters.province.trim())}"`);
   }
   if (filters.city?.trim()) {
-    clauses.push(`city:"${escapeAlgoliaFilterValue(filters.city.trim())}"`);
+    // Hors scope immobilier (Mode, etc.), une annonce peut vendre dans plusieurs villes
+    // (`cities`, tableau) — voir docs/marketplace-multi-categories/
+    // 08-zones-multiples-mode.md §5, même bascule que search-filter-query.ts côté web.
+    const attribute = isImmobilierScope ? 'city' : 'cities';
+    clauses.push(`${attribute}:"${escapeAlgoliaFilterValue(filters.city.trim())}"`);
   }
   if (filters.budgetMinXaf) {
     clauses.push(`price >= ${filters.budgetMinXaf}`);
@@ -91,6 +95,10 @@ export type PropertyHit = {
   description?: string;
   city?: string;
   province?: string;
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. Absent sur l'immobilier et sur une annonce Mode indexée
+  // avant ce champ (repli sur `city` géré par formatListingZones, lib/listingZones.ts).
+  cities?: string[];
   street?: string;
   price?: number;
   typeProperty?: string;

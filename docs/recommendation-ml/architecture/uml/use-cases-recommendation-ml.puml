@@ -1,0 +1,31 @@
+@startuml
+title Recommandation ML - cas d'utilisation MVP
+left to right direction
+actor Visiteur
+actor "Utilisateur connecté" as User
+actor "Équipe produit/data" as Data
+actor "Administrateur analytics" as Admin
+
+rectangle "Trouve Ton Nkama" {
+  usecase "Recevoir des annonces\néligibles et classées" as UC1
+  usecase "Enregistrer une impression" as UC2
+  usecase "Enregistrer une interaction" as UC3
+  usecase "Personnaliser selon\nl'historique autorisé" as UC4
+  usecase "Entraîner et évaluer\nun modèle" as UC5
+  usecase "Activer ou restaurer\nune version" as UC6
+  usecase "Consulter les métriques\nagrégées" as UC7
+}
+
+Visiteur --> UC1
+Visiteur --> UC2
+Visiteur --> UC3
+User --> UC1
+User --> UC4
+User --> UC2
+User --> UC3
+Data --> UC5
+Data --> UC6
+Admin --> UC7
+UC1 .> UC2 : <<include>>
+@enduml
+

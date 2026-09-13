@@ -44,6 +44,18 @@ export type CategoryPath = {
 
 export type ListingAttributeValue = string | number | boolean
 
+// Zones multiples (catégories locationPrecision === "city", ex. Mode) — voir
+// docs/marketplace-multi-categories/08-zones-multiples-mode.md. Un vendeur Mode vend
+// souvent dans plusieurs villes (ex. Libreville ET Franceville), contrairement à
+// l'immobilier (locationPrecision === "exact"), qui reste un point unique et n'a jamais ce
+// champ.
+export type LocationZone = {
+    city: string
+    province: string
+    latitude: number
+    longitude: number
+}
+
 export type Property = Location & ICreation & {
     typeProperty: TypeProperty
     // Optionnels tant que le backfill (scripts/backfill-listing-categories.js) n'a pas
@@ -52,6 +64,19 @@ export type Property = Location & ICreation & {
     categoryId?: string
     categoryPath?: CategoryPath
     attributes?: Record<string, ListingAttributeValue>
+    // Zones multiples : présent uniquement pour locationPrecision === "city". Absent sur
+    // toute annonce immobilière et sur toute annonce Mode créée avant ce champ (repli sur
+    // city/province singuliers via getListingZones(), voir lib/listing-zones.ts — aucun
+    // backfill n'est requis pour l'affichage). `city`/`province`/`latitude`/`longitude`
+    // (hérités de `Location`) restent toujours renseignés avec la zone PRIMAIRE
+    // (zones[0]) pour la rétrocompatibilité de tout code qui les lit encore en singulier.
+    zones?: LocationZone[]
+    // Dénormalisation de `zones` pour Algolia (facettes/filtres sur un tableau de chaînes,
+    // même mécanisme que `tags` déjà en production — voir extensions/
+    // firestore-algolia-search.env). Jamais éditées directement, toujours dérivées de
+    // `zones` à l'écriture.
+    cities?: string[]
+    provinces?: string[]
     images: Image[]
     title: string,
     description: string,

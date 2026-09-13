@@ -57,11 +57,19 @@ export function useAlgoliaCityOptions(province: string | undefined) {
  * Province -> Ville habituelle (useAlgoliaCityOptions, ci-dessus) bloquerait alors le
  * sélecteur Ville en attente d'une Province qui ne reflète jamais la vraie localisation du
  * vendeur. Utilisé par SelectCityModeScope.
+ *
+ * Facette sur `cities` (tableau, pas `city` singulier) : une annonce Mode peut vendre dans
+ * plusieurs villes (voir docs/marketplace-multi-categories/08-zones-multiples-mode.md) —
+ * elle doit apparaître dans le compteur de CHACUNE de ses villes, pas seulement la
+ * primaire. `cities` est absent sur une annonce Mode pré-migration (avant ce champ) : elle
+ * reste alors trouvable via `city` par la recherche elle-même (voir search-filter-query.ts),
+ * seul ce sélecteur de facette ne la compte pas tant qu'elle n'a pas été rééditée — la même
+ * dégradation gracieuse que documentée dans le plan.
  */
 export function useAlgoliaAllCityOptions() {
     return useQuery({
-        queryKey: ['algolia-facets', 'city', 'all'],
-        queryFn: () => fetchLocationFacet('city'),
+        queryKey: ['algolia-facets', 'cities', 'all'],
+        queryFn: () => fetchLocationFacet('cities'),
         staleTime: 5 * 60 * 1000,
     });
 }

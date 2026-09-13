@@ -91,10 +91,33 @@ export async function provisionIncompletePhoneUser(uid: string, phone: string): 
     })
 }
 
-/** Deletes a Firestore `users/{uid}` doc directly (no matching Firebase Auth user expected). */
+/**
+ * Deletes the Firebase Auth user for a uid, if it exists. Swallows
+ * `auth/user-not-found` so it's safe to call in teardown regardless of whether
+ * the test actually triggered a `signInWithCustomToken` (which is what creates
+ * the Auth record for a forged-session uid — see helpers/auth.ts + the app's
+ * /api/generate-token bridge).
+ */
+export async function deleteAuthUser(uid: string): Promise<void> {
+  const app = ensureAdminApp()
+  try {
+    await admin.auth(app).deleteUser(uid)
+  } catch (err: unknown) {
+    if ((err as { code?: string }).code === 'auth/user-not-found') return
+    throw err
+  }
+}
+
+/**
+ * Deletes a Firestore `users/{uid}` doc AND the matching Firebase Auth user.
+ * A forged-session spec that lets the real Firebase bridge run
+ * (`signInWithCustomToken`) leaves an Auth record behind for its per-run uid;
+ * deleting only the Firestore doc leaked one Auth user per spec per run.
+ */
 export async function deleteUserDoc(uid: string): Promise<void> {
   const app = ensureAdminApp()
   await admin.firestore(app).collection('users').doc(uid).delete()
+  await deleteAuthUser(uid)
 }
 
 /** Deletes the Firebase Auth user (and matching Firestore `users/{uid}` doc) for an email, if one exists. */
@@ -355,6 +378,12 @@ export async function deleteReels(
       await Promise.all([
         ref.delete(),
         ...paths.map((filePath) => bucket.file(filePath).delete({ ignoreNotFound: true })),
+        // La Cloud Function de transcodage tourne en asynchrone et écrit reels/<uid>/<id>/
+        // {video.mp4,thumbnail.jpg} — souvent APRÈS le teardown, donc absents du doc au
+        // moment où on lit `paths` ci-dessus. On balaie tout le préfixe pour ne rien laisser
+        // orphelin dans le bucket (c'était la source de la saturation du quota Storage dev).
+        bucket.deleteFiles({ prefix: `reels/${uid}/${id}/`, force: true }),
+        bucket.deleteFiles({ prefix: `reels-raw/${uid}/${id}`, force: true }),
       ])
     }),
   )

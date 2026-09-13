@@ -16,6 +16,7 @@ import { getPropertyImageUrls } from '@/lib/property-images'
 import { getUserDisplayName } from '@/lib/user-display-name'
 import { generateColorFromName } from '@/lib/generateColorFromName'
 import { formatPublicationDate } from '@/lib/utils'
+import { getListingZones } from '@/lib/listing-zones'
 
 /**
  * Fiche détail d'une annonce HORS immobilier (Mode, etc.) — gabarit calqué sur celui
@@ -55,6 +56,10 @@ export default function PreviewCategoryListing({ property }: Readonly<{ property
   // (taille, marque…) vont dans le bloc caractéristiques plus bas.
   const etat = typeof attributes.etat === 'string' ? attributes.etat : undefined
   const otherAttributes = attributeEntries.filter(([key]) => key !== 'etat')
+
+  // Zones multiples (Mode, etc.) — la fiche détail a la place d'afficher toutes les zones
+  // (contrairement aux cartes de grille, voir ListingCard.tsx) : pas de troncature ici.
+  const zones = getListingZones(property)
 
   const sellerName = getUserDisplayName(seller)
   const avatarBackground = generateColorFromName(sellerName ?? '')
@@ -97,12 +102,15 @@ export default function PreviewCategoryListing({ property }: Readonly<{ property
                 {leafName}
               </span>
             )}
-            {property.city && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+            {zones.map((zone, index) => (
+              <span
+                key={`${zone.city}-${index}`}
+                className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300"
+              >
                 <MapPin className="h-3 w-3" />
-                {property.city}
+                {zone.city}
               </span>
-            )}
+            ))}
             <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-300">
               <CalendarDays className="h-3 w-3" />
               {formatPublicationDate(property.createdAt)}

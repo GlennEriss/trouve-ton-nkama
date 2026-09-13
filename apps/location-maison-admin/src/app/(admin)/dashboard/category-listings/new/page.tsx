@@ -82,7 +82,11 @@ export default function NewCategoryListingPage() {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [province, setProvince] = useState(GABON_PROVINCES[0].name);
-  const [city, setCity] = useState("");
+  // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+  // 08-zones-multiples-mode.md. `cityDraft` = saisie en cours, `cities` = liste déjà
+  // ajoutée (au moins une requise à la soumission).
+  const [cityDraft, setCityDraft] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
   const [contact, setContact] = useState("");
   const [whatsappContact, setWhatsappContact] = useState("");
   const [callContact, setCallContact] = useState("");
@@ -178,7 +182,8 @@ export default function NewCategoryListingPage() {
     setTitle("");
     setDescription("");
     setPrice("");
-    setCity("");
+    setCityDraft("");
+    setCities([]);
     setContact("");
     setWhatsappContact("");
     setCallContact("");
@@ -187,6 +192,21 @@ export default function NewCategoryListingPage() {
     setPendingFiles([]);
     setSelectedAnnouncer(null);
     setAnnouncerQuery("");
+  }, []);
+
+  const MAX_CITIES = 5;
+  const addCity = useCallback(() => {
+    const trimmed = cityDraft.trim();
+    if (!trimmed) return;
+    setCities((previous) => {
+      if (previous.length >= MAX_CITIES) return previous;
+      if (previous.some((c) => c.toLocaleLowerCase("fr-FR") === trimmed.toLocaleLowerCase("fr-FR"))) return previous;
+      return [...previous, trimmed];
+    });
+    setCityDraft("");
+  }, [cityDraft]);
+  const removeCityAt = useCallback((index: number) => {
+    setCities((previous) => previous.filter((_, i) => i !== index));
   }, []);
 
   const handleSubmit = useCallback(
@@ -214,6 +234,10 @@ export default function NewCategoryListingPage() {
         setGlobalError("Prix invalide.");
         return;
       }
+      if (cities.length === 0) {
+        setGlobalError("Ajoute au moins une ville.");
+        return;
+      }
       for (const field of selectedCategory.attributeSchema) {
         if (field.required && !attributeValues[field.key]) {
           setGlobalError(`Champ requis manquant : ${field.label}.`);
@@ -233,7 +257,7 @@ export default function NewCategoryListingPage() {
             description,
             price: priceNumber,
             province,
-            city,
+            cities,
             images: uploadedImages.map(({ fileURL, filePATH }) => ({ fileURL, filePATH })),
             contact: contact || undefined,
             whatsappContact: whatsappContact || undefined,
@@ -261,7 +285,7 @@ export default function NewCategoryListingPage() {
       attributeValues,
       callContact,
       canCreate,
-      city,
+      cities,
       contact,
       description,
       price,
@@ -389,12 +413,53 @@ export default function NewCategoryListingPage() {
                   </option>
                 ))}
               </select>
-              <Input
-                value={city}
-                onChange={(event) => setCity(event.target.value)}
-                placeholder="Ville"
-                disabled={!canCreate || isSubmitting}
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={cityDraft}
+                  onChange={(event) => setCityDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addCity();
+                    }
+                  }}
+                  placeholder="Ville (Entrée pour ajouter)"
+                  disabled={!canCreate || isSubmitting || cities.length >= MAX_CITIES}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addCity}
+                  disabled={!canCreate || isSubmitting || !cityDraft.trim() || cities.length >= MAX_CITIES}
+                >
+                  Ajouter
+                </Button>
+              </div>
+            </div>
+
+            {/* Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
+                08-zones-multiples-mode.md. Au moins une ville requise à la soumission. */}
+            <div className="flex flex-wrap gap-2">
+              {cities.length === 0 && (
+                <p className="text-sm italic text-muted-foreground">Aucune ville ajoutée pour l&apos;instant.</p>
+              )}
+              {cities.map((c, index) => (
+                <span
+                  key={`${c}-${index}`}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm"
+                >
+                  {c}
+                  <button
+                    type="button"
+                    onClick={() => removeCityAt(index)}
+                    disabled={!canCreate || isSubmitting}
+                    className="text-muted-foreground hover:text-destructive disabled:opacity-50"
+                    aria-label={`Retirer ${c}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
             </div>
 
             <div className="grid gap-3 md:grid-cols-3">

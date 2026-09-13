@@ -10,12 +10,13 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useImageDropzone } from '@/hooks/useImageDropzone'
 import { useToast } from '@/hooks/use-toast'
-import { createFile } from '@/db/file.db'
+import { uploadPropertyImages } from '@/db/file.db'
 import { createProperty } from '@/db/property.db'
 import { routes } from '@/constantes/routes'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
 import type { Property } from '@/models/annonce'
 import type { PublishableCategoryLeaf } from '@/app/api/categories/publishable-leaves/route'
+import { buildZonesPatch } from '@/lib/listing-zones'
 
 type LeavesPayload = { leaves: PublishableCategoryLeaf[] }
 
@@ -31,7 +32,7 @@ type AIDraft = {
   title: string
   description: string
   price: number | null
-  city: string | null
+  cities: string[]
   attributes: Record<string, string | number | boolean>
 }
 
@@ -128,7 +129,9 @@ export default function CreateCategoryListingPage() {
       // Les images sont uploadées AVANT l'appel IA, qui est ce qui débite le crédit
       // (voir /api/ai/category-listing-draft). Dans l'autre sens, un upload qui échoue
       // laisse l'annonceur facturé sans annonce — constaté en prod le 2026-08-17.
-      const uploadedImages = await Promise.all(images.map((file) => createFile(file, user!.uid, 'property')))
+      // Concurrence bornée plutôt qu'un Promise.all illimité — voir
+      // docs/performance-creation-modification-annonces-reels.md, point 4.
+      const uploadedImages = await uploadPropertyImages(images, user!.uid, 'property')
 
       const draft = await requestCategoryListingDraft(description)
       const matchedCategory = leaves.find((leaf) => leaf.id === draft.categoryId)
@@ -143,6 +146,18 @@ export default function CreateCategoryListingPage() {
       }
 
       const provinceMeta = GABON_PROVINCES[0]
+      // Une ville par zone détectée par l'IA — province non déduite par ville (aucun
+      // catalogue ville->province branché ici, voir docs/marketplace-multi-categories/
+      // 08-zones-multiples-mode.md §3.3/§9), donc la même province placeholder pour
+      // toutes les zones, comme pour la zone unique historique.
+      const zonesPatch = buildZonesPatch(
+        draft.cities.map((city) => ({
+          city,
+          province: provinceMeta.name,
+          latitude: provinceMeta.lat,
+          longitude: provinceMeta.lng,
+        })),
+      )
 
       const property = {
         title: draft.title,
@@ -153,12 +168,9 @@ export default function CreateCategoryListingPage() {
         categoryPath: { lvl0: matchedCategory.rootName, lvl1: `${matchedCategory.rootName} > ${matchedCategory.name}` },
         attributes,
         street: '',
-        city: draft.city ?? '',
-        province: provinceMeta.name,
+        ...zonesPatch,
         country: 'Gabon',
         countryCode: 'GA',
-        latitude: provinceMeta.lat,
-        longitude: provinceMeta.lng,
         isLocExact: false,
         locationSource: 'UNVERIFIED',
         contact,

@@ -12,6 +12,7 @@ export function toPropertyListItem(hit: PropertyHit): PropertyListItem {
     status: hit.status ?? 'FOR_RENT',
     city: hit.city ?? '',
     province: hit.province ?? '',
+    cities: hit.cities,
     typeProperty: hit.typeProperty ?? '',
     images: hit.images ?? [],
   };
