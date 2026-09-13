@@ -308,7 +308,8 @@ describe('SearchScreen', () => {
     await fireEvent.press(await screen.findByTestId('filters-province-option-Haut-Ogooué'));
 
     // Ville redevient "Toutes les villes" — Libreville appartenait à l'ancienne province.
-    expect(screen.getByText('Toutes les villes')).toBeTruthy();
+    // Nouvelle province -> nouvelle clé de requête -> re-chargement transitoire, d'où le findBy.
+    expect(await screen.findByText('Toutes les villes')).toBeTruthy();
   });
 
   it('Immobilier — budget minimum et maximum sont tous les deux envoyés à Algolia', async () => {

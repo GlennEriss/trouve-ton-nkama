@@ -51,6 +51,9 @@ export { monitorAlgoliaSearchQuota } from './search/algolia-quota-monitor';
 // docs/performance-creation-modification-annonces-reels.md, point 1)
 export { onPropertyLocationSync } from './location/location-sync.trigger';
 
+// Matérialisation universelle de la propriété, y compris pour les imports/scripts directs.
+export { onPropertyOwnerUidsSync } from './properties/owner-uids';
+
 // Exemple de fonction (à décommenter si nécessaire)
 // export const helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});

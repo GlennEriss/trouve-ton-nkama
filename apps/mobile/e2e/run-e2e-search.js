@@ -70,6 +70,16 @@ async function recoverToStableState() {
   }
 }
 
+// Premier testID d'option réelle (pas "Tous / Toutes") sous un LocationSelect donné — les
+// valeurs viennent d'Algolia (facette sur les vraies annonces indexées, voir
+// src/api/algolia.ts), donc ce test ne peut pas connaître à l'avance un nom de province/ville
+// précis : on prend simplement la première option proposée, peu importe laquelle.
+function firstRealOptionTestID(xml, prefix) {
+  const re = new RegExp(`resource-id="(${prefix}-option-[^"]+)"`, 'g');
+  const ids = [...xml.matchAll(re)].map((m) => m[1]);
+  return ids.find((id) => id !== `${prefix}-option-tout`) ?? null;
+}
+
 // Navigue vers un onglet du bas, avec un filet : si le bouton d'onglet est introuvable (écran
 // coincé), on relance l'app une fois plutôt que de laisser tous les tests suivants échouer en
 // cascade.
@@ -157,6 +167,112 @@ CASES.push({
     await tapTestID('filters-close');
     await waitForTestIDGone('filters-apply', 8000);
     return `ouverture ${openMs} ms, fermeture ${Date.now() - t1} ms`;
+  },
+});
+
+CASES.push({
+  name: 'Filtres — Immobilier : Province/Ville/Quartier (Algolia) + budget min/max',
+  run: async () => {
+    await goToRecherche();
+    await tapTestID('category-pill-immobilier');
+    await waitForResultsSettled();
+
+    await tapTestID('search-filters-button');
+    await waitForTestID('filters-apply', 8000);
+
+    // Province : première option réelle, peu importe laquelle (vient d'Algolia, voir
+    // firstRealOptionTestID).
+    await tapTestID('filters-province');
+    await waitForTestID('filters-province-modal', 8000);
+    let xml = await dumpTree();
+    const provinceOption = firstRealOptionTestID(xml, 'filters-province');
+    if (!provinceOption) throw new Error("Aucune province renvoyée par Algolia (facette 'province' vide).");
+    const t0 = Date.now();
+    await tapTestID(provinceOption);
+    await waitForTestIDGone('filters-province-modal', 8000);
+
+    // Ville : ne devient choisissable qu'une fois la province sélectionnée (cascade).
+    await tapTestID('filters-city');
+    await waitForTestID('filters-city-modal', 8000);
+    xml = await dumpTree();
+    const cityOption = firstRealOptionTestID(xml, 'filters-city');
+    if (!cityOption) throw new Error('Aucune ville renvoyée par Algolia pour cette province.');
+    await tapTestID(cityOption);
+    await waitForTestIDGone('filters-city-modal', 8000);
+
+    // Quartier : cascade sur province + ville — peut légitimement être vide pour une ville
+    // donnée (pas toutes les annonces ont un quartier renseigné), donc pas une erreur en soi.
+    await tapTestID('filters-street');
+    await waitForTestID('filters-street-modal', 8000);
+    xml = await dumpTree();
+    const streetOption = firstRealOptionTestID(xml, 'filters-street');
+    let streetPicked = false;
+    if (streetOption) {
+      await tapTestID(streetOption);
+      await waitForTestIDGone('filters-street-modal', 8000);
+      streetPicked = true;
+    } else {
+      await tapTestID('filters-street-modal-close');
+    }
+    const cascadeMs = Date.now() - t0;
+
+    await tapTestID('filters-budget-min');
+    typeText('10000');
+    await tapTestID('filters-budget-max');
+    typeText('900000000');
+    if (isSoftKeyboardShown()) {
+      adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
+      await sleep(300);
+    }
+
+    await tapTestID('filters-apply');
+    const settled = await waitForResultsSettled();
+
+    return `cascade province→ville→quartier en ${cascadeMs} ms (quartier ${streetPicked ? 'choisi' : 'vide pour cette ville'}), budget min/max appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;
+  },
+});
+
+CASES.push({
+  name: 'Filtres — Mode : ville (select Algolia, pas de texte libre) + budget minimum',
+  run: async () => {
+    await goToRecherche();
+    await tapTestID('category-pill-mode');
+    await waitForResultsSettled();
+
+    await tapTestID('search-filters-button');
+    await waitForTestID('filters-apply', 8000);
+
+    let xml = await dumpTree();
+    if (xml.includes('resource-id="filters-province"') || xml.includes('resource-id="filters-street"')) {
+      throw new Error("Province/Quartier ne devraient pas apparaître en scope Mode.");
+    }
+
+    await tapTestID('filters-city');
+    await waitForTestID('filters-city-modal', 8000);
+    xml = await dumpTree();
+    const cityOption = firstRealOptionTestID(xml, 'filters-city');
+    let cityPicked = false;
+    const t0 = Date.now();
+    if (cityOption) {
+      await tapTestID(cityOption);
+      await waitForTestIDGone('filters-city-modal', 8000);
+      cityPicked = true;
+    } else {
+      await tapTestID('filters-city-modal-close');
+    }
+    const cityMs = Date.now() - t0;
+
+    await tapTestID('filters-budget-min');
+    typeText('5000');
+    if (isSoftKeyboardShown()) {
+      adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
+      await sleep(300);
+    }
+
+    await tapTestID('filters-apply');
+    const settled = await waitForResultsSettled();
+
+    return `ville ${cityPicked ? `choisie en ${cityMs} ms (Algolia, facette "cities")` : 'vide pour Mode'}, budget minimum appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;
   },
 });
 

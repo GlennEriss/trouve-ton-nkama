@@ -25,6 +25,9 @@ const setters = {
 let provincesState: any[]
 
 jest.mock('next/image', () => ({ __esModule: true, default: (props: any) => <img alt={props.alt} /> }))
+jest.mock('@/features/recommendation/tracking/use-register-recommendation-request', () => ({
+  useRankedListings: (items: any[]) => ({ displayItems: items, isRanking: false, recommendationRequest: null }),
+}))
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
   useSearchParams: () => ({

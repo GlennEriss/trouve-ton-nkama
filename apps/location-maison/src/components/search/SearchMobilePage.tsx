@@ -10,7 +10,8 @@ import { useAlgoliaContext } from '@/providers/AlgoliaContext';
 import { useInfiniteHits, useInstantSearch, useStats } from 'react-instantsearch';
 import PropertyCard from '../home-page/PropertyCard';
 import { RecommendationRequestProvider } from '@/providers/recommendation-request-provider';
-import { useRegisterRecommendationRequest } from '@/features/recommendation/tracking/use-register-recommendation-request';
+import { useRankedListings } from '@/features/recommendation/tracking/use-register-recommendation-request';
+import { toRecommendationCandidate } from '@/features/recommendation/scoring/candidate-mapper';
 import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills';
 import CategoryLeafFilterPills from './CategoryLeafFilterPills';
 import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient';
@@ -32,17 +33,27 @@ export default function SearchMobilePage() {
     const topRef = React.useRef<HTMLDivElement>(null);
     const sentinelRef = React.useRef<HTMLDivElement>(null);
     const { items, isLastPage, showMore } = useInfiniteHits();
-    const recommendationRequest = useRegisterRecommendationRequest(items, 'search');
+    const searchParams = useSearchParams();
+    const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+        items,
+        'search',
+        (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
+        {
+            categoryLvl0: searchParams.get('category') || 'Immobilier',
+            city: city || undefined,
+            budgetMin: minPrice ? Number(minPrice) : undefined,
+            budgetMax: maxPrice ? Number(maxPrice) : undefined,
+        },
+    );
     const recommendationPositionByObjectId = React.useMemo(() => {
         const map = new Map<string, number>();
-        items.forEach((item: any, index: number) => {
+        displayItems.forEach((item: any, index: number) => {
             if (item?.objectID) map.set(item.objectID, index);
         });
         return map;
-    }, [items]);
+    }, [displayItems]);
     const { nbHits } = useStats();
     const { status: searchStatus, refresh } = useInstantSearch();
-    const searchParams = useSearchParams();
     // Une demande de recherche est un contenu acheteur (collection Firestore `search_requests`,
     // voir DEMANDES_CATEGORY_NAME) — jamais indexé dans Algolia, donc nbHits/items ci-dessus ne
     // le concernent pas. Les hooks react-instantsearch continuent de s'exécuter normalement
@@ -162,10 +173,10 @@ export default function SearchMobilePage() {
         > = [];
 
         let adIndex = 0;
-        items.forEach((item, index) => {
+        displayItems.forEach((item, index) => {
             results.push({ type: 'property', item });
 
-            const hasEnoughItems = items.length > FIRST_AD_AFTER_INDEX;
+            const hasEnoughItems = displayItems.length > FIRST_AD_AFTER_INDEX;
             if (!hasEnoughItems) return;
 
             const isFirstAdPosition = index === FIRST_AD_AFTER_INDEX;
@@ -179,7 +190,7 @@ export default function SearchMobilePage() {
         });
 
         return results;
-    }, [items]);
+    }, [displayItems]);
 
     // Groupe les cards consécutives entre deux pubs (2026-08-15, demande utilisateur
     // explicite) : une pub insérée comme simple item d'une grille auto-fit partagée force un
@@ -338,6 +349,14 @@ export default function SearchMobilePage() {
                                 </button>
                             </div>
                         ) : items.length === 0 && (searchStatus === 'loading' || searchStatus === 'stalled') ? (
+                            <div className="flex items-center justify-center gap-2 py-8 text-gray-600 dark:text-gray-300" role="status">
+                                <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+                                <span>Recherche des annonces...</span>
+                            </div>
+                        ) : isRanking ? (
+                            // Attente brève (~150ms max) du reclassement Phase 2 avant d'afficher
+                            // la première page — jamais de blocage indéfini, un timeout retombe
+                            // sur l'ordre Algolia.
                             <div className="flex items-center justify-center gap-2 py-8 text-gray-600 dark:text-gray-300" role="status">
                                 <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
                                 <span>Recherche des annonces...</span>

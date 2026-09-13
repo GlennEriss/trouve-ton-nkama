@@ -62,7 +62,9 @@ describe('POST /api/recommendations/requests + /api/recommendations/events', () 
   const originalEnv = process.env
 
   beforeAll(async () => {
-    process.env = { ...originalEnv, CACHE_BACKEND: 'memory' }
+    // Trafic baseline à 0% par défaut : garde les tests Phase 1 déterministes (toujours
+    // 'control'). Les tests Phase 2 dédiés ci-dessous forcent 100% pour tester le reclassement.
+    process.env = { ...originalEnv, CACHE_BACKEND: 'memory', RECOMMENDATION_BASELINE_TRAFFIC_PERCENT: '0' }
     ;({ POST: requestsPOST } = await import('@/app/api/recommendations/requests/route'))
     ;({ POST: eventsPOST } = await import('@/app/api/recommendations/events/route'))
   })
@@ -202,5 +204,50 @@ describe('POST /api/recommendations/requests + /api/recommendations/events', () 
     expect(response.status).toBe(400)
     const payload = await response.json()
     expect(payload.error.code).toBe('VALIDATION_ERROR')
+  })
+
+  describe('Phase 2 — variante baseline (RECOMMENDATION_BASELINE_TRAFFIC_PERCENT=100)', () => {
+    beforeEach(() => {
+      process.env.RECOMMENDATION_BASELINE_TRAFFIC_PERCENT = '100'
+    })
+
+    afterEach(() => {
+      process.env.RECOMMENDATION_BASELINE_TRAFFIC_PERCENT = '0'
+    })
+
+    it('reclasse les candidats et renvoie orderedListingIds avec ranking_version=baseline-v1', async () => {
+      const { payload } = await registerRequest({
+        candidates: [
+          { listingId: 'old-listing', position: 0, createdAtMs: Date.now() - 300 * 24 * 60 * 60 * 1000, imageCount: 0, state: 'IN_PROGRESS', moderationStatus: 'APPROVED' },
+          { listingId: 'fresh-listing', position: 1, createdAtMs: Date.now() - 1 * 24 * 60 * 60 * 1000, imageCount: 6, state: 'IN_PROGRESS', moderationStatus: 'APPROVED' },
+        ],
+      })
+
+      expect(payload.rankingVariant).toBe('baseline')
+      expect(payload.rankingVersion).toBe('baseline-v1')
+      expect(payload.orderedListingIds).toEqual(['fresh-listing', 'old-listing'])
+    })
+
+    it('ne renvoie jamais un candidat hors contraintes dans orderedListingIds', async () => {
+      const { payload } = await registerRequest({
+        scoringContext: { categoryLvl0: 'immobilier' },
+        candidates: [
+          { listingId: 'wrong-category', position: 0, categoryLvl0: 'mode', state: 'IN_PROGRESS', moderationStatus: 'APPROVED' },
+          { listingId: 'archived-listing', position: 1, categoryLvl0: 'immobilier', state: 'ARCHIVED', moderationStatus: 'APPROVED' },
+          { listingId: 'eligible-listing', position: 2, categoryLvl0: 'immobilier', state: 'IN_PROGRESS', moderationStatus: 'APPROVED' },
+        ],
+      })
+
+      expect(payload.orderedListingIds).toEqual(['eligible-listing'])
+    })
+
+    it('journalise la variante et version réellement utilisées (baseline-v1) vers BigQuery', async () => {
+      await registerRequest()
+      expect(forwardToRecommendationAnalytics).toHaveBeenCalledWith(
+        'requests',
+        expect.objectContaining({ ranking_variant: 'baseline', ranking_version: 'baseline-v1' }),
+        expect.any(String),
+      )
+    })
   })
 })

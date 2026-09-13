@@ -15,12 +15,74 @@ appartient à un autre chantier en cours en parallèle).
 | 5 — Parcours IA | `property/create/page.tsx`, `category-listing/create/page.tsx` | Garde-fou "état de requête catégories inconnu" (bug réel trouvé en e2e), progression par phases (photos/génération/validation/enregistrement). |
 | 6 — Upload Reel reprenable | `reel.db.ts` (`uploadRawReelVideo`), `CreateOrphanReelClient.tsx`, `EditReelClient.tsx` | `uploadBytesResumable` + progression 0-100 + annulation (signal/timeout), barre `role="progressbar"` accessible dans les deux écrans. |
 | 7 — Invalidations Reel non bloquantes | `EditReelClient.tsx` | `setQueryData` immédiat + invalidations en arrière-plan (`void ... .catch(logger.warn)`). |
-| 8 — Instrumentation | `src/lib/observability/submission-performance.ts` | Module testé (11 tests), câblé dans `property.form.provider.tsx` et les 2 pages IA (phases `image_upload`/`ai`/`property_write`). Pas encore câblé dans les Reels. |
+| 8 — Instrumentation | `src/lib/observability/submission-performance.ts` | Module testé (11 tests), câblé dans `property.form.provider.tsx`, les 2 pages IA **et les 2 parcours Reel** (`CreateOrphanReelClient.tsx` phases `reel_create`/`video_upload`, `EditReelClient.tsx` phases `reel_create`/`video_upload`/`cache_invalidation`). |
 
-**Non fait, hors code applicatif** : déploiement de la Cloud Function `onPropertyLocationSync`
-(`firebase deploy --only functions`) ; câblage de l'instrumentation dans les parcours Reel ;
-mesure réelle en développement pour établir une baseline avant/après (le doc le demande
-explicitement — c'est la suite naturelle une fois déployé). Rien n'est commité.
+**Déployé (2026-09-13)** : Cloud Function `onPropertyLocationSync` (point 1) déployée sur
+`location-maison-dev` **et** `location-maison-prod-167da`, vérifiée en écrivant une annonce
+test réelle en dev (province → ville → rue créées avec les bons identifiants et la bonne
+hiérarchie parent/enfant, données de test nettoyées ensuite).
+
+## Mesure réelle avant/après (2026-09-13, dev Firestore)
+
+Mesure demandée explicitement par le document avant de considérer une optimisation validée
+(§ « Critère de sortie », point 8). Réalisée contre le **vrai** projet Firestore de
+développement (`location-maison-dev`), pas simulée.
+
+### Point 1 — géographie hors chemin critique
+
+Méthode : appel direct de `syncPropertyLocation()` (le service exact utilisé par la Cloud
+Function déployée) avec l'Admin SDK, sur une localité tantôt inédite (chemin défavorable —
+3 `create()` séquentiels) tantôt déjà connue (chemin courant — 3 lectures, 0 écriture),
+comparé à une écriture Firestore isolée équivalente à `createProperty()` (ce qui reste seul
+sur le chemin critique aujourd'hui). Trois exécutions :
+
+| Mesure | Run 1 | Run 2 | Run 3 | Sens |
+|---|---:|---:|---:|---|
+| A. Geo sync — localité inédite (pire cas, ex-chemin critique) | 2074 ms | 2357 ms | 2346 ms | **AVANT** — bloquait la réponse |
+| B. Geo sync — localité déjà connue (cas courant, ex-chemin critique) | 620 ms | 530 ms | 589 ms | **AVANT** — bloquait la réponse |
+| C. Écriture de l'annonce seule (chemin critique actuel) | 469 ms | 517 ms | 392 ms | **APRÈS** — seul ce qui reste |
+
+**Lecture** : sur une ville/province déjà vues (l'immense majorité des annonces, Libreville
+en tête), le point 1 retire environ **530-620 ms** du délai perçu avant confirmation. Sur une
+localité inédite (nouvelle ville jamais publiée), il en retire **plus de 2 secondes**. Ces
+deux chiffres s'ajoutent en plus à celui du point 2 (voir ci-dessous) — ils ne se recouvrent
+pas, la géo-sync et les suggestions étaient deux attentes distinctes et toutes deux
+séquentielles avec l'écriture principale dans l'ancien code.
+
+**Biais assumé, à charge contre le gain plutôt que pour** : mesuré avec l'Admin SDK
+(Node → Firestore), pas le SDK Web que l'ancien code client utilisait (navigateur →
+Firestore, généralement plus lent, en particulier sur mobile). Le gain réellement perçu par
+un utilisateur est donc probablement **supérieur** à ces chiffres, pas inférieur.
+
+### Point 2 — suggestions non bloquantes
+
+Pas remesuré séparément : le code retiré (`updateOrCreateSuggestion` + `withTimeout(...,
+8_000, ...)`) imposait un **plafond documenté de 8 000 ms** avant confirmation en cas de
+lenteur/timeout de cette écriture — entièrement supprimé du chemin critique. Gain plancher
+garanti par construction (plus d'attente du tout), pas seulement mesuré.
+
+### Points 3/4/6 — pipeline image, concurrence, upload Reel
+
+**Non isolés séparément** dans cette passe : les mesurer proprement demande, comme le
+document le précise lui-même (§ Point 4 « Mesure et réglage », § Point 3 « Validation
+performance »), un **réseau simulé/throttlé** et plusieurs images de tailles réalistes — sur
+la bonne connexion de cet environnement de dev, `Promise.all` illimité et une concurrence à 3
+ne se distinguent pas de façon fiable (l'écart n'apparaît qu'en dégradant la connexion,
+exactement ce que le document anticipe : « le temps médian ne doit pas régresser sur une
+bonne connexion »). Référence disponible en attendant : les runs e2e réels de ce chantier
+(`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore) publient une annonce
+immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**, et une annonce Mode
+par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de bout en bout après
+l'ensemble des optimisations de ce document, à comparer à une mesure « avant » qui
+nécessiterait de rejouer l'ancien code, non fait ici pour ne pas revenir en arrière sur du
+code déjà remplacé.
+
+### Suite recommandée
+
+Établir une baseline chiffrée pour les points 3/4/6 nécessite un test dédié avec profil
+réseau simulé (voir Playwright `context.route`/CDP throttling) et plusieurs tailles de lot
+d'images — hors budget de cette passe, proposé comme prochaine étape si ces points doivent
+être formellement validés au même niveau que le point 1.
 
 ## Objet du document
 

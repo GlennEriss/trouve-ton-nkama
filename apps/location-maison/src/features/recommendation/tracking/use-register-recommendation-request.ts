@@ -1,70 +1,108 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import {
   registerRecommendationRequest,
   type RecommendationContext,
+  type RecommendationScoringCandidate,
+  type RecommendationScoringContext,
   type RegisteredRecommendationRequest,
 } from './recommendation-request.client'
 
 // Plafond aligné sur celui accepté par /api/recommendations/requests (voir
 // apps/location-maison/src/app/api/recommendations/requests/route.ts et le schéma adaptateur
 // côté location-maison-admin). Au-delà, les résultats chargés par scroll infini ne sont pas
-// suivis en Phase 1 — limitation connue, pas un bug (voir docs/recommendation-ml/).
+// suivis en Phase 1/2 — limitation connue, pas un bug (voir docs/recommendation-ml/).
 const MAX_CANDIDATES = 50
 
-function extractListingId(item: unknown): string | null {
-  if (!item || typeof item !== 'object') return null
-  const record = item as Record<string, unknown>
-  const raw = record.objectID ?? record.id ?? null
-  return typeof raw === 'string' && raw.length > 0 ? raw : null
+// Marge réseau au-dessus du NFR serveur (reranking P95 < 100ms, ARCHITECTURE-OVERVIEW.md) : passé
+// ce délai, on abandonne l'attente et on garde l'ordre Algolia — jamais de blocage indéfini.
+const FIRST_PAGE_TIMEOUT_MS = 150
+
+export type RankedListingsResult<T> = {
+  /** Items dans l'ordre final à afficher : reclassés si une variante baseline a répondu à temps,
+   * ordre Algolia d'origine sinon (variante control, timeout, ou échec). */
+  displayItems: T[]
+  /** true uniquement pendant la brève attente du tout premier chargement (jamais pour les pages
+   * suivantes du scroll infini, qui ne sont ni bloquantes ni reclassées). */
+  isRanking: boolean
+  recommendationRequest: RegisteredRecommendationRequest | null
 }
 
-// Enregistre (et ré-enregistre si la liste chargée change réellement) la liste servie auprès de
-// /api/recommendations/requests, sans jamais modifier l'ordre Algolia existant (Phase 1 =
-// collecte seule). Le résultat alimente RecommendationRequestProvider.
-export function useRegisterRecommendationRequest(
-  items: unknown[],
+export function useRankedListings<T>(
+  items: T[],
   context: RecommendationContext | undefined,
-): RegisteredRecommendationRequest | null {
+  toCandidate: (item: T, index: number) => RecommendationScoringCandidate | null,
+  scoringContext?: RecommendationScoringContext,
+): RankedListingsResult<T> {
   const [registered, setRegistered] = useState<RegisteredRecommendationRequest | null>(null)
+  const [isRanking, setIsRanking] = useState(false)
   const lastSignatureRef = useRef<string | null>(null)
+  const hasHandledFirstPageRef = useRef(false)
 
-  useEffect(() => {
-    if (!context) {
-      return
-    }
+  // useLayoutEffect (pas useEffect) : pose isRanking=true avant la peinture du premier
+  // chargement, pour éviter un flash de l'ordre Algolia non reclassé avant l'état d'attente.
+  useLayoutEffect(() => {
+    if (!context) return
 
     const candidates = items
       .slice(0, MAX_CANDIDATES)
-      .map((item, index) => {
-        const listingId = extractListingId(item)
-        return listingId ? { listingId, position: index } : null
-      })
-      .filter((candidate): candidate is { listingId: string; position: number } => candidate !== null)
+      .map((item, index) => toCandidate(item, index))
+      .filter((candidate): candidate is RecommendationScoringCandidate => candidate !== null)
 
-    if (candidates.length === 0) {
-      return
-    }
+    if (candidates.length === 0) return
 
     const signature = candidates.map((candidate) => candidate.listingId).join(',')
-    if (signature === lastSignatureRef.current) {
-      return
-    }
+    if (signature === lastSignatureRef.current) return
     lastSignatureRef.current = signature
 
+    const isFirstPage = !hasHandledFirstPageRef.current
+    hasHandledFirstPageRef.current = true
+
     let cancelled = false
-    void registerRecommendationRequest({ context, candidates }).then((result) => {
-      if (!cancelled && result) {
-        setRegistered(result)
-      }
+    const controller = isFirstPage && typeof AbortController !== 'undefined' ? new AbortController() : undefined
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+    if (isFirstPage) {
+      setIsRanking(true)
+      timeoutId = setTimeout(() => controller?.abort(), FIRST_PAGE_TIMEOUT_MS)
+    }
+
+    void registerRecommendationRequest({
+      context,
+      candidates,
+      scoringContext,
+      signal: controller?.signal,
+    }).then((result) => {
+      if (cancelled) return
+      if (result) setRegistered(result)
+      if (isFirstPage) setIsRanking(false)
     })
 
     return () => {
       cancelled = true
+      if (timeoutId !== undefined) clearTimeout(timeoutId)
     }
-  }, [items, context])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, context, scoringContext])
 
-  return registered
+  const displayItems = useMemo(() => {
+    const orderedListingIds = registered?.orderedListingIds
+    if (!orderedListingIds || orderedListingIds.length === 0) {
+      return items
+    }
+
+    const orderIndex = new Map(orderedListingIds.map((id, index) => [id, index]))
+    const withId = items.map((item, index) => ({ item, id: toCandidate(item, index)?.listingId ?? null }))
+
+    const ranked = withId.filter((entry): entry is { item: T; id: string } => entry.id !== null && orderIndex.has(entry.id))
+    const unranked = withId.filter((entry) => entry.id === null || !orderIndex.has(entry.id)).map((entry) => entry.item)
+
+    ranked.sort((a, b) => orderIndex.get(a.id)! - orderIndex.get(b.id)!)
+
+    return [...ranked.map((entry) => entry.item), ...unranked]
+  }, [items, registered, toCandidate])
+
+  return { displayItems, isRanking, recommendationRequest: registered }
 }

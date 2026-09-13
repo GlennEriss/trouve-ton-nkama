@@ -11,7 +11,8 @@ import {
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import PropertyCard from "../home-page/PropertyCard";
 import { RecommendationRequestProvider } from "@/providers/recommendation-request-provider";
-import { useRegisterRecommendationRequest } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { useRankedListings } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { toRecommendationCandidate } from "@/features/recommendation/scoring/candidate-mapper";
 import { FilterModal } from "../home-page/FilterModal";
 import { TypeProperty } from "@/constantes/property-type";
 
@@ -164,7 +165,17 @@ export default function SearchPage() {
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
-  const recommendationRequest = useRegisterRecommendationRequest(items, "search");
+  const { displayItems, isRanking, recommendationRequest } = useRankedListings(
+    items,
+    "search",
+    (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
+    {
+      categoryLvl0: "Immobilier",
+      city: city || undefined,
+      budgetMin: minPrice ? Number(minPrice) : undefined,
+      budgetMax: maxPrice ? Number(maxPrice) : undefined,
+    },
+  );
   useEffect(() => {
     if (!sentinelRef.current) return;
     const obs = new IntersectionObserver(
@@ -313,15 +324,23 @@ export default function SearchPage() {
               désormais une taille fixe (220px, même gabarit que le carrousel de la home),
               le nombre de cards par ligne s'adapte naturellement à la largeur disponible.
               Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
-          <RecommendationRequestProvider value={recommendationRequest}>
-            <div className="flex flex-wrap gap-4">
-              {items.map((propertyData, i) => (
-                <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
-                  <PropertyCard property={propertyData} position={i} />
-                </div>
-              ))}
+          {isRanking ? (
+            // Attente brève (~150ms max) du reclassement Phase 2 avant d'afficher la première
+            // page — jamais de blocage indéfini, un timeout retombe sur l'ordre Algolia.
+            <div className="flex items-center justify-center py-20" role="status" aria-label="Chargement des annonces">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          </RecommendationRequestProvider>
+          ) : (
+            <RecommendationRequestProvider value={recommendationRequest}>
+              <div className="flex flex-wrap gap-4">
+                {displayItems.map((propertyData: any, i) => (
+                  <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
+                    <PropertyCard property={propertyData} position={i} />
+                  </div>
+                ))}
+              </div>
+            </RecommendationRequestProvider>
+          )}
 
           {/* Sentinel pour infinite scroll */}
           <div ref={sentinelRef} />

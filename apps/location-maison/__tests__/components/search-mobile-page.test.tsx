@@ -17,6 +17,9 @@ let instantStatus: string
 let sessionStatus: string
 let observerCallback: IntersectionObserverCallback
 
+jest.mock('@/features/recommendation/tracking/use-register-recommendation-request', () => ({
+  useRankedListings: (items: any[]) => ({ displayItems: items, isRanking: false, recommendationRequest: null }),
+}))
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: pushMock }),
   useSearchParams: () => ({ get: (key: string) => params.get(key), toString: () => params.toString() }),

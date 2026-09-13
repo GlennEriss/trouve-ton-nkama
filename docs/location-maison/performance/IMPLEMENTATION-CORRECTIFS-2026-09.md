@@ -59,11 +59,15 @@ idempotent et fonctionne en dry-run par défaut. Commandes :
 - `npm run listings:backfill-owners:dry` pour mesurer sans écrire ;
 - `npm run listings:backfill-owners:apply` uniquement après validation du dry-run et sauvegarde.
 
-Le backfill de production a été vérifié immédiatement après écriture : 1 035 annonces parcourues,
-zéro correction restante et zéro annonce sans propriétaire exploitable. La nouvelle requête est
-implémentée, mais reste inactive tant que la version du code qui assure la double écriture n'est
-pas déployée. Après déploiement, activer `ANNOUNCER_ADS_OWNER_UIDS_QUERY=true`; revenir à `false`
-constitue le rollback sans migration inverse.
+Le backfill initial de production a été vérifié immédiatement après écriture : 1 035 annonces
+parcourues, zéro correction restante et zéro annonce sans propriétaire exploitable. Sept annonces
+créées pendant la fenêtre de déploiement ont ensuite été corrigées. Le contrôle final du
+13 septembre 2026 porte sur 1 042 annonces et ne trouve plus aucun écart.
+
+La double écriture est déployée dans les applications publique et admin. Le trigger Firebase
+`onPropertyOwnerUidsSync`, également déployé en production, couvre en plus les imports et scripts
+qui écrivent directement dans Firestore. `ANNOUNCER_ADS_OWNER_UIDS_QUERY=true` est actif sur Vercel
+Production ; revenir à `false` puis redéployer constitue le rollback sans migration inverse.
 
 ### Expiration des promotions
 
@@ -80,8 +84,6 @@ budget navigateur réellement dépassé.
 
 ## Prochaine étape recommandée
 
-Déployer d'abord la double écriture, relancer le dry-run afin de couvrir les annonces éventuellement
-créées entre-temps, puis activer `ANNOUNCER_ADS_OWNER_UIDS_QUERY=true`. La recherche texte, les tris
-et les agrégats de « Mes annonces » devront ensuite être séparés de la lecture paginée (ou servis
-par Algolia avec filtrage obligatoire sur le propriétaire) pour supprimer le dernier scan par
-annonceur.
+La recherche texte, les tris et les agrégats de « Mes annonces » devront ensuite être séparés de la
+lecture paginée (ou servis par Algolia avec filtrage obligatoire sur le propriétaire) pour supprimer
+le dernier scan par annonceur.
