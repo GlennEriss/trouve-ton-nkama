@@ -5,12 +5,20 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { Search, SlidersHorizontal, X } from 'lucide-react-native';
-import { searchProperties, type SearchFilters } from '../api/algolia';
+import {
+  searchProperties,
+  getProvinceOptions,
+  getCityOptions,
+  getAllCityOptions,
+  getStreetOptions,
+  type SearchFilters,
+} from '../api/algolia';
 import { getActiveCategories, getPublishableLeaves, type PublishableCategoryLeaf } from '../api/categories';
 import { toPropertyListItem } from '../lib/propertyMapping';
 import { colors } from '../theme/colors';
 import { PropertyCard } from '../components/PropertyCard';
 import { ChipExpander, type ChipOption } from '../components/ChipExpander';
+import { LocationSelect } from '../components/LocationSelect';
 import type { SearchStackParamList } from '../navigation/types';
 
 const GRID_GAP = 12;
@@ -43,7 +51,10 @@ function countActiveFilters(filters: SearchFilters): number {
   return (
     (filters.typeProperty?.length ? 1 : 0) +
     (filters.status ? 1 : 0) +
+    (filters.province ? 1 : 0) +
     (filters.city ? 1 : 0) +
+    (filters.street ? 1 : 0) +
+    (filters.budgetMinXaf ? 1 : 0) +
     (filters.budgetMaxXaf ? 1 : 0) +
     attributeCount
   );
@@ -67,7 +78,10 @@ function FiltersModal({
 }) {
   const [types, setTypes] = useState<string[]>(initialFilters.typeProperty ?? []);
   const [status, setStatus] = useState<SearchFilters['status']>(initialFilters.status);
-  const [city, setCity] = useState(initialFilters.city ?? '');
+  const [province, setProvinceState] = useState<string | undefined>(initialFilters.province);
+  const [city, setCityState] = useState<string | undefined>(initialFilters.city);
+  const [street, setStreetState] = useState<string | undefined>(initialFilters.street);
+  const [budgetMin, setBudgetMin] = useState(initialFilters.budgetMinXaf ? String(initialFilters.budgetMinXaf) : '');
   const [budgetMax, setBudgetMax] = useState(initialFilters.budgetMaxXaf ? String(initialFilters.budgetMaxXaf) : '');
   const [attributes, setAttributes] = useState<Record<string, string[]>>(initialFilters.attributes ?? {});
 
@@ -79,7 +93,10 @@ function FiltersModal({
     if (!visible) return;
     setTypes(initialFilters.typeProperty ?? []);
     setStatus(initialFilters.status);
-    setCity(initialFilters.city ?? '');
+    setProvinceState(initialFilters.province);
+    setCityState(initialFilters.city);
+    setStreetState(initialFilters.street);
+    setBudgetMin(initialFilters.budgetMinXaf ? String(initialFilters.budgetMinXaf) : '');
     setBudgetMax(initialFilters.budgetMaxXaf ? String(initialFilters.budgetMaxXaf) : '');
     setAttributes(initialFilters.attributes ?? {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,6 +109,42 @@ function FiltersModal({
   const attributeFields = (leaf?.attributeSchema ?? [])
     .filter((f) => f.facetable && f.type === 'enum')
     .sort((a, b) => Number(b.primary) - Number(a.primary));
+
+  // Cascade Province -> Ville -> Quartier (immobilier uniquement) : changer un niveau vide les
+  // niveaux suivants, jamais l'inverse — même comportement que
+  // useSelectFilterLocationMediator.ts côté web (onProvinceChange/onCityChange), sinon on
+  // pourrait se retrouver avec un quartier d'une ville qu'on vient de quitter.
+  const setProvince = (next: string | undefined) => {
+    setProvinceState(next);
+    setCityState(undefined);
+    setStreetState(undefined);
+  };
+  const setCity = (next: string | undefined) => {
+    setCityState(next);
+    setStreetState(undefined);
+  };
+
+  // Provinces/villes/quartiers viennent d'Algolia (facette sur les vraies annonces indexées,
+  // jamais une liste codée en dur) — voir src/api/algolia.ts. `enabled` évite de requêter tant
+  // que la modale est fermée ou qu'un niveau dépendant n'a pas encore de valeur.
+  const { data: provinceOptions = [], isLoading: provincesLoading } = useQuery({
+    queryKey: ['filters-provinces'],
+    queryFn: getProvinceOptions,
+    enabled: visible && isImmobilierScope,
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: cityOptions = [], isLoading: citiesLoading } = useQuery({
+    queryKey: ['filters-cities', isImmobilierScope, province],
+    queryFn: () => (isImmobilierScope ? getCityOptions(province) : getAllCityOptions()),
+    enabled: visible && (!isImmobilierScope || !!province),
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: streetOptions = [], isLoading: streetsLoading } = useQuery({
+    queryKey: ['filters-streets', province, city],
+    queryFn: () => getStreetOptions(province, city),
+    enabled: visible && isImmobilierScope && !!city,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const toggleType = (key: string) => {
     setTypes((prev) => (prev.includes(key) ? prev.filter((t) => t !== key) : [...prev, key]));
@@ -108,7 +161,10 @@ function FiltersModal({
   const handleReset = () => {
     setTypes([]);
     setStatus(undefined);
-    setCity('');
+    setProvinceState(undefined);
+    setCityState(undefined);
+    setStreetState(undefined);
+    setBudgetMin('');
     setBudgetMax('');
     setAttributes({});
   };
@@ -118,7 +174,10 @@ function FiltersModal({
       ...initialFilters,
       typeProperty: types.length ? types : undefined,
       status,
-      city: city.trim() || undefined,
+      province: isImmobilierScope ? province : undefined,
+      city,
+      street: isImmobilierScope ? street : undefined,
+      budgetMinXaf: Number(budgetMin) > 0 ? Number(budgetMin) : undefined,
       budgetMaxXaf: Number(budgetMax) > 0 ? Number(budgetMax) : undefined,
       attributes: Object.values(attributes).some((v) => v.length) ? attributes : undefined,
     });
@@ -174,11 +233,61 @@ function FiltersModal({
             </>
           )}
 
-          <Text style={styles.label}>Ville</Text>
-          <TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="Ex: Libreville" />
+          {isImmobilierScope && (
+            <LocationSelect
+              testID="filters-province"
+              label="Province"
+              value={province}
+              options={provinceOptions}
+              placeholder="Toutes les provinces"
+              loading={provincesLoading}
+              onSelect={setProvince}
+            />
+          )}
+
+          <LocationSelect
+            testID="filters-city"
+            label="Ville"
+            value={city}
+            options={cityOptions}
+            placeholder={isImmobilierScope && !province ? "Choisissez d'abord une province" : 'Toutes les villes'}
+            loading={citiesLoading}
+            disabled={isImmobilierScope && !province}
+            onSelect={isImmobilierScope ? setCity : setCityState}
+          />
+
+          {isImmobilierScope && (
+            <LocationSelect
+              testID="filters-street"
+              label="Quartier"
+              value={street}
+              options={streetOptions}
+              placeholder={!city ? "Choisissez d'abord une ville" : 'Tous les quartiers'}
+              loading={streetsLoading}
+              disabled={!city}
+              onSelect={setStreetState}
+            />
+          )}
+
+          <Text style={styles.label}>Budget minimum (FCFA)</Text>
+          <TextInput
+            testID="filters-budget-min"
+            style={styles.input}
+            value={budgetMin}
+            onChangeText={setBudgetMin}
+            keyboardType="numeric"
+            placeholder="Ex: 50000"
+          />
 
           <Text style={styles.label}>Budget maximum (FCFA)</Text>
-          <TextInput style={styles.input} value={budgetMax} onChangeText={setBudgetMax} keyboardType="numeric" placeholder="Ex: 300000" />
+          <TextInput
+            testID="filters-budget-max"
+            style={styles.input}
+            value={budgetMax}
+            onChangeText={setBudgetMax}
+            keyboardType="numeric"
+            placeholder="Ex: 300000"
+          />
 
           {attributeFields.map((field) => (
             <View key={field.key}>

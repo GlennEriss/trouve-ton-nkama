@@ -38,16 +38,30 @@ function mockAlgoliaResponse(hits: unknown[], nbPages = 1) {
 }
 
 // Contrairement à mockAlgoliaResponse (une seule forme de réponse pour tous les appels),
-// SearchScreen appelle désormais aussi GET /api/categories/active et
-// GET /api/categories/publishable-leaves — il faut distinguer par URL pour tester les pills
-// catégorie/sous-catégorie avec de vraies données.
-function mockApiResponses(opts: { hits?: unknown[]; nbPages?: number; categories?: unknown[]; leaves?: unknown[] }) {
-  global.fetch = jest.fn((url: string) => {
+// SearchScreen appelle désormais aussi GET /api/categories/active,
+// GET /api/categories/publishable-leaves, et des requêtes de FACETTE (province/ville/quartier
+// des filtres, params.facets présent, pas de `hits`) — il faut distinguer les 4 formes.
+function mockApiResponses(opts: {
+  hits?: unknown[];
+  nbPages?: number;
+  categories?: unknown[];
+  leaves?: unknown[];
+  // Valeurs de facette par attribut Algolia (ex. { province: { Estuaire: 5 }, city: {...} }) —
+  // mêmes clés que fetchLocationFacet côté src/api/algolia.ts.
+  facets?: Record<string, Record<string, number>>;
+}) {
+  global.fetch = jest.fn((url: string, init?: { body?: string }) => {
     if (url.includes('/api/categories/active')) {
       return Promise.resolve({ ok: true, status: 200, json: async () => ({ categories: opts.categories ?? [] }) });
     }
     if (url.includes('/api/categories/publishable-leaves')) {
       return Promise.resolve({ ok: true, status: 200, json: async () => ({ leaves: opts.leaves ?? [] }) });
+    }
+    const params = init?.body ? JSON.parse(init.body)?.requests?.[0]?.params : undefined;
+    const facetAttribute = params?.facets?.[0];
+    if (facetAttribute) {
+      const facetValues = opts.facets?.[facetAttribute] ?? {};
+      return Promise.resolve({ ok: true, status: 200, json: async () => ({ results: [{ facets: { [facetAttribute]: facetValues } }] }) });
     }
     return Promise.resolve({
       ok: true,
@@ -220,5 +234,135 @@ describe('SearchScreen', () => {
 
     expect(screen.queryByText('1')).toBeNull();
     await waitFor(() => expect(lastAlgoliaFilters()).not.toContain('typeProperty'));
+  });
+
+  it('Immobilier — Province/Ville/Quartier viennent d’Algolia (pas une liste codée en dur) et filtrent en cascade', async () => {
+    mockApiResponses({
+      hits: [],
+      facets: {
+        province: { Estuaire: 12, 'Haut-Ogooué': 3 },
+        city: { Libreville: 8, Owendo: 4 },
+        street: { Glass: 2, Batterie: 1 },
+      },
+    });
+    await renderScreen();
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    // Le select est désactivé tant que sa requête de facette charge (comme un vrai <select>
+    // désactivé pendant le chargement) — un fireEvent.press sur un élément désactivé n'invoque
+    // pas onPress, donc chaque étape attend explicitement la fin du chargement précédent avant
+    // de presser l'étape suivante.
+    await screen.findByText('Toutes les provinces');
+
+    // Ville désactivée tant qu'aucune province n'est choisie (cascade, comme
+    // useSelectFilterLocationMediator.ts côté web).
+    await fireEvent.press(screen.getByTestId('filters-city'));
+    expect(screen.queryByTestId('filters-city-modal')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('filters-province'));
+    expect(await screen.findByTestId('filters-province-option-Estuaire')).toBeTruthy();
+    expect(screen.getByTestId('filters-province-option-Haut-Ogooué')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('filters-province-option-Estuaire'));
+
+    await screen.findByText('Toutes les villes');
+    await fireEvent.press(screen.getByTestId('filters-city'));
+    expect(await screen.findByTestId('filters-city-option-Libreville')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('filters-city-option-Libreville'));
+
+    await screen.findByText('Tous les quartiers');
+    await fireEvent.press(screen.getByTestId('filters-street'));
+    expect(await screen.findByTestId('filters-street-option-Glass')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('filters-street-option-Glass'));
+
+    await fireEvent.press(screen.getByText('Appliquer'));
+
+    await waitFor(() => {
+      const filters = lastAlgoliaFilters();
+      expect(filters).toContain('province:"Estuaire"');
+      expect(filters).toContain('city:"Libreville"');
+      expect(filters).toContain('street:"Glass"');
+    });
+  });
+
+  it('Immobilier — changer de province réinitialise ville et quartier déjà choisis', async () => {
+    mockApiResponses({
+      hits: [],
+      facets: {
+        province: { Estuaire: 12, 'Haut-Ogooué': 3 },
+        city: { Libreville: 8 },
+      },
+    });
+    await renderScreen();
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await screen.findByText('Toutes les provinces');
+    await fireEvent.press(screen.getByTestId('filters-province'));
+    await fireEvent.press(await screen.findByTestId('filters-province-option-Estuaire'));
+
+    await screen.findByText('Toutes les villes');
+    await fireEvent.press(screen.getByTestId('filters-city'));
+    await fireEvent.press(await screen.findByTestId('filters-city-option-Libreville'));
+    expect(screen.getByText('Libreville')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('filters-province'));
+    await fireEvent.press(await screen.findByTestId('filters-province-option-Haut-Ogooué'));
+
+    // Ville redevient "Toutes les villes" — Libreville appartenait à l'ancienne province.
+    expect(screen.getByText('Toutes les villes')).toBeTruthy();
+  });
+
+  it('Immobilier — budget minimum et maximum sont tous les deux envoyés à Algolia', async () => {
+    mockAlgoliaResponse([]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await fireEvent.changeText(screen.getByTestId('filters-budget-min'), '50000');
+    await fireEvent.changeText(screen.getByTestId('filters-budget-max'), '300000');
+    await fireEvent.press(screen.getByText('Appliquer'));
+
+    await waitFor(() => {
+      const filters = lastAlgoliaFilters();
+      expect(filters).toContain('price >= 50000');
+      expect(filters).toContain('price <= 300000');
+    });
+  });
+
+  it('Mode — la ville est un select Algolia (facette "cities", pas un champ de texte libre) et filtre sur "cities"', async () => {
+    mockApiResponses({
+      hits: [],
+      categories: [IMMOBILIER, MODE],
+      facets: { cities: { Libreville: 6, Franceville: 2 } },
+    });
+    await renderScreen();
+
+    await fireEvent.press(await screen.findByText('Mode'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+
+    // Pas de province/quartier hors immobilier.
+    expect(screen.queryByTestId('filters-province')).toBeNull();
+    expect(screen.queryByTestId('filters-street')).toBeNull();
+    // Aucun champ de texte libre pour la ville : uniquement le déclencheur du select.
+    expect(screen.queryByPlaceholderText('Ex: Libreville')).toBeNull();
+
+    await screen.findByText('Toutes les villes');
+    await fireEvent.press(screen.getByTestId('filters-city'));
+    expect(await screen.findByTestId('filters-city-option-Libreville')).toBeTruthy();
+    expect(screen.getByTestId('filters-city-option-Franceville')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('filters-city-option-Libreville'));
+    await fireEvent.press(screen.getByText('Appliquer'));
+
+    await waitFor(() => expect(lastAlgoliaFilters()).toContain('cities:"Libreville"'));
+  });
+
+  it('Mode — le budget minimum est disponible et envoyé à Algolia', async () => {
+    mockApiResponses({ hits: [], categories: [IMMOBILIER, MODE] });
+    await renderScreen();
+
+    await fireEvent.press(await screen.findByText('Mode'));
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await fireEvent.changeText(screen.getByTestId('filters-budget-min'), '10000');
+    await fireEvent.press(screen.getByText('Appliquer'));
+
+    await waitFor(() => expect(lastAlgoliaFilters()).toContain('price >= 10000'));
   });
 });

@@ -210,6 +210,94 @@ describe('ReelsFeedClient', () => {
     expect(carouselApi.scrollNext).toHaveBeenCalled()
   })
 
+  it('appelle via le bouton Appeler et navigue vers un lien tel:', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, href: '' },
+      writable: true,
+    })
+    render(<ReelsFeedClient />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Appeler' })[0])
+
+    expect(trackInteractionMock).toHaveBeenCalledWith('phone_contact', { phoneNumber: '+24166545430' })
+    expect(window.location.href).toBe('tel:+24166545430')
+  })
+
+  it('partage vers chaque cible du menu (WhatsApp, Facebook, X, mail, TikTok)', async () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, href: '' },
+      writable: true,
+    })
+    render(<ReelsFeedClient />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'WhatsApp' })[0])
+    expect(openMock).toHaveBeenCalledWith(expect.stringContaining('wa.me/?text='), '_blank', 'noopener,noreferrer')
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'whatsapp')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Facebook' })[0])
+    expect(openMock).toHaveBeenCalledWith(expect.stringContaining('facebook.com/sharer'), '_blank', 'noopener,noreferrer')
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'facebook')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'X' })[0])
+    expect(openMock).toHaveBeenCalledWith(expect.stringContaining('twitter.com/intent/tweet'), '_blank', 'noopener,noreferrer')
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'x')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Mail' })[0])
+    expect(window.location.href).toContain('mailto:?subject=')
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'mail')
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'TikTok' })[0])
+    expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('/reels/reel-1'))
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'tiktok')
+  })
+
+  it('déclenche le partage natif sur mobile (pointeur grossier + navigator.share)', async () => {
+    const shareMock = jest.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, 'share', { configurable: true, value: shareMock })
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: jest.fn((query: string) => ({
+        matches: query.includes('pointer: coarse'),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+      })),
+    })
+    render(<ReelsFeedClient />)
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Partager ce réel' })[0])
+
+    await waitFor(() => expect(shareMock).toHaveBeenCalledWith(
+      expect.objectContaining({ url: expect.stringContaining('/reels/reel-1') }),
+    ))
+    expect(trackShareMock).toHaveBeenCalledWith('reel-1', 'native')
+
+    Reflect.deleteProperty(navigator, 'share')
+  })
+
+  it('navigue vers le réel précédent et bascule l onglet catégorie "Tout"', async () => {
+    activeCategoriesQueryState = {
+      data: [
+        { id: 'mode', slug: 'mode', name: 'Mode', icon: null, order: 10 },
+        { id: 'immobilier', slug: 'immobilier', name: 'Immobilier', icon: null, order: 0 },
+      ],
+    }
+    render(<ReelsFeedClient />)
+
+    // "Réel précédent" est désactivé sur la toute première diapositive : avancer d'un cran
+    // avant de vérifier qu'il redevient cliquable.
+    selectedIndex = 1
+    act(() => carouselSelect?.())
+    fireEvent.click(screen.getByRole('button', { name: 'Réel précédent' }))
+    expect(carouselApi.scrollPrev).toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mode' }))
+    carouselApi.scrollTo.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Tout' }))
+    await waitFor(() => expect(carouselApi.scrollTo).toHaveBeenCalledWith(0))
+  })
+
   it('précharge la suite quand le carousel approche de la fin', async () => {
     queryState = loadedState([reel(1), reel(2), reel(3), reel(4), reel(5)], { hasNextPage: true })
     render(<ReelsFeedClient />)

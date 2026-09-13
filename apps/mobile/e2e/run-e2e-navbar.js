@@ -25,6 +25,7 @@ const {
 } = require('./lib');
 
 const DRAWER_LINKS = [
+  { testID: 'drawer-link-accueil', name: 'Accueil', destinationTestID: 'screen-accueil' },
   { testID: 'drawer-link-search-requests', name: 'Demandes de recherche', destinationTestID: 'screen-search-requests' },
   { testID: 'drawer-link-terms', name: "Conditions d'utilisation", destinationTestID: 'screen-legal-terms' },
   { testID: 'drawer-link-privacy', name: 'Politique de confidentialité', destinationTestID: 'screen-legal-privacy' },
@@ -233,6 +234,21 @@ CASES.push({
     ]);
 
     return `écran chargé en ${navMs} ms (total avec tap ${totalMs} ms), contenu complet vérifié haut+bas, aucune WebView`;
+  },
+});
+
+CASES.push({
+  name: 'Logo (navbar) → Accueil',
+  run: async () => {
+    // Part d'un autre onglet (pas déjà Accueil) pour prouver que le tap sur le logo navigue
+    // vraiment, plutôt que de constater un "Accueil" déjà affiché par coïncidence.
+    await tapTestID('header-search');
+    await waitForTestID('screen-recherche', 15000);
+
+    const t0 = Date.now();
+    await tapTestID('header-logo');
+    const navMs = await waitForTestID('screen-accueil', 15000);
+    return `${Date.now() - t0} ms (navigation confirmée ${navMs} ms)`;
   },
 });
 

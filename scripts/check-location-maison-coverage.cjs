@@ -11,9 +11,7 @@ const profiles = {
       // property.db.ts ci-dessous (jamais exécutables), branches par des chemins d'erreur
       // Firestore non couverts.
       'src/db/credit-transaction.db.ts': { branches: 65, functions: 85, lines: 94, statements: 94 },
-      // Recalibré le 2026-09-13 : gap préexistant (commit 63ef6833), functions légèrement sous
-      // le seuil précédent (94.73% mesuré).
-      'src/db/reel.db.ts': { branches: 60, functions: 94, lines: 90, statements: 90 },
+      'src/db/reel.db.ts': { branches: 60, functions: 95, lines: 90, statements: 90 },
       'src/hooks/use-gift-payment.ts': { branches: 65, functions: 100, lines: 90, statements: 90 },
       'src/hooks/useFormAIHandler.ts': { branches: 75, functions: 100, lines: 95, statements: 95 },
       'src/components/reels/CreateOrphanReelClient.tsx': { branches: 65, functions: 30, lines: 85, statements: 85 },
@@ -36,9 +34,7 @@ const profiles = {
       'src/components/advertising/AdvertisingCreateWizard.tsx': { branches: 70, functions: 70, lines: 85, statements: 85 },
       'src/features/announcer/ad-management/hooks/useAdManagement.ts': { branches: 90, functions: 95, lines: 95, statements: 95 },
       'src/features/announcer/ad-management/ui/v1/AdManagementPage.tsx': { branches: 70, functions: 70, lines: 90, statements: 90 },
-      // Recalibré le 2026-09-13 : gap préexistant (commit 63ef6833), lines/statements mesurées
-      // à 87.94% (handlers share/appel non couverts).
-      'src/components/reels/ReelsFeedClient.tsx': { branches: 70, functions: 65, lines: 87, statements: 87 },
+      'src/components/reels/ReelsFeedClient.tsx': { branches: 70, functions: 65, lines: 90, statements: 90 },
       'src/components/reels/MyReelsClient.tsx': { branches: 85, functions: 85, lines: 95, statements: 95 },
       // Recalibré le 2026-09-13 : gap préexistant (commit 63ef6833), branches/functions
       // mesurées à 87.5%/86.66%.

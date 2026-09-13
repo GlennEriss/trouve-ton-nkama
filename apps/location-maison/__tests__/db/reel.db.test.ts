@@ -384,13 +384,20 @@ describe('reel database and API client', () => {
       storage.uploadBytesResumable.mockReturnValue(task)
 
       const controller = new AbortController()
+      const addEventListenerSpy = jest.spyOn(controller.signal, 'addEventListener')
       const promise = uploadRawReelVideo(new File(['video'], 'visite.mov'), 'owner-1', 'reel-1', {
         signal: controller.signal,
       })
-      // Laisse le "await getStorage()" interne se résoudre avant d'abandonner : le signal
-      // reste "aborted" quoi qu'il arrive, donc l'ordre exact importe peu, seul le fait que
-      // le listener finisse par être posé compte ici.
-      await Promise.resolve()
+      // Attend que le listener d'abandon soit réellement posé (le "await getStorage()" interne
+      // — un import() dynamique — prend plusieurs microtasks à se résoudre) avant d'abandonner :
+      // sans ça, `.abort()` peut arriver avant l'enregistrement du listener, et c'est alors la
+      // branche `if (options.signal.aborted)` (déjà abandonné) qui appelle cancel(), pas le
+      // listener lui-même — un chemin de code différent, silencieusement non couvert.
+      for (let attempt = 0; attempt < 20 && addEventListenerSpy.mock.calls.length === 0; attempt += 1) {
+        await Promise.resolve()
+      }
+      expect(addEventListenerSpy).toHaveBeenCalledWith('abort', expect.any(Function), { once: true })
+
       controller.abort()
       await Promise.resolve()
 

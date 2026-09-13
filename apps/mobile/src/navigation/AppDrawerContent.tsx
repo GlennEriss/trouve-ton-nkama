@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { X, ClipboardList, FileText, Shield, Trash2 } from 'lucide-react-native';
+import { X, ClipboardList, FileText, Home, Shield, Trash2 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { Logo } from '../components/Logo';
 import type { DrawerParamList } from './types';
@@ -18,21 +18,36 @@ import type { DrawerParamList } from './types';
 // d'équivalent dans SIDEBAR_LINKS mais reste ici volontairement.
 type LegalPage = 'terms' | 'privacy' | 'dataDeletion';
 
-function getActiveRoute(state: DrawerContentComponentProps['state']): { name: keyof DrawerParamList; page?: LegalPage } {
+function getActiveRoute(
+  state: DrawerContentComponentProps['state'],
+): { name: keyof DrawerParamList; page?: LegalPage; tab?: string } {
   const route = state.routes[state.index];
   if (route.name === 'Legal') {
     const params = route.params as DrawerParamList['Legal'] | undefined;
     return { name: 'Legal', page: params?.page };
+  }
+  if (route.name === 'MainTabs') {
+    // route.state n'existe qu'une fois la pile d'onglets déjà initialisée (après une première
+    // navigation dedans) ; tant que ce n'est pas le cas, le premier onglet (Accueil, voir
+    // MainTabs.tsx) est celui actif par défaut.
+    const tabState = route.state as { routes: Array<{ name: string }>; index: number } | undefined;
+    const activeTab = tabState?.routes[tabState.index]?.name ?? 'Accueil';
+    return { name: 'MainTabs', tab: activeTab };
   }
   return { name: route.name as keyof DrawerParamList };
 }
 
 export function AppDrawerContent({ navigation, state }: DrawerContentComponentProps) {
   const active = getActiveRoute(state);
+  const isAccueilActive = active.name === 'MainTabs' && active.tab === 'Accueil';
   const isSearchRequestsActive = active.name === 'SearchRequests';
   const isLegalActive = (page: LegalPage) => active.name === 'Legal' && active.page === page;
 
   const close = () => navigation.closeDrawer();
+  const goAccueil = () => {
+    navigation.navigate('MainTabs', { screen: 'Accueil' });
+    close();
+  };
   const goSearchRequests = () => {
     navigation.navigate('SearchRequests');
     close();
@@ -55,6 +70,16 @@ export function AppDrawerContent({ navigation, state }: DrawerContentComponentPr
       </View>
 
       <View style={styles.nav}>
+        <TouchableOpacity
+          testID="drawer-link-accueil"
+          accessibilityState={{ selected: isAccueilActive }}
+          style={styles.row}
+          onPress={goAccueil}
+        >
+          <Home color={isAccueilActive ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isAccueilActive ? styles.rowTextActive : styles.rowText}>Accueil</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           testID="drawer-link-search-requests"
           accessibilityState={{ selected: isSearchRequestsActive }}
