@@ -158,6 +158,38 @@ export type TrafficProjectionRow = {
   correlation_id: string;
 };
 
+export type RecommendationRequestRow = {
+  recommendation_request_id: string;
+  event_id: string;
+  occurred_at: string;
+  received_at: string;
+  subject_id_hash: string | null;
+  session_id: string | null;
+  context: string;
+  ranking_variant: string;
+  ranking_version: string;
+  filters_json: Record<string, unknown> | null;
+  candidates_json: Array<{ listing_id: string; position: number }>;
+  correlation_id: string;
+};
+
+export type RecommendationEventRow = {
+  event_id: string;
+  recommendation_request_id: string;
+  listing_id: string;
+  event_name: string;
+  occurred_at: string;
+  received_at: string;
+  subject_id_hash: string | null;
+  session_id: string | null;
+  position: number | null;
+  ranking_variant: string;
+  ranking_version: string;
+  query_id: string | null;
+  device_class: string | null;
+  correlation_id: string;
+};
+
 export type IdempotencyRegistryRow = {
   idempotency_key: string;
   request_fingerprint: string;
@@ -572,6 +604,20 @@ export async function insertTrafficProjectionRows(rows: TrafficProjectionRow[]) 
   await insertRows(
     "traffic_events_raw",
     toInsertRows(rows, (row) => `${row.source}:${row.provider_event_id}`),
+  );
+}
+
+export async function insertRecommendationRequestRows(rows: RecommendationRequestRow[]) {
+  await insertRows(
+    "recommendation_requests",
+    toInsertRows(rows, (row) => row.recommendation_request_id),
+  );
+}
+
+export async function insertRecommendationEventRows(rows: RecommendationEventRow[]) {
+  await insertRows(
+    "recommendation_events",
+    toInsertRows(rows, (row) => row.event_id),
   );
 }
 
