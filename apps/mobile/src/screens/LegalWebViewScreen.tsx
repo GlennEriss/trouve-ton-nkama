@@ -4,15 +4,16 @@ import { WebView } from 'react-native-webview';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ProfileStackParamList } from '../navigation/types';
 import TermsOfUseScreen from './TermsOfUseScreen';
+import PrivacyPolicyScreen from './PrivacyPolicyScreen';
 
-// Politique de confidentialité / suppression des données : contenu affiché via WebView pointant
-// sur les pages web existantes (source de vérité unique) plutôt que dupliqué en JSX natif — un
-// texte légal a un seul endroit où il doit changer, jamais deux copies qui peuvent diverger. Voir
-// src/app/(public)/{privacy-policy,data-deletion}/page.tsx côté web.
-// "terms" (CGU) fait exception : écran natif dédié (TermsOfUseScreen) — demande explicite d'un
-// vrai écran accessible plutôt que le chargement réseau d'une page web pour ce texte.
-const LEGAL_URLS: Record<Exclude<ProfileStackParamList['Legal']['page'], 'terms'>, string> = {
-  privacy: 'https://www.tonnkama.com/privacy-policy',
+// Suppression des données : seule page légale encore affichée via WebView pointant sur la page
+// web existante (source de vérité unique) plutôt que dupliquée en JSX natif — un texte légal a
+// un seul endroit où il doit changer, jamais deux copies qui peuvent diverger. Voir
+// src/app/(public)/data-deletion/page.tsx côté web.
+// "terms" et "privacy" font exception : écrans natifs dédiés (TermsOfUseScreen,
+// PrivacyPolicyScreen) — demande explicite de vrais écrans accessibles plutôt que le chargement
+// réseau d'une page web pour ces textes.
+const LEGAL_URLS: Record<Extract<ProfileStackParamList['Legal']['page'], 'dataDeletion'>, string> = {
   dataDeletion: 'https://www.tonnkama.com/data-deletion',
 };
 
@@ -21,6 +22,9 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'Legal'>;
 export default function LegalWebViewScreen({ route }: Props) {
   if (route.params.page === 'terms') {
     return <TermsOfUseScreen />;
+  }
+  if (route.params.page === 'privacy') {
+    return <PrivacyPolicyScreen />;
   }
 
   return (

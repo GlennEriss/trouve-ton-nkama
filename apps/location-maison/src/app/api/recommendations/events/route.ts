@@ -11,7 +11,7 @@ import { claimEventId, wasListingServed } from '@/lib/server/recommendation-cach
 
 const logger = createLogger('api.recommendations.events')
 
-export const RECOMMENDATION_EVENT_NAMES = [
+const RECOMMENDATION_EVENT_NAMES = [
   'recommendation_impression',
   'recommendation_click',
   'recommendation_detail_view',

@@ -139,6 +139,50 @@ CASES.push({
 });
 
 CASES.push({
+  name: 'Politique de confidentialité — écran natif complet (pas de WebView)',
+  run: async () => {
+    await openDrawer();
+    const t0 = Date.now();
+    await tapTestID('drawer-link-privacy');
+    const navMs = await waitForTestID('screen-legal-privacy', 15000);
+    const totalMs = Date.now() - t0;
+
+    let xml = await dumpTree();
+    if (xml.includes('resource-id="webview"') || xml.includes('resource-id="webView"')) {
+      throw new Error('Une WebView est encore montée sur screen-legal-privacy — devrait être 100% natif.');
+    }
+
+    // Contenu réel visible sans scroll (haut de page) : badge, titre, sous-titre, date, 1re section.
+    const topTexts = [
+      'Protection des données',
+      'Politique de confidentialité',
+      'Dernière mise à jour : 5 mars 2026',
+      'Données collectées',
+      'Nous collectons uniquement les données nécessaires au fonctionnement de la plateforme et à la qualité de service.',
+    ];
+    const missingTop = topTexts.filter((t) => !xml.includes(`text="${t}`));
+    if (missingTop.length > 0) {
+      throw new Error(`Texte(s) attendu(s) absent(s) en haut de l'écran : ${missingTop.join(' | ')}`);
+    }
+
+    // Scroll jusqu'en bas — même amplitude calibrée que pour l'écran des CGU (voir plus haut).
+    for (let i = 0; i < 8; i += 1) {
+      adb(['shell', 'input', 'swipe', '360', '1600', '360', '200', '100']);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    xml = await dumpTree();
+    const bottomTexts = ['Vos droits', 'Contact légal :', 'glenneriss@gmail.com', 'Ces informations sont publiées par Trouve Ton Nkama.'];
+    const missingBottom = bottomTexts.filter((t) => !xml.includes(`text="${t}`));
+    if (missingBottom.length > 0) {
+      throw new Error(`Texte(s) attendu(s) absent(s) en bas de l'écran après scroll : ${missingBottom.join(' | ')}`);
+    }
+
+    return `écran chargé en ${navMs} ms (total avec tap ${totalMs} ms), contenu complet vérifié haut+bas, aucune WebView`;
+  },
+});
+
+CASES.push({
   name: 'Recherche (icône navbar)',
   run: async () => {
     await tapTestID('header-search');
