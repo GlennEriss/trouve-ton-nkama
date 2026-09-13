@@ -5,6 +5,16 @@
 - [Landing page publique `/publicite`](./LANDING-PUBLICITE.md) : objectif,
   contenu, intégration de la vidéo 11, accès sans connexion, parcours de
   conversion, SEO et critères d'acceptation.
+- [Audit AdSense et optimisation des revenus](./AUDIT-ADSENSE-REVENUS-2026-09.md) : intégration
+  actuelle, anomalies vérifiées, métriques nécessaires, plan d'expérimentation et tests.
+
+### Ordre de lecture pour travailler sur la monétisation
+
+1. Lire le présent document pour distinguer régie first-party, promotion d'annonce et AdSense.
+2. Lire l'[audit AdSense](./AUDIT-ADSENSE-REVENUS-2026-09.md) avant toute modification de slots.
+3. Consulter la spécification admin `MONETISATION-PUBS-ADSENSE-SPEC.md` pour les rapports et KPI.
+4. Consulter `docs/location-maison/testing/PLAN-DE-TESTS.md` avant les tests réels : aucun clic
+   automatisé ne doit viser une publicité Google.
 
 > **Note de cohérence (septembre 2026)** : le code contient désormais un parcours
 > self-service sous `/advertising` et `/advertising/create`. Les sections V1

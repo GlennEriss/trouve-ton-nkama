@@ -158,6 +158,18 @@ test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode �
     await mockCommonAppNoise(page, { mockFirebaseToken: false })
     await page.goto('/category-listing/create', { waitUntil: 'domcontentloaded' })
 
+    // Le bouton "Générer" dépend de GET /api/categories/publishable-leaves (useQuery,
+    // sans attente explicite au montage) : sur un premier hit de la route en dev
+    // (compilation Turbopack à froid), un clic trop rapide tombe sur `leaves: []` et
+    // affiche "Aucune catégorie n'accepte de nouvelles annonces pour le moment." avant même
+    // d'appeler Gemini — flaky observé en e2e réel, pas un bug produit. On attend la réponse
+    // avant d'interagir.
+    await page
+      .waitForResponse((response) => response.url().includes('/api/categories/publishable-leaves'), {
+        timeout: 30000,
+      })
+      .catch(() => {})
+
     await page.getByPlaceholder(/Ex : Robe Zara/i).fill(MODE_DESCRIPTION)
     await page.locator('input[type="file"]').setInputFiles(
       path.join(process.cwd(), 'public', 'apple-touch-icon.png'),

@@ -4,6 +4,7 @@
 
 import { Image } from "@/models/annonce";
 import { createLogger } from '@/lib/logger';
+import { mapWithConcurrency } from '@/lib/async/map-with-concurrency';
 
 const logger = createLogger('db.file');
 
@@ -11,6 +12,12 @@ const getStorage = () => import("@/firebase/storage");
 
 const THUMBNAIL_MAX_SIZE_MB = 0.08;
 const THUMBNAIL_MAX_DIMENSION_PX = 640;
+
+/**
+ * Valeur initiale, ajustée par mesure plutôt que par variable distante dans ce premier lot
+ * — voir docs/performance-creation-modification-annonces-reels.md, point 4.
+ */
+export const DEFAULT_UPLOAD_CONCURRENCY = 3;
 
 /**
  * Generates a unique file name by appending a timestamp to the original file name.
@@ -132,22 +139,31 @@ async function fetchDownloadURLWithRetry(
     throw lastError;
 }
 
+type StorageModule = Awaited<ReturnType<typeof getStorage>>;
+type CompressionModule = typeof import("browser-image-compression");
+
 /**
  * Génère et uploade une variante basse résolution du fichier déjà compressé, utilisée dans les
  * contextes "liste" (cartes de recherche, favoris, gestion des annonces) pour éviter de servir
  * la même image pleine résolution partout. Best-effort : une vignette manquante n'empêche jamais
  * la création de l'annonce, les appelants retombent sur `fileURL`.
+ *
+ * `storageModule`/`compressionModule` sont déjà résolus par l'appelant (import dynamique
+ * mutualisé avec la branche principale, voir createFile) — cette fonction ne fait plus son
+ * propre `import()`, ce qui lui permet de démarrer la compression EN MÊME TEMPS que l'upload
+ * principal plutôt qu'après sa fin (docs/performance-creation-modification-annonces-reels.md,
+ * point 3).
  */
 async function uploadThumbnail(
     file: File,
     location: string,
-    uniqueFileName: string
+    uniqueFileName: string,
+    storageModule: StorageModule,
+    compressionModule: CompressionModule,
 ): Promise<{ thumbURL: string; thumbPATH: string } | null> {
     try {
-        const [{ storage, ref, uploadBytes, getDownloadURL }, { default: imageCompression }] = await Promise.all([
-            getStorage(),
-            import("browser-image-compression"),
-        ]);
+        const { storage, ref, uploadBytes, getDownloadURL } = storageModule;
+        const imageCompression = compressionModule.default;
 
         const thumbnailFile = await imageCompression(file, {
             maxSizeMB: THUMBNAIL_MAX_SIZE_MB,
@@ -189,7 +205,13 @@ async function uploadThumbnail(
  */
 export async function createFile(file: File, ownerId: string | undefined, location: string): Promise<Image> {
     try {
-        const { storage, ref, uploadBytes, getDownloadURL } = await getStorage();
+        // Storage et browser-image-compression importés une seule fois, en parallèle — la
+        // branche vignette n'a plus son propre import() séquentiel (voir uploadThumbnail).
+        const [storageModule, compressionModule] = await Promise.all([
+            getStorage(),
+            import("browser-image-compression"),
+        ]);
+        const { storage, ref, uploadBytes, getDownloadURL } = storageModule;
         const uniqueFileName = timestampedFileName(file.name);
         // Create a storage reference with a unique name
         let fileRef = ref(
@@ -205,15 +227,24 @@ export async function createFile(file: File, ownerId: string | undefined, locati
                 status: 'InProgress'
             },
         };
-        // Upload the file with metadata
-        const uploadResult = await withTimeout(uploadBytes(fileRef, file, metadata), 20_000, "Upload image");
+
+        // Upload principal ET branche vignette démarrés en parallèle (au lieu de la vignette
+        // après la fin de l'upload principal) — voir
+        // docs/performance-creation-modification-annonces-reels.md, point 3. Le temps par
+        // image tend ainsi vers le maximum des deux branches plutôt que leur somme. L'échec
+        // principal reste bloquant (pas de catch ici, propagé plus bas) ; la vignette reste
+        // best-effort (uploadThumbnail avale déjà ses propres erreurs).
+        const mainUploadPromise = withTimeout(uploadBytes(fileRef, file, metadata), 20_000, "Upload image");
+        const thumbnailPromise = uploadThumbnail(file, location, uniqueFileName, storageModule, compressionModule);
+
+        const uploadResult = await mainUploadPromise;
 
         // L'URL est déduite des métadonnées de l'upload ; `getDownloadURL` n'est appelé qu'en repli.
         const fileURL =
             buildDownloadURLFromMetadata(uploadResult.metadata) ??
             (await fetchDownloadURLWithRetry(() => getDownloadURL(fileRef), "Récupération URL image"));
 
-        const thumbnail = await uploadThumbnail(file, location, uniqueFileName);
+        const thumbnail = await thumbnailPromise;
 
         return { fileURL, filePATH, ...(thumbnail ?? {}) };
     } catch (error) {
@@ -229,6 +260,39 @@ export async function createFile(file: File, ownerId: string | undefined, locati
         });
         throw new Error(message);
     }
+}
+
+/**
+ * Upload d'un lot d'images avec une concurrence bornée (voir `mapWithConcurrency`) au lieu
+ * d'un `Promise.all` qui lance tout instantanément — service partagé par le hook immobilier
+ * (`useOnSubmitFormProperty`) et les deux pages de création assistée par IA (property et
+ * category-listing), voir docs/performance-creation-modification-annonces-reels.md, point 4.
+ *
+ * Contrat : ordre des images préservé, plus de `concurrency` uploads actifs en même temps,
+ * erreur enrichie avec l'index et le nom du fichier fautif (jamais son contenu), tableau
+ * vide accepté, `files` jamais muté.
+ */
+export async function uploadPropertyImages(
+    files: readonly (File | Blob)[],
+    ownerId: string | undefined,
+    location: string,
+    concurrency: number = DEFAULT_UPLOAD_CONCURRENCY,
+): Promise<Image[]> {
+    return mapWithConcurrency(files, concurrency, async (img, index) => {
+        const file = img instanceof File
+            ? img
+            : new File([img], `image_${index}.jpeg`, { type: img.type || 'image/jpeg', lastModified: Date.now() });
+
+        try {
+            return await createFile(file, ownerId, location);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Échec de l\'upload.';
+            const enriched = new Error(message) as Error & { index: number; fileName: string };
+            enriched.index = index;
+            enriched.fileName = file.name;
+            throw enriched;
+        }
+    });
 }
 
 /**

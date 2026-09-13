@@ -1,0 +1,45 @@
+@startuml
+title Recommandation ML - classes structurantes MVP
+class RecommendationRequest {
+  requestId: string
+  subjectId: string
+  context: Context
+  filters: ListingFilters
+}
+class Candidate {
+  listingId: string
+  basePosition: number
+  features: FeatureVector
+}
+class RankedListing {
+  listingId: string
+  score: number
+  position: number
+  rankingVersion: string
+}
+class RecommendationEvent {
+  eventId: string
+  requestId: string
+  listingId: string
+  name: EventName
+  position: number
+}
+interface CandidateProvider
+interface FeatureProvider
+interface Ranker
+interface EventRepository
+interface ModelRegistry
+class DeterministicRanker
+class LogisticRegressionRanker
+class RecommendationService
+
+RecommendationService --> CandidateProvider
+RecommendationService --> FeatureProvider
+RecommendationService --> Ranker
+Ranker <|.. DeterministicRanker
+Ranker <|.. LogisticRegressionRanker
+RecommendationRequest --> Candidate
+Candidate --> RankedListing
+EventRepository --> RecommendationEvent
+LogisticRegressionRanker --> ModelRegistry
+@enduml

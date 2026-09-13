@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -89,7 +89,12 @@ export default function HomeScreen() {
               <ProvinceChips onSelect={openProvince} />
             </View>
 
-            <Text style={[styles.sectionTitle, styles.recentTitle]}>Annonces récentes</Text>
+            <View style={styles.recentHeader}>
+              <Text style={styles.sectionTitle}>Annonces récentes</Text>
+              <TouchableOpacity onPress={openSearch}>
+                <Text style={styles.seeAll}>Voir tout</Text>
+              </TouchableOpacity>
+            </View>
             {isLoading && (
               <View style={styles.centered}>
                 <ActivityIndicator size="large" color={colors.primary} />
@@ -117,7 +122,8 @@ const styles = StyleSheet.create({
   headerSections: { gap: 20, paddingBottom: 8 },
   provinceSection: { gap: 10 },
   sectionTitle: { fontSize: 17, fontWeight: '700', color: colors.foreground, paddingHorizontal: 16 },
-  recentTitle: { paddingBottom: 0 },
+  recentHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  seeAll: { fontSize: 13, fontWeight: '600', color: colors.primary, paddingRight: 16 },
   centered: { alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: { color: colors.mutedText, fontSize: 14 },
   gridContent: { flexGrow: 1, paddingTop: 12, paddingBottom: 16 },

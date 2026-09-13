@@ -81,7 +81,9 @@ async function goToTab(tabTestID, screenTestID) {
     return;
   } catch {
     await relaunchApp();
-    await waitForTestID('screen-accueil', 45000);
+    // 120s : voir le commentaire équivalent dans startAppAndDismissLogBox (lib.js) — le
+    // handshake natif du bridge RN après un force-stop peut prendre 40-90s sur l'émulateur.
+    await waitForTestID('screen-accueil', 120000);
     await recoverToStableState();
     await tapTestID(tabTestID, 10000);
     await waitForTestID(screenTestID, 15000);

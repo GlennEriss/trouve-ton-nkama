@@ -19,6 +19,9 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useToast } from '@/hooks/use-toast'
 import { readVideoDurationSeconds } from '@/hooks/useVideoDropzone'
 import { VideoTrimEditor } from '@/components/reels/VideoTrimEditor'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('components.edit-reel-client')
 
 const MAX_DESCRIPTION_LENGTH = 280
 
@@ -136,11 +139,33 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
         await updateReelDetails(reelId, contact, description)
       }
 
-      await Promise.all([
+      // Le cache est mis à jour tout de suite (après la réussite serveur, jamais avant —
+      // voir docs/performance-creation-modification-annonces-reels.md, point 7) plutôt que
+      // d'attendre le refetch complet des trois invalidations. Un retrim doit refléter
+      // immédiatement `processingStatus: "uploading"` ET retirer l'ancienne URL prête, sinon
+      // l'interface pourrait continuer à montrer la vidéo périmée le temps du refetch.
+      const reelQueryKey = ['reels', 'edit', reelId, user?.uid]
+      queryClient.setQueryData(reelQueryKey, (previous: unknown) => {
+        if (!previous || typeof previous !== 'object') return previous
+        return isTrimChanged
+          ? { ...previous, processingStatus: 'uploading', videoUrl: undefined }
+          : { ...previous, contact, description }
+      })
+
+      // Invalidations lancées en arrière-plan, jamais sur le chemin critique de la
+      // redirection : la mutation a déjà réussi, un échec d'invalidation ne doit ni bloquer
+      // ni faire échouer la modification déjà enregistrée.
+      void Promise.all([
         queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] }),
-        queryClient.invalidateQueries({ queryKey: ['reels', 'edit', reelId, user?.uid] }),
+        queryClient.invalidateQueries({ queryKey: reelQueryKey }),
         queryClient.invalidateQueries({ queryKey: ['reels-feed'] }),
-      ])
+      ]).catch((invalidationError) => {
+        logger.warn('Reel cache invalidation failed after a successful edit', {
+          error: invalidationError,
+          reelId,
+        })
+      })
+
       toast({
         title: "Réel modifié",
         description: isTrimChanged

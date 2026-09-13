@@ -1,5 +1,10 @@
 # Monétisation Pubs (AdSense) - Suivi Revenus & Performance
 
+> Audit technique associé côté application publique :
+> [AUDIT-ADSENSE-REVENUS-2026-09.md](../location-maison/feature/publicite/AUDIT-ADSENSE-REVENUS-2026-09.md).
+> Le présent document définit le reporting admin ; l'audit décrit le rendu, les anomalies de
+> slots et l'ordre des optimisations.
+
 ## 1. Contexte et objectif
 
 Constat actuel:

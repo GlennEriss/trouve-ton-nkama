@@ -18,7 +18,7 @@ import { useCurrentUser } from '@/hooks/use-current-user'
 import { useOnSubmitFormProperty } from '@/hooks/useOnSubmitFormProperty'
 import { useToast } from '@/hooks/use-toast'
 import { DirectorFactory } from '@/directors/factory.director'
-import { createFile } from '@/db/file.db'
+import { uploadPropertyImages } from '@/db/file.db'
 import { createProperty } from '@/db/property.db'
 import { routes } from '@/constantes/routes'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
@@ -171,10 +171,9 @@ export default function CreatePropertyWithAIPage() {
     try {
       // Upload AVANT l'appel IA, qui est ce qui débite le crédit (voir /api/ai/property-draft).
       // Dans l'autre sens, un upload qui échoue laisse l'annonceur facturé sans annonce —
-      // constaté en prod le 2026-08-17.
-      const uploadedImages = await Promise.all(
-        images.map((file) => createFile(file, user?.uid, 'property')),
-      )
+      // constaté en prod le 2026-08-17. Concurrence bornée plutôt qu'un Promise.all illimité
+      // — voir docs/performance-creation-modification-annonces-reels.md, point 4.
+      const uploadedImages = await uploadPropertyImages(images, user?.uid, 'property')
 
       const aiData = await requestPropertyDraft(description)
       const skeleton = DirectorFactory.createDirectorProperty(aiData.typeProperty).build()

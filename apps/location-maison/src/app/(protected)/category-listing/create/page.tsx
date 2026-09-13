@@ -10,7 +10,7 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { useCurrentUser } from '@/hooks/use-current-user'
 import { useImageDropzone } from '@/hooks/useImageDropzone'
 import { useToast } from '@/hooks/use-toast'
-import { createFile } from '@/db/file.db'
+import { uploadPropertyImages } from '@/db/file.db'
 import { createProperty } from '@/db/property.db'
 import { routes } from '@/constantes/routes'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
@@ -129,7 +129,9 @@ export default function CreateCategoryListingPage() {
       // Les images sont uploadées AVANT l'appel IA, qui est ce qui débite le crédit
       // (voir /api/ai/category-listing-draft). Dans l'autre sens, un upload qui échoue
       // laisse l'annonceur facturé sans annonce — constaté en prod le 2026-08-17.
-      const uploadedImages = await Promise.all(images.map((file) => createFile(file, user!.uid, 'property')))
+      // Concurrence bornée plutôt qu'un Promise.all illimité — voir
+      // docs/performance-creation-modification-annonces-reels.md, point 4.
+      const uploadedImages = await uploadPropertyImages(images, user!.uid, 'property')
 
       const draft = await requestCategoryListingDraft(description)
       const matchedCategory = leaves.find((leaf) => leaf.id === draft.categoryId)

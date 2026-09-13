@@ -1,0 +1,28 @@
+@startuml
+title Recommandation ML - composants MVP
+actor Utilisateur
+component "Application Next.js" as Web
+component "API Recommandation" as API
+component "Candidate Service" as Candidates
+component "Ranking Service" as Ranking
+component "Event Ingestion" as Events
+component "Training Pipeline" as Training
+database "Firestore" as Firestore
+database "BigQuery" as BQ
+cloud "Algolia" as Algolia
+storage "Model Registry\nCloud Storage" as Registry
+
+Utilisateur --> Web
+Web --> API : filtres et contexte
+API --> Candidates
+Candidates --> Algolia
+API --> Ranking
+Ranking --> Firestore : configuration/version
+Ranking --> Registry : artefact modèle
+Web ..> Events : impressions/interactions
+Events --> BQ
+Training --> BQ
+Training --> Registry
+API --> Web : résultats + requestId
+@enduml
+
