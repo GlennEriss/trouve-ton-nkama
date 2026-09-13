@@ -41,6 +41,9 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
   const [isEditingContact, setIsEditingContact] = React.useState(false)
   const [initializedReelId, setInitializedReelId] = React.useState<string | null>(null)
   const [isSaving, setIsSaving] = React.useState(false)
+  // Progression de l'upload vidéo lors d'un retrim (0-100), null hors upload — voir
+  // docs/performance-creation-modification-annonces-reels.md, point 6.
+  const [uploadPercent, setUploadPercent] = React.useState<number | null>(null)
 
   // Barre de montage identique à la création (VideoTrimEditor) : la vidéo déjà publiée est
   // récupérée en Blob (elle est déjà transcodée/allégée) pour permettre un nouveau montage sans
@@ -129,11 +132,16 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
         const rawVideoPath = buildRawReelVideoPath(videoFile, user.uid, reelId)
         await retrimReel(reelId, rawVideoPath, trimStart, trimEnd, muted, contact, description)
         try {
-          await uploadRawReelVideo(videoFile, user.uid, reelId)
+          setUploadPercent(0)
+          await uploadRawReelVideo(videoFile, user.uid, reelId, {
+            onProgress: (progress) => setUploadPercent(progress.percent),
+          })
         } catch (uploadError) {
           const message = uploadError instanceof Error ? uploadError.message : "Échec de l'envoi de la vidéo."
           await markReelUploadFailed(reelId, message)
           throw uploadError
+        } finally {
+          setUploadPercent(null)
         }
       } else {
         await updateReelDetails(reelId, contact, description)
@@ -296,6 +304,22 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
             disabled={isBusy}
             className="h-11 w-full rounded-full border-0 bg-white/10 px-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
           />
+        )}
+
+        {uploadPercent !== null && (
+          <div className="flex items-center gap-2 px-1">
+            <div
+              role="progressbar"
+              aria-valuenow={uploadPercent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Envoi de la vidéo"
+              className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15"
+            >
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${uploadPercent}%` }} />
+            </div>
+            <span className="text-xs tabular-nums text-white/70">{uploadPercent}%</span>
+          </div>
         )}
 
         <div className="flex items-center gap-2">

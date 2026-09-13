@@ -17,12 +17,28 @@ import { MAX_IMAGES_UPLOAD } from '@/constantes'
 import type { Property } from '@/models/annonce'
 import type { PublishableCategoryLeaf } from '@/app/api/categories/publishable-leaves/route'
 import { buildZonesPatch } from '@/lib/listing-zones'
+import { createSubmissionPerformanceTracker } from '@/lib/observability/submission-performance'
 
 type LeavesPayload = { leaves: PublishableCategoryLeaf[] }
 
+// Progression par phases (voir docs/performance-creation-modification-annonces-reels.md,
+// point 5) — remplace le libellé générique "Génération…" pendant l'attente.
+type GenerationPhase = 'idle' | 'photos' | 'generation' | 'validation' | 'enregistrement'
+const PHASE_LABELS: Record<GenerationPhase, string> = {
+  idle: "Générer l'annonce",
+  photos: 'Envoi des photos…',
+  generation: "Génération par l'IA…",
+  validation: 'Validation…',
+  enregistrement: 'Enregistrement…',
+}
+
 async function fetchPublishableLeaves(): Promise<PublishableCategoryLeaf[]> {
   const response = await fetch('/api/categories/publishable-leaves')
-  if (!response.ok) return []
+  // Une réponse HTTP en échec doit être visible comme une erreur react-query (isError), pas
+  // silencieusement confondue avec "0 catégorie active" — voir
+  // docs/performance-creation-modification-annonces-reels.md, point 5 ("interdire la
+  // soumission tant que la requête n'a pas un état connu").
+  if (!response.ok) throw new Error(`publishable-leaves request failed (${response.status})`)
   const data = (await response.json()) as LeavesPayload
   return Array.isArray(data.leaves) ? data.leaves : []
 }
@@ -56,7 +72,11 @@ export default function CreateCategoryListingPage() {
   const { user } = useCurrentUser()
   const { toast } = useToast()
 
-  const { data: leaves = [] } = useQuery({
+  const {
+    data: leaves = [],
+    isLoading: leavesLoading,
+    isError: leavesErrored,
+  } = useQuery({
     queryKey: ['categories', 'publishable-leaves'],
     queryFn: fetchPublishableLeaves,
     staleTime: 1000 * 60 * 10,
@@ -67,6 +87,7 @@ export default function CreateCategoryListingPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [phase, setPhase] = useState<GenerationPhase>('idle')
 
   const { getRootProps, getInputProps, isProcessing } = useImageDropzone({
     onFiles: (files) => {
@@ -109,7 +130,17 @@ export default function CreateCategoryListingPage() {
   const handleGenerate = useCallback(async () => {
     setError(null)
 
-    if (leaves.length === 0) {
+    // Interdire la soumission tant que l'état de la requête de catégories n'est pas connu
+    // (voir docs/performance-creation-modification-annonces-reels.md, point 5) : sans ce
+    // garde-fou, un clic assez rapide pour devancer la réponse de
+    // /api/categories/publishable-leaves lisait `leaves` encore vide et affichait "Aucune
+    // catégorie n'accepte de nouvelles annonces" — un faux négatif observé en e2e réel, pas
+    // seulement théorique.
+    if (leavesLoading) {
+      setError('Chargement des catégories en cours — réessaie dans un instant.')
+      return
+    }
+    if (leavesErrored || leaves.length === 0) {
       setError("Aucune catégorie n'accepte de nouvelles annonces pour le moment.")
       return
     }
@@ -125,19 +156,26 @@ export default function CreateCategoryListingPage() {
     }
 
     setIsGenerating(true)
+    const perf = createSubmissionPerformanceTracker({
+      dimensions: { journeyType: 'category_listing', mode: 'create', fileCount: images.length },
+    })
     try {
       // Les images sont uploadées AVANT l'appel IA, qui est ce qui débite le crédit
       // (voir /api/ai/category-listing-draft). Dans l'autre sens, un upload qui échoue
       // laisse l'annonceur facturé sans annonce — constaté en prod le 2026-08-17.
       // Concurrence bornée plutôt qu'un Promise.all illimité — voir
       // docs/performance-creation-modification-annonces-reels.md, point 4.
-      const uploadedImages = await uploadPropertyImages(images, user!.uid, 'property')
+      setPhase('photos')
+      const uploadedImages = await perf.measure('image_upload', () => uploadPropertyImages(images, user!.uid, 'property'))
 
-      const draft = await requestCategoryListingDraft(description)
+      setPhase('generation')
+      const draft = await perf.measure('ai', () => requestCategoryListingDraft(description))
       const matchedCategory = leaves.find((leaf) => leaf.id === draft.categoryId)
       if (!matchedCategory) {
         throw new Error("Catégorie détectée introuvable. Réessaie.")
       }
+
+      setPhase('validation')
 
       const attributes: Record<string, string | number | boolean> = {}
       for (const field of matchedCategory.attributeSchema) {
@@ -181,7 +219,8 @@ export default function CreateCategoryListingPage() {
         state: 'IN_PROGRESS',
       } as unknown as Property
 
-      const propertyId = await createProperty(property)
+      setPhase('enregistrement')
+      const propertyId = await perf.measure('property_write', () => createProperty(property))
       if (!propertyId) {
         throw new Error("Impossible de créer l'annonce.")
       }
@@ -191,8 +230,9 @@ export default function CreateCategoryListingPage() {
       setError(cause instanceof Error ? cause.message : 'Échec de la génération.')
     } finally {
       setIsGenerating(false)
+      setPhase('idle')
     }
-  }, [description, images, leaves, missingUpfrontFields, router, user])
+  }, [description, images, leaves, leavesErrored, leavesLoading, missingUpfrontFields, router, user])
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -257,9 +297,14 @@ export default function CreateCategoryListingPage() {
           </p>
         )}
 
-        <Button onClick={() => void handleGenerate()} disabled={isGenerating} size="lg" className="w-full gap-2">
+        <Button
+          onClick={() => void handleGenerate()}
+          disabled={isGenerating || leavesLoading}
+          size="lg"
+          className="w-full gap-2"
+        >
           {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-          Générer l&apos;annonce
+          {isGenerating ? PHASE_LABELS[phase] : "Générer l'annonce"}
         </Button>
       </div>
     </div>

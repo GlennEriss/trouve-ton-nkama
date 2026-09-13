@@ -45,6 +45,7 @@ export async function createCategoryListingDocument(input: {
     whatsappContact: input.whatsappContact ?? null,
     callContact: input.callContact ?? null,
     createdBy: input.announcerUid,
+    ownerUids: [input.announcerUid],
     searchableName: input.title.trim().toLowerCase(),
     // Toujours PENDING, y compris pour une saisie admin : contrairement au parcours
     // immobilier admin existant (auto-APPROVED), une annonce multi-catégorie ne doit

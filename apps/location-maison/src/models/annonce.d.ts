@@ -102,6 +102,9 @@ export type Property = Location & ICreation & {
     // l'admin via import Apify). Co-gestion : l'annonceur édite, l'admin modère.
     claimedBy?: string
     claimedAt?: Timestamp
+    // Identifiants autorisés à gérer l'annonce. Champ dénormalisé destiné aux requêtes
+    // paginées `array-contains`; toujours dérivé de createdBy/claimedBy côté serveur.
+    ownerUids?: string[]
 
     // Modération avant publication : distinct de `state` (ICreation), qui gère
     // l'archivage par le propriétaire, pas la review admin.

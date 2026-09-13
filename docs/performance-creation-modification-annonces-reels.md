@@ -1,5 +1,27 @@
 # Performance de création et de modification des annonces et des réels
 
+## État d'avancement — ✅ implémenté (2026-09-13)
+
+Les 8 points ont été implémentés et vérifiés (`tsc --noEmit` propre, suite Jest complète
+verte — 250/251 suites, 1758/1764 tests ; le seul point non concerné, `ads-config.test.ts`,
+appartient à un autre chantier en cours en parallèle).
+
+| Point | Fichiers principaux | Note |
+|---|---|---|
+| 1 — Géographie hors chemin critique | `functions/src/location/*`, `useOnSubmitFormProperty.ts` | Trigger `.onWrite` (v1) sur `properties/{id}`, logique extraite dans `handleLocationSyncEvent` (v1 CloudFunction non appelable directement en test). Coordonnées techniques désormais **conservées** dans le document (inversion assumée). Cloud Function écrite, **pas déployée**. |
+| 2 — Suggestions non bloquantes | `property.form.provider.tsx` | `updateOrCreateSuggestion` retiré (suppression, pas fire-and-forget). |
+| 3 — Pipeline vignette parallèle | `file.db.ts` | Upload principal + compression/upload vignette démarrés en parallèle. |
+| 4 — Concurrence contrôlée | `src/lib/async/map-with-concurrency.ts`, `uploadPropertyImages()` | Concurrence 3, câblé dans le hook immobilier + les 2 pages IA. |
+| 5 — Parcours IA | `property/create/page.tsx`, `category-listing/create/page.tsx` | Garde-fou "état de requête catégories inconnu" (bug réel trouvé en e2e), progression par phases (photos/génération/validation/enregistrement). |
+| 6 — Upload Reel reprenable | `reel.db.ts` (`uploadRawReelVideo`), `CreateOrphanReelClient.tsx`, `EditReelClient.tsx` | `uploadBytesResumable` + progression 0-100 + annulation (signal/timeout), barre `role="progressbar"` accessible dans les deux écrans. |
+| 7 — Invalidations Reel non bloquantes | `EditReelClient.tsx` | `setQueryData` immédiat + invalidations en arrière-plan (`void ... .catch(logger.warn)`). |
+| 8 — Instrumentation | `src/lib/observability/submission-performance.ts` | Module testé (11 tests), câblé dans `property.form.provider.tsx` et les 2 pages IA (phases `image_upload`/`ai`/`property_write`). Pas encore câblé dans les Reels. |
+
+**Non fait, hors code applicatif** : déploiement de la Cloud Function `onPropertyLocationSync`
+(`firebase deploy --only functions`) ; câblage de l'instrumentation dans les parcours Reel ;
+mesure réelle en développement pour établir une baseline avant/après (le doc le demande
+explicitement — c'est la suite naturelle une fois déployé). Rien n'est commité.
+
 ## Objet du document
 
 Ce document prépare l'analyse puis l'optimisation des parcours suivants dans l'application

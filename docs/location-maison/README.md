@@ -96,6 +96,12 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
 ### 📊 Statistiques
 - **[statistics/](./statistics/)** : Documentation statistiques
 
+### ⚡ Performance et complexité
+- **[performance/](./performance/README.md)** : audits transversaux de performance
+  - [Audit intégral de complexité algorithmique](./performance/AUDIT-COMPLEXITE-ALGORITHMIQUE-2026-09.md)
+  - [Guide développeur des correctifs](./performance/GUIDE-DEVELOPPEUR-CORRECTIFS-COMPLEXITE.md)
+  - Recherche, chargement, filtres, tris, pagination et chemins de création/modification
+
 ### 📈 Trackers
 - **[trackers/](./trackers/)** : Plan d'implementation tracking produit
   - Taxonomie des evenements

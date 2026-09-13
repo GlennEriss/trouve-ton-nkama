@@ -53,5 +53,19 @@ describe('/api/map/properties', () => {
     expect(firestore.where).toHaveBeenCalledWith('city', '==', 'Libreville')
     expect(firestore.limit).toHaveBeenCalledWith(200)
     expect(response.headers.get('Cache-Control')).toContain('s-maxage=300')
+    expect(await response.json()).toMatchObject({ totalCount: 0, truncated: false })
+  })
+
+  it('signale explicitement une fenetre cartographique potentiellement tronquee', async () => {
+    firestore.getDocs.mockResolvedValue({
+      docs: Array.from({ length: 200 }, (_, index) => ({
+        id: `property-${index}`,
+        data: () => ({ title: `Annonce ${index}`, images: [] }),
+      })),
+    })
+
+    const response = await GET(request('http://localhost/api/map/properties?quarter=Akebe'))
+
+    expect(await response.json()).toMatchObject({ totalCount: 200, truncated: true })
   })
 })

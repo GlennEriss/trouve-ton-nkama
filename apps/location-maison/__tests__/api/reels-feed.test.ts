@@ -50,6 +50,19 @@ describe('/api/reels/feed', () => {
     expect(getPublicReels).toHaveBeenCalledWith({ limitPerPage: 10, cursor: null })
   })
 
+  it('normalise et plafonne la taille de page', async () => {
+    getPublicReels.mockResolvedValue({ reels: [], nextCursor: null })
+
+    await GET(req('limitPerPage=10000'))
+    expect(getPublicReels).toHaveBeenLastCalledWith(expect.objectContaining({ limitPerPage: 50 }))
+
+    await GET(req('limitPerPage=0'))
+    expect(getPublicReels).toHaveBeenLastCalledWith(expect.objectContaining({ limitPerPage: 1 }))
+
+    await GET(req('limitPerPage=abc'))
+    expect(getPublicReels).toHaveBeenLastCalledWith(expect.objectContaining({ limitPerPage: 10 }))
+  })
+
   it('traduit une panne en 500', async () => {
     getPublicReels.mockRejectedValueOnce(new Error('db down'))
     const response = await GET(req('limitPerPage=10'))

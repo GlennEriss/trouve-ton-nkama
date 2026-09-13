@@ -26,7 +26,7 @@ export default function QuarterSearchCombobox({
   const [search, setSearch] = useState('');
   
   const { getAllQuarters, data } = useOSMLocations();
-  const quarters = getAllQuarters();
+  const quarters = useMemo(() => getAllQuarters(), [getAllQuarters]);
 
   // Regrouper par province
   const groupedQuarters = useMemo(() => {
@@ -75,6 +75,11 @@ export default function QuarterSearchCombobox({
 
   const totalResults = useMemo(() => 
     Object.values(filteredGroups).reduce((sum, arr) => sum + arr.length, 0),
+    [filteredGroups]
+  );
+
+  const sortedFilteredGroups = useMemo(
+    () => Object.entries(filteredGroups).sort(([a], [b]) => a.localeCompare(b, 'fr')),
     [filteredGroups]
   );
 
@@ -132,9 +137,7 @@ export default function QuarterSearchCombobox({
           <CommandList className="max-h-[350px]">
             <CommandEmpty>Aucun quartier trouvé.</CommandEmpty>
             
-            {Object.entries(filteredGroups)
-              .sort(([a], [b]) => a.localeCompare(b, 'fr'))
-              .map(([province, items]) => (
+            {sortedFilteredGroups.map(([province, items]) => (
                 <CommandGroup key={province} heading={province} className="px-2">
                   {items.map((quarter) => (
                     <CommandItem

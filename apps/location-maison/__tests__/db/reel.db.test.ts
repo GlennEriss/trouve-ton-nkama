@@ -25,7 +25,42 @@ const firestore = {
 const storage = {
   storage: { name: 'test-storage' },
   ref: jest.fn(),
-  uploadBytes: jest.fn(),
+  uploadBytesResumable: jest.fn(),
+}
+
+/**
+ * Fausse UploadTask Firebase (uploadBytesResumable) — voir
+ * docs/performance-creation-modification-annonces-reels.md, point 6. `on('state_changed',
+ * progressCb, errorCb, completeCb)` déclenche `progressCb` pour chaque snapshot fourni, puis
+ * `completeCb` (succès) ou `errorCb` (échec) de façon asynchrone (microtask), comme le ferait
+ * la tâche réelle.
+ */
+function makeFakeUploadTask(options: {
+  snapshots?: Array<{ bytesTransferred: number; totalBytes: number }>
+  error?: Error
+} = {}) {
+  const cancel = jest.fn(() => true)
+  const task = {
+    cancel,
+    on: (
+      _event: 'state_changed',
+      progressCb?: (snapshot: { bytesTransferred: number; totalBytes: number }) => void,
+      errorCb?: (error: Error) => void,
+      completeCb?: () => void,
+    ) => {
+      queueMicrotask(() => {
+        for (const snapshot of options.snapshots ?? []) {
+          progressCb?.(snapshot)
+        }
+        if (options.error) {
+          errorCb?.(options.error)
+        } else {
+          completeCb?.()
+        }
+      })
+    },
+  }
+  return { task, cancel }
 }
 
 jest.mock('@/firebase/auth', () => authState)
@@ -74,7 +109,7 @@ describe('reel database and API client', () => {
     firestore.startAfter.mockImplementation((value) => ({ kind: 'startAfter', value }))
     firestore.query.mockImplementation((...args) => ({ args }))
     storage.ref.mockImplementation((_storage, path) => ({ path }))
-    storage.uploadBytes.mockResolvedValue({})
+    storage.uploadBytesResumable.mockReturnValue(makeFakeUploadTask().task)
   })
 
   it('construit un chemin brut stable avec extension ou mp4 par defaut', () => {
@@ -207,7 +242,11 @@ describe('reel database and API client', () => {
   })
 
   it('pagine les reels du proprietaire avec dates et curseur', async () => {
-    const docs = [reelDoc('reel-1', { createdBy: 'owner-1' }), reelDoc('reel-2', { createdBy: 'owner-1' })]
+    const docs = [
+      reelDoc('reel-1', { createdBy: 'owner-1' }),
+      reelDoc('reel-2', { createdBy: 'owner-1' }),
+      reelDoc('reel-3', { createdBy: 'owner-1' }),
+    ]
     firestore.getDoc.mockResolvedValue({ exists: () => true, id: 'cursor-1' })
     firestore.getDocs.mockResolvedValue({ docs })
     const startDate = new Date('2026-01-01T00:00:00Z')
@@ -229,6 +268,7 @@ describe('reel database and API client', () => {
     expect(firestore.Timestamp.fromDate).toHaveBeenCalledWith(startDate)
     expect(firestore.Timestamp.fromDate).toHaveBeenCalledWith(endDate)
     expect(firestore.startAfter).toHaveBeenCalled()
+    expect(firestore.limit).toHaveBeenCalledWith(3)
   })
 
   it('lit un reel par identifiant ou retourne null', async () => {
@@ -243,6 +283,7 @@ describe('reel database and API client', () => {
     const docs = [
       reelDoc('reel-1', { processingStatus: 'ready', moderationStatus: 'APPROVED' }),
       reelDoc('reel-2', { processingStatus: 'ready', moderationStatus: 'APPROVED' }),
+      reelDoc('reel-3', { processingStatus: 'ready', moderationStatus: 'APPROVED' }),
     ]
     firestore.getDocs.mockResolvedValue({ docs })
 
@@ -255,6 +296,18 @@ describe('reel database and API client', () => {
     })
     expect(firestore.where).toHaveBeenCalledWith('processingStatus', '==', 'ready')
     expect(firestore.where).toHaveBeenCalledWith('moderationStatus', '==', 'APPROVED')
+    expect(firestore.limit).toHaveBeenCalledWith(3)
+  })
+
+  it('ne produit pas de curseur pour une derniere page exactement pleine', async () => {
+    firestore.getDocs.mockResolvedValue({ docs: [
+      reelDoc('reel-1', { processingStatus: 'ready' }),
+      reelDoc('reel-2', { processingStatus: 'ready' }),
+    ] })
+
+    await expect(getPublicReels({ limitPerPage: 2, cursor: null })).resolves.toMatchObject({
+      nextCursor: null,
+    })
   })
 
   it('upload la video brute avec les metadonnees de proprietaire', async () => {
@@ -262,7 +315,7 @@ describe('reel database and API client', () => {
     await expect(uploadRawReelVideo(file, 'owner-1', 'reel-1'))
       .resolves.toBe('reels-raw/owner-1/reel-1.mov')
 
-    expect(storage.uploadBytes).toHaveBeenCalledWith(
+    expect(storage.uploadBytesResumable).toHaveBeenCalledWith(
       { path: 'reels-raw/owner-1/reel-1.mov' },
       file,
       { customMetadata: { owner: 'owner-1', reelId: 'reel-1' } },
@@ -274,9 +327,97 @@ describe('reel database and API client', () => {
     ['storage/canceled', 'Envoi annulé.'],
     ['storage/retry-limit-exceeded', 'Envoi trop long (délai dépassé). Vérifiez la connexion puis réessayez.'],
   ])('traduit l erreur Storage %s', async (code, expectedMessage) => {
-    storage.uploadBytes.mockRejectedValue(Object.assign(new Error('provider message'), { code }))
+    storage.uploadBytesResumable.mockReturnValue(
+      makeFakeUploadTask({ error: Object.assign(new Error('provider message'), { code }) }).task,
+    )
     const file = new File(['video'], 'visite.mov')
     await expect(uploadRawReelVideo(file, 'owner-1', 'reel-1')).rejects.toThrow(expectedMessage)
+  })
+
+  // docs/performance-creation-modification-annonces-reels.md, point 6 : progression réelle
+  // (abonnement state_changed, 0/intermédiaire/100 sans division par zéro) + annulation.
+  describe('progression et annulation (upload Reel reprenable)', () => {
+    it('abonnement correct a state_changed : progression 0, intermediaire et 100', async () => {
+      storage.uploadBytesResumable.mockReturnValue(
+        makeFakeUploadTask({
+          snapshots: [
+            { bytesTransferred: 0, totalBytes: 1000 },
+            { bytesTransferred: 500, totalBytes: 1000 },
+            { bytesTransferred: 1000, totalBytes: 1000 },
+          ],
+        }).task,
+      )
+      const onProgress = jest.fn()
+      const file = new File(['video'], 'visite.mov')
+
+      await uploadRawReelVideo(file, 'owner-1', 'reel-1', { onProgress })
+
+      expect(onProgress.mock.calls.map(([p]) => p.percent)).toEqual([0, 50, 100])
+    })
+
+    it('ne divise jamais par zero quand totalBytes est absent/nul', async () => {
+      storage.uploadBytesResumable.mockReturnValue(
+        makeFakeUploadTask({ snapshots: [{ bytesTransferred: 0, totalBytes: 0 }] }).task,
+      )
+      const onProgress = jest.fn()
+
+      await uploadRawReelVideo(new File(['video'], 'visite.mov'), 'owner-1', 'reel-1', { onProgress })
+
+      expect(onProgress).toHaveBeenCalledWith(expect.objectContaining({ percent: expect.any(Number) }))
+      expect(Number.isNaN(onProgress.mock.calls[0][0].percent)).toBe(false)
+    })
+
+    it('resout avec le meme chemin apres succes, avec ou sans callback de progression', async () => {
+      storage.uploadBytesResumable.mockReturnValue(makeFakeUploadTask().task)
+      await expect(uploadRawReelVideo(new File(['video'], 'visite.mov'), 'owner-1', 'reel-1'))
+        .resolves.toBe('reels-raw/owner-1/reel-1.mov')
+    })
+
+    it('annule la tache Storage quand le signal d\'abandon est declenche', async () => {
+      const { task, cancel } = makeFakeUploadTask({
+        // Ne se termine jamais : simule un envoi long, seule l'annulation compte ici.
+        snapshots: [],
+      })
+      // Neutralise la résolution automatique pour ce test — on veut observer l'annulation,
+      // pas la fin naturelle de l'upload.
+      task.on = () => {}
+      storage.uploadBytesResumable.mockReturnValue(task)
+
+      const controller = new AbortController()
+      const promise = uploadRawReelVideo(new File(['video'], 'visite.mov'), 'owner-1', 'reel-1', {
+        signal: controller.signal,
+      })
+      // Laisse le "await getStorage()" interne se résoudre avant d'abandonner : le signal
+      // reste "aborted" quoi qu'il arrive, donc l'ordre exact importe peu, seul le fait que
+      // le listener finisse par être posé compte ici.
+      await Promise.resolve()
+      controller.abort()
+      await Promise.resolve()
+
+      expect(cancel).toHaveBeenCalledTimes(1)
+      // La promesse reste volontairement pendante (task.on ne résout jamais) : on ne
+      // l'attend pas, seul l'appel à cancel() est vérifié.
+      void promise.catch(() => {})
+    })
+
+    it('annule la tache Storage quand le timeout d\'upload expire', async () => {
+      jest.useFakeTimers()
+      const { task, cancel } = makeFakeUploadTask({ snapshots: [] })
+      task.on = () => {} // ne résout ni ne rejette jamais : seul le timeout doit intervenir
+      storage.uploadBytesResumable.mockReturnValue(task)
+
+      const promise = uploadRawReelVideo(new File(['video'], 'visite.mov'), 'owner-1', 'reel-1')
+      const assertion = expect(promise).rejects.toThrow('Upload vidéo a pris trop de temps.')
+      // Version asynchrone : laisse les microtasks (dont le "await getStorage()" interne, qui
+      // doit se résoudre avant que withTimeout ne pose son setTimeout) s'intercaler entre
+      // chaque avancée de l'horloge simulée — un advanceTimersByTime synchrone avancerait une
+      // horloge sans qu'aucun minuteur n'ait encore été programmé.
+      await jest.advanceTimersByTimeAsync(600_000)
+      await assertion
+      expect(cancel).toHaveBeenCalledTimes(1)
+
+      jest.useRealTimers()
+    })
   })
 
   it('abonne puis desabonne proprement un reel', async () => {

@@ -37,13 +37,11 @@ Le développeur doit suivre cet ordre :
 
 ## Statut global
 
-**État actuel : NO-GO pour l'entraînement ML, préparation autorisée pour l'audit.**
-
-L'architecture est documentée. Les cinq décisions bloquantes du document
-`AVANT-IMPLEMENTATION.md` ne sont pas encore validées et la disponibilité réelle du pipeline
-BigQuery doit être auditée. Il est possible de commencer l'audit technique et la production de
-fixtures, mais pas de collecter de nouvelles données personnelles ni d'activer un classement
-personnalisé avant validation du consentement et du contrat événementiel.
+**État actuel (2026-09-13) : les 5 décisions bloquantes sont validées, GO pour l'audit et la
+collecte. NO-GO pour l'entraînement et le serving personnalisé** tant que les critères d'entrée du
+MVP (`MVP-V1-FIGE.md`) et le reste de la checklist (pipeline BigQuery audité, contrat
+événementiel approuvé, index Algolia audité, baseline mesurable, kill switch, fixtures) ne sont
+pas cochés.
 
 ## Décision directrice
 

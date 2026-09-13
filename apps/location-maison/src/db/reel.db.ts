@@ -362,8 +362,11 @@ export async function getReelsByOwner(
         constraints.push(where('createdAt', '<=', Timestamp.fromDate(options.endDate)));
     }
 
-    const limitPerPage = options?.limitPerPage ?? 20;
-    let q = query(reelsRef, ...constraints, orderBy('createdAt', 'desc'), limit(limitPerPage));
+    const requestedLimit = options?.limitPerPage ?? 20;
+    const limitPerPage = Number.isInteger(requestedLimit)
+        ? Math.min(50, Math.max(1, requestedLimit))
+        : 20;
+    let q = query(reelsRef, ...constraints, orderBy('createdAt', 'desc'), limit(limitPerPage + 1));
 
     if (options?.cursor) {
         const cursorSnap = await getDoc(doc(db, firebaseCollectionNames.reels, options.cursor));
@@ -373,9 +376,10 @@ export async function getReelsByOwner(
     }
 
     const snapshot = await getDocs(q);
-    const reels = snapshot.docs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
-    const nextCursor = snapshot.docs.length === limitPerPage
-        ? snapshot.docs[snapshot.docs.length - 1].id
+    const pageDocs = snapshot.docs.slice(0, limitPerPage);
+    const reels = pageDocs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
+    const nextCursor = snapshot.docs.length > limitPerPage && pageDocs.length > 0
+        ? pageDocs[pageDocs.length - 1].id
         : null;
 
     return { reels, nextCursor };
@@ -416,6 +420,9 @@ export async function getPublicReels({
     categoryRootName?: string;
 }): Promise<{ reels: (Reel & { id: string })[]; nextCursor: string | null }> {
     const { collection, getDocs, doc, getDoc, db, where, query, orderBy, startAfter, limit } = await getFirestore();
+    const pageSize = Number.isInteger(limitPerPage)
+        ? Math.min(50, Math.max(1, limitPerPage))
+        : 10;
     const reelsRef = collection(db, firebaseCollectionNames.reels);
     let q = query(
         reelsRef,
@@ -423,7 +430,7 @@ export async function getPublicReels({
         where('moderationStatus', '==', 'APPROVED'),
         ...(categoryRootName ? [where('categoryPath.lvl0', '==', categoryRootName)] : []),
         orderBy('createdAt', 'desc'),
-        limit(limitPerPage)
+        limit(pageSize + 1)
     );
 
     if (cursor) {
@@ -434,23 +441,49 @@ export async function getPublicReels({
     }
 
     const querySnapshot = await getDocs(q);
-    const reels = querySnapshot.docs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
+    const pageDocs = querySnapshot.docs.slice(0, pageSize);
+    const reels = pageDocs.map((d) => ({ ...(d.data() as Reel), id: d.id }));
 
-    const nextCursor = querySnapshot.docs.length === limitPerPage
-        ? querySnapshot.docs[querySnapshot.docs.length - 1].id
+    const nextCursor = querySnapshot.docs.length > pageSize && pageDocs.length > 0
+        ? pageDocs[pageDocs.length - 1].id
         : null;
 
     return { reels, nextCursor };
 }
 
+export type UploadRawReelVideoProgress = {
+    bytesTransferred: number;
+    totalBytes: number;
+    /** Borné à [0, 100] — voir docs/performance-creation-modification-annonces-reels.md, point 6. */
+    percent: number;
+};
+
+export type UploadRawReelVideoOptions = {
+    onProgress?: (progress: UploadRawReelVideoProgress) => void;
+    /** Annule l'upload en cours (ex. l'utilisateur quitte l'écran) — voir "Annulation" du point 6. */
+    signal?: AbortSignal;
+};
+
+const RAW_VIDEO_UPLOAD_TIMEOUT_MS = 600_000;
+
 /**
  * Upload le fichier vidéo brut — la Cloud Function de transcodage se déclenche sur cet upload
  * et prend le relais (durée réelle, conversion, miniature), ce module ne fait que déposer le
  * fichier au bon endroit.
+ *
+ * `uploadBytesResumable` (pas `uploadBytes`) : expose une progression réelle
+ * (`state_changed`) et une tâche annulable, sans changer le chemin Storage ni les métadonnées
+ * — voir docs/performance-creation-modification-annonces-reels.md, point 6. Le contrat
+ * (chemin retourné, erreurs traduites, timeout) reste identique pour les appelants existants.
  */
-export async function uploadRawReelVideo(file: File, ownerId: string, reelId: string): Promise<string> {
+export async function uploadRawReelVideo(
+    file: File,
+    ownerId: string,
+    reelId: string,
+    options: UploadRawReelVideoOptions = {},
+): Promise<string> {
     try {
-        const { storage, ref, uploadBytes } = await getStorage();
+        const { storage, ref, uploadBytesResumable } = await getStorage();
         const rawVideoPath = buildRawReelVideoPath(file, ownerId, reelId);
         const fileRef = ref(storage, rawVideoPath);
 
@@ -461,12 +494,52 @@ export async function uploadRawReelVideo(file: File, ownerId: string, reelId: st
             },
         };
 
-        // 10 min (pas 2, l'ancienne valeur) : à l'ancien plafond de 500 Mo, 2 min exigeait déjà
-        // un débit montant soutenu d'environ 33 Mbps pour ne pas expirer avant la fin de
-        // l'envoi — hors de portée d'une connexion mobile moyenne. Avec le nouveau plafond
-        // (1 Go), une marge courte aurait fait systématiquement échouer les gros fichiers sur
-        // une connexion lente au lieu de simplement prendre plus longtemps.
-        await withTimeout(uploadBytes(fileRef, file, metadata), 600_000, "Upload vidéo");
+        const task = uploadBytesResumable(fileRef, file, metadata);
+
+        if (options.signal) {
+            if (options.signal.aborted) {
+                task.cancel();
+            } else {
+                options.signal.addEventListener('abort', () => task.cancel(), { once: true });
+            }
+        }
+
+        const uploadCompleted = new Promise<void>((resolve, reject) => {
+            task.on(
+                'state_changed',
+                (snapshot) => {
+                    if (!options.onProgress) return;
+                    // totalBytes est normalement > 0 (fichier déjà sélectionné) ; repli à 1
+                    // uniquement pour éviter une division par zéro dans un cas limite.
+                    const totalBytes = snapshot.totalBytes || 1;
+                    const percent = Math.min(
+                        100,
+                        Math.max(0, Math.round((snapshot.bytesTransferred / totalBytes) * 100)),
+                    );
+                    options.onProgress({
+                        bytesTransferred: snapshot.bytesTransferred,
+                        totalBytes: snapshot.totalBytes,
+                        percent,
+                    });
+                },
+                (error) => reject(error),
+                () => resolve(),
+            );
+        });
+
+        try {
+            // 10 min (pas 2, l'ancienne valeur) : à l'ancien plafond de 500 Mo, 2 min exigeait
+            // déjà un débit montant soutenu d'environ 33 Mbps pour ne pas expirer avant la fin
+            // de l'envoi — hors de portée d'une connexion mobile moyenne. Avec le nouveau
+            // plafond (1 Go), une marge courte aurait fait systématiquement échouer les gros
+            // fichiers sur une connexion lente au lieu de simplement prendre plus longtemps.
+            await withTimeout(uploadCompleted, RAW_VIDEO_UPLOAD_TIMEOUT_MS, "Upload vidéo");
+        } catch (timeoutOrUploadError) {
+            // Le timeout ci-dessus ne coupe pas la tâche Storage sous-jacente : l'annuler
+            // explicitement plutôt que la laisser tourner en arrière-plan indéfiniment.
+            task.cancel();
+            throw timeoutOrUploadError;
+        }
 
         return rawVideoPath;
     } catch (error) {
@@ -478,6 +551,7 @@ export async function uploadRawReelVideo(file: File, ownerId: string, reelId: st
             fileSize: file?.size,
             ownerId,
             reelId,
+            cancelled: (error as { code?: string } | null)?.code === 'storage/canceled',
         });
         throw new Error(message);
     }

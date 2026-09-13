@@ -116,6 +116,7 @@ export async function claimListingsByVerifiedPhone(
     batch.update(doc.ref, {
       claimedBy: uid,
       claimedAt: FieldValue.serverTimestamp(),
+      ownerUids: FieldValue.arrayUnion(uid),
     });
   }
   await batch.commit();

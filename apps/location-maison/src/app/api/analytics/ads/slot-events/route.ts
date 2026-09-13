@@ -47,6 +47,7 @@ const bodySchema = z
               'ad_slot_rendered',
               'ad_request_sent',
               'ad_filled',
+              'ad_viewable_impression',
               'ad_impression',
               'ad_click',
             ]),

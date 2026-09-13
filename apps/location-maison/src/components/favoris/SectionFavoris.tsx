@@ -3,11 +3,11 @@ import React from 'react'
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import queryKeys from '@/constantes/react-query-keys';
 import { PROPERTY_ITEM_PER_PAGE } from '@/constantes/item-per-page';
 import { Property } from '@/models/annonce';
-import { getPropertyById } from '@/db/property.db';
+import { getPropertiesByIds } from '@/db/property.db';
 import { Button } from '@trouve-ton-nkama/ui/button';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,13 @@ export default function SectionFavoris() {
     const {user} = useCurrentUser()
     const router = useRouter();
     const [currentPage, setCurrentPage] = React.useState(0);
-    const [totalPage, setTotalPage] = React.useState(0);
+    const favoriteIds = React.useMemo<string[]>(
+        () => Array.from(new Set(
+            (user?.favoris ?? []).filter((id: unknown): id is string => typeof id === 'string' && id.trim().length > 0),
+        )),
+        [user?.favoris],
+    );
+    const totalPage = Math.ceil(favoriteIds.length / PROPERTY_ITEM_PER_PAGE);
     const handleCardClick = (id: number | string) => {
         router.push(`/annonce/${id}`);
     };
@@ -30,42 +36,20 @@ export default function SectionFavoris() {
     const handlePrev = () => {
         currentPage > 0 && setCurrentPage(currentPage - 1);
     }
-    const fetchInfiniteProperties = async ({ pageParam }: { pageParam: any }) => {
-        const { limitPerPage } = pageParam;
-        const paginated: string[][] = [];
-        if (user?.favoris) {
-            for (let i = 0; i < user.favoris.length; i += limitPerPage) {
-                paginated.push(user.favoris.slice(i, i + limitPerPage));
-            }
-        }
-        setTotalPage(paginated.length)
-        const properties: Property[] = []
-        const propertyIds = paginated[currentPage] ?? []
-        for (const propertyId of propertyIds) {
-            const property = await getPropertyById(propertyId)
-            if (property) {
-                properties.push(property)
-            }
-        }
-        const favoris = {
-            properties,
-            lastDoc: null,
-            limitPerPage
-        }
-        return favoris
-    }
-    const { data, isPending, isFetching, isLoading } = useInfiniteQuery({
-        queryKey: [queryKeys.favoris, user, currentPage],
-        queryFn: fetchInfiniteProperties,
+    const propertyIds = React.useMemo(
+        () => favoriteIds.slice(
+            currentPage * PROPERTY_ITEM_PER_PAGE,
+            (currentPage + 1) * PROPERTY_ITEM_PER_PAGE,
+        ),
+        [currentPage, favoriteIds],
+    );
+    const { data: properties = [], isPending, isFetching, isLoading } = useQuery<Property[]>({
+        queryKey: [queryKeys.favoris, user?.uid, propertyIds],
+        queryFn: () => getPropertiesByIds(propertyIds),
+        enabled: Boolean(user),
         staleTime: 600000,
         gcTime: 1000 * 60 * 15,
         refetchOnWindowFocus: false,
-        initialPageParam: { limitPerPage: PROPERTY_ITEM_PER_PAGE, lastDoc: null },
-        getNextPageParam: (lastPage, allPages, pageParam) => {
-            const { limitPerPage } = pageParam;
-            const lastDoc = allPages[allPages.length - 1].lastDoc;
-            return { limitPerPage, lastDoc };
-        },
     })
     if (isLoading || isFetching) {
         return (
@@ -76,7 +60,7 @@ export default function SectionFavoris() {
             </div>
         );
     }
-    if (!data || data.pages[currentPage]?.properties?.length === 0) {
+    if (properties.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-10">
                 <Image src="/no-favorites.svg" width={128} height={128} alt="Aucun favori" />
@@ -94,7 +78,7 @@ export default function SectionFavoris() {
     return (
         <div className='px-5'>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5'>
-                {data?.pages[0].properties.map((property) => {
+                {properties.map((property) => {
                     const propertyId = property.id ?? "unknown";
                     const rawPrimaryImageUrl = resolveThumbnailUrl(property.images?.[0]);
                     const primaryImageSrc =

@@ -69,6 +69,9 @@ export async function GET(request: NextRequest) {
       quarter,
       properties,
       totalCount: properties.length,
+      // Firestore ne fournit ici qu'une fenêtre cartographique. Le client ne doit pas
+      // interpréter totalCount comme un total exhaustif quand la borne est atteinte.
+      truncated: querySnapshot.docs.length >= MAX_MAP_PROPERTIES,
       timestamp: new Date().toISOString(),
     });
 
@@ -92,6 +95,7 @@ export async function GET(request: NextRequest) {
           quarter,
           properties: [],
           totalCount: 0,
+          truncated: false,
         },
         { status: 500 }
       );

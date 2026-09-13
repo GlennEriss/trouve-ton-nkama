@@ -10,7 +10,10 @@ const CACHE_TTL_SECONDS = parseInt(process.env.REDIS_CATALOG_TTL ?? '600', 10);
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const limitPerPage = parseInt(url.searchParams.get('limitPerPage') ?? '10', 10);
+  const requestedLimit = Number(url.searchParams.get('limitPerPage') ?? 10);
+  const limitPerPage = Number.isInteger(requestedLimit)
+    ? Math.min(50, Math.max(1, requestedLimit))
+    : 10;
   const cursor = url.searchParams.get('cursor') ?? null;
   const categoryRootName = url.searchParams.get('category')?.trim() || undefined;
 

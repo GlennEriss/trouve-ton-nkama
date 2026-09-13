@@ -27,6 +27,12 @@ jest.mock('@/components/ads/AdSenseBlock', () => ({
   ),
 }))
 
+let stackingDecisionOverride: { showHouse: boolean; showAdSense: boolean } | null = null
+jest.mock('@/lib/ads/stacking-experiment', () => ({
+  resolveAdStackingDecision: (input: { hasHouseCreative: boolean }) =>
+    stackingDecisionOverride ?? { showHouse: input.hasHouseCreative, showAdSense: true },
+}))
+
 jest.mock('@/components/ads/AdCreativeCard', () => ({
   __esModule: true,
   default: ({
@@ -89,6 +95,7 @@ describe('Lot 6B - rendu publicitaire', () => {
   // survivrait aux tests suivants de ce fichier.
   afterEach(() => {
     jest.restoreAllMocks()
+    stackingDecisionOverride = null
   })
 
   it('affiche la campagne maison et conserve l unite AdSense independante', async () => {
@@ -136,6 +143,25 @@ describe('Lot 6B - rendu publicitaire', () => {
         expect.objectContaining({ event: 'click', campaignId: creative.campaignId }),
       ])
     })
+  })
+
+  it('variante D_HOUSE_PRIORITY : la maison active masque AdSense (jamais empile)', async () => {
+    // Infra d'experience §5.4/Lot 3 : ne change le rendu que si la variante est explicitement
+    // pilotee, jamais par defaut (couvert par le test precedent, variante implicite A_STACK).
+    stackingDecisionOverride = { showHouse: true, showAdSense: false }
+
+    render(
+      <SponsoredSlot
+        placement="search_infeed"
+        fallbackSlot="123"
+        fallbackSlotKey="search-6b"
+      />,
+    )
+
+    await screen.findByRole('button', { name: creative.headline })
+    expect(screen.queryByTestId('adsense-unit')).not.toBeInTheDocument()
+
+    stackingDecisionOverride = null
   })
 
   it('garde AdSense sans envoyer de metrique maison quand il n y a pas de campagne', async () => {

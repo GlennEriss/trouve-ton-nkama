@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Property } from '@/models/annonce';
 import { getProperties } from '@/db/property.db';
 import { createLogger } from '@/lib/logger';
@@ -18,38 +18,44 @@ export const usePropertiesPagination = ({
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [lastDocs, setLastDocs] = useState<any[]>([null]);
-
-  const fetchedPages = useMemo<Record<number, FetchedPage>>(() => ({}), []);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const fetchedPages = useRef(new Map<number, FetchedPage>());
+  const pageStartCursors = useRef(new Map<number, any>([[1, null]]));
+  const criteriaKey = `${limitPerPage}\u0000${type}\u0000${createdBy}`;
+  const previousCriteriaKey = useRef(criteriaKey);
 
   const fetchData = useCallback(
     async (page: number = currentPage, reset = false) => {
       setLoading(true);
 
       try {
-        if (!reset && fetchedPages[page]) {
-          setProperties(fetchedPages[page].properties);
-          setLoading(false);
+        if (reset) {
+          fetchedPages.current.clear();
+          pageStartCursors.current = new Map([[1, null]]);
+          page = 1;
+        }
+
+        const cached = fetchedPages.current.get(page);
+        if (cached) {
+          setProperties(cached.properties);
+          setHasNextPage(Boolean(cached.lastDoc));
           return;
         }
 
         const res = await getProperties({
           limitPerPage,
-          lastDoc: reset ? null : lastDocs[page - 1],
+          lastDoc: pageStartCursors.current.get(page) ?? null,
           type,
           createdBy,
         });
 
         setProperties(res.properties);
-
-        if (reset) {
-          setLastDocs([null]);
-          fetchedPages[1] = { properties: res.properties, lastDoc: res.lastDoc };
-          setCurrentPage(1);
-        } else {
-          fetchedPages[page] = { properties: res.properties, lastDoc: res.lastDoc };
-          setLastDocs((prev) => [...prev, res.lastDoc]);
+        setHasNextPage(Boolean(res.lastDoc));
+        fetchedPages.current.set(page, { properties: res.properties, lastDoc: res.lastDoc });
+        if (res.lastDoc) {
+          pageStartCursors.current.set(page + 1, res.lastDoc);
         }
+        if (reset) setCurrentPage(1);
       } catch (error) {
         logger.error('Failed to fetch paginated properties', {
           page,
@@ -63,20 +69,33 @@ export const usePropertiesPagination = ({
         setLoading(false);
       }
     },
-    [limitPerPage, type, createdBy, lastDocs, fetchedPages, currentPage]
+    [limitPerPage, type, createdBy, currentPage]
   );
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, fetchData]);
+    if (previousCriteriaKey.current !== criteriaKey) {
+      previousCriteriaKey.current = criteriaKey;
+      fetchedPages.current.clear();
+      pageStartCursors.current = new Map([[1, null]]);
+      if (currentPage !== 1) {
+        setCurrentPage(1);
+        return;
+      }
+    }
+    void fetchData();
+  }, [criteriaKey, currentPage, fetchData]);
 
   return {
     properties,
     loading,
     fetchData,
-    nextPage: () => setCurrentPage((prev) => prev + 1),
+    nextPage: () => setCurrentPage((prev) => hasNextPage ? prev + 1 : prev),
     previousPage: () => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev)),
     currentPage,
-    totalPages: Math.ceil(properties.length / limitPerPage),
+    hasNextPage,
+    hasPreviousPage: currentPage > 1,
+    // Le total exact nécessiterait une agrégation séparée. Cette borne est suffisante pour
+    // afficher la navigation sans annoncer un faux total calculé sur la page courante.
+    totalPages: currentPage + (hasNextPage ? 1 : 0),
   };
 };

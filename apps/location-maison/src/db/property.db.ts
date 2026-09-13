@@ -4,6 +4,7 @@ import { createModel, deleteModel } from "./generic.db";
 import { collectionFirebaseNames } from "@/constantes";
 import { createLogger } from '@/lib/logger';
 import { invalidatePropertySeoCache } from '@/lib/invalidate-property-seo-cache';
+import { mapWithConcurrency } from '@/lib/async/map-with-concurrency';
 
 const logger = createLogger('db.property');
 
@@ -42,7 +43,12 @@ export async function createProperty(property: Property): Promise<string | null>
     // Toute nouvelle annonce démarre en attente de review, quelle que soit la valeur
     // fournie par l'appelant (défense en profondeur, en plus de firestore.rules).
     const { rejectionReason, moderationReviewedAt, moderationReviewedBy, ...safeProperty } = property;
-    const payload: Property = { ...safeProperty, moderationStatus: 'PENDING' };
+    const ownerUids = Array.from(new Set(
+        [safeProperty.createdBy, safeProperty.claimedBy]
+            .filter((uid): uid is string => typeof uid === 'string' && uid.trim().length > 0)
+            .map((uid) => uid.trim()),
+    ));
+    const payload: Property = { ...safeProperty, ownerUids, moderationStatus: 'PENDING' };
     const id = await createModel<Property>(payload, firebaseCollectionNames.properties);
     if (id) {
         void invalidatePropertySeoCache();
@@ -64,19 +70,18 @@ export async function deleteProperty(id: string): Promise<boolean> {
 }
 export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: { limitPerPage: number, lastDoc: any, createdBy?: string, type?: string }) {
     const { collection, doc, getDoc, getDocs, db, where, query, startAfter, limit, orderBy } = await getFirestore();
+    const pageSize = Number.isInteger(limitPerPage)
+        ? Math.min(50, Math.max(1, limitPerPage))
+        : 10;
     const professionalRef = collection(db, firebaseCollectionNames.properties);
     let q = query(
         professionalRef,
         where('state', '==', 'IN_PROGRESS'),
         where('moderationStatus', '==', 'APPROVED'),
         orderBy('createdAt', 'desc'),
+        // Un seul aller-retour suffit pour savoir s'il reste une page.
+        limit(pageSize + 1),
     )
-    if (limitPerPage > 0) {
-        q = query(
-            q,
-            limit(limitPerPage)
-        )
-    }
 
     if (createdBy) {
         q = query(
@@ -102,28 +107,57 @@ export async function getProperties({ limitPerPage, lastDoc, createdBy, type }: 
         )
     }
     const querySnapshot = await getDocs(q);
+    const pageDocs = querySnapshot.docs.slice(0, pageSize);
+    const hasMore = querySnapshot.docs.length > pageSize;
     const properties: Property[] = [];
-    if (querySnapshot.docs.length < limitPerPage) {
-        lastDoc = null;
-    } else {
-        const nextCursor = querySnapshot.docs[querySnapshot.docs.length - 1];
-        const nextQuery = query(q, startAfter(nextCursor), limit(1));
-        const nextQuerySnapshot = await getDocs(nextQuery);
-        if (nextQuerySnapshot.docs.length === 0) {
-            lastDoc = null;
-        } else {
-            lastDoc = nextCursor.id;
-        }
-    }
-    querySnapshot.forEach((doc: any) => {
-        const data = normalizeKitchenField({ ...doc.data(), id: doc.id });
+    lastDoc = hasMore && pageDocs.length > 0 ? pageDocs[pageDocs.length - 1].id : null;
+    pageDocs.forEach((propertyDoc: any) => {
+        const data = normalizeKitchenField({ ...propertyDoc.data(), id: propertyDoc.id });
         properties.push(data as Property);
     });
     return {
         properties,
-        limitPerPage,
+        limitPerPage: pageSize,
         lastDoc,
     };
+}
+
+const FIRESTORE_IN_BATCH_SIZE = 30;
+const FAVORITES_READ_CONCURRENCY = 3;
+
+/**
+ * Charge des annonces par identifiants sans imposer un aller-retour séquentiel par document.
+ * L'ordre d'entrée est conservé, les doublons et documents supprimés sont ignorés.
+ */
+export async function getPropertiesByIds(ids: string[]): Promise<Property[]> {
+    const uniqueIds = Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean)));
+    if (uniqueIds.length === 0) return [];
+
+    const { collection, documentId, getDocs, db, where, query } = await getFirestore();
+    const propertiesRef = collection(db, firebaseCollectionNames.properties);
+    const chunks: string[][] = [];
+    for (let index = 0; index < uniqueIds.length; index += FIRESTORE_IN_BATCH_SIZE) {
+        chunks.push(uniqueIds.slice(index, index + FIRESTORE_IN_BATCH_SIZE));
+    }
+
+    const byId = new Map<string, Property>();
+    await mapWithConcurrency(
+        chunks,
+        FAVORITES_READ_CONCURRENCY,
+        async (chunk) => {
+            const snapshot = await getDocs(query(propertiesRef, where(documentId(), 'in', chunk)));
+            snapshot.docs.forEach((propertyDoc: any) => {
+                byId.set(
+                    propertyDoc.id,
+                    normalizeKitchenField({ ...propertyDoc.data(), id: propertyDoc.id }) as Property,
+                );
+            });
+        },
+    );
+
+    return uniqueIds
+        .map((id) => byId.get(id))
+        .filter((property): property is Property => Boolean(property));
 }
 
 export type SearchOwnedPropertiesResult = {
