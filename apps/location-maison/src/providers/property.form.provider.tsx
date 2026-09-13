@@ -20,6 +20,7 @@ import queryKeys from "@/constantes/react-query-keys"
 import { routes } from "@/constantes/routes"
 import { invalidatePropertyCountCache } from "@/lib/invalidate-property-count-cache"
 import { createLogger } from "@/lib/logger"
+import { createSubmissionPerformanceTracker } from "@/lib/observability/submission-performance"
 import { isAnnouncer } from "@/lib/auth/role-routing"
 import { PublishAuthModal } from "@/components/property-publish/PublishAuthModal"
 import { PropertyFormComponentContext } from "./property-form.context"
@@ -310,18 +311,25 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
     // utilisateur Annonceur authentifié ET synchronisé côté SDK Firebase Client
     // (cf. isFirebaseConnected), sinon les règles de sécurité rejettent l'écriture.
     const runFinalSubmission = async (parsed: any) => {
+        // Instrumentation par phase (voir docs/performance-creation-modification-annonces-reels.md,
+        // point 8) — un nouvel identifiant par tentative, jamais de contenu utilisateur dans
+        // les dimensions, jamais d'impact sur le résultat de la soumission (best-effort).
+        const perf = createSubmissionPerformanceTracker({
+            dimensions: { journeyType: 'property', mode: id ? 'update' : 'create' },
+        })
         try {
             logger.info('Property final submit started', {
                 activeStep,
                 typeProperty,
                 isUpdate: Boolean(id),
                 imagesCount: Array.isArray(parsed.images) ? parsed.images.length : 0,
+                submissionId: perf.submissionId,
             })
 
-            const propertyMutate = await withTimeout(
-                onSubmitForm(parsed),
-                FINAL_SUBMIT_TIMEOUT_MS,
-                'Préparation de la propriété'
+            const propertyMutate = await perf.measure(
+                'image_upload',
+                () => withTimeout(onSubmitForm(parsed), FINAL_SUBMIT_TIMEOUT_MS, 'Préparation de la propriété'),
+                { dimensions: { fileCount: Array.isArray(parsed.images) ? parsed.images.length : 0 } },
             )
             void clearDraftImages()
 
@@ -336,14 +344,13 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             }
 
             // Lancer la mutation
-            await withTimeout(
-                mutation.mutateAsync(sanitized),
-                FINAL_SUBMIT_TIMEOUT_MS,
-                "Enregistrement de la propriété"
+            await perf.measure('property_write', () =>
+                withTimeout(mutation.mutateAsync(sanitized), FINAL_SUBMIT_TIMEOUT_MS, "Enregistrement de la propriété"),
             )
             logger.info('Property final submit completed', {
                 typeProperty,
                 isUpdate: Boolean(id),
+                submissionId: perf.submissionId,
             })
         } catch (error) {
             logger.error('Property final submit failed', {
@@ -351,6 +358,7 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
                 activeStep,
                 typeProperty,
                 isUpdate: Boolean(id),
+                submissionId: perf.submissionId,
             })
             toast({
                 duration: 3000,

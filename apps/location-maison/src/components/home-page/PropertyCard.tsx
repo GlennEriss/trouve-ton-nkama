@@ -15,12 +15,22 @@ const PropertyCard = ({
   property,
   hideDate = false,
   priority = false,
+  position,
 }: {
   property: any;
   hideDate?: boolean;
   priority?: boolean;
+  position?: number;
 }) => {
-  return <ListingCard property={property} hideDate={hideDate} density="compact" priority={priority} />;
+  return (
+    <ListingCard
+      property={property}
+      hideDate={hideDate}
+      density="compact"
+      priority={priority}
+      position={position}
+    />
+  );
 };
 
 export default PropertyCard;

@@ -13,6 +13,14 @@ import { useStep3FormPropertyMediator } from "@/hooks/useStep3FormPropertyMediat
 import TextareaApp from "../shared/ui/TextareaApp"
 import { PhoneNumberParts } from "../shared/form/PhoneNumberFormAppSimple"
 
+function buildSortedOptions(values: string[], selected?: string): OptionType[] {
+  const uniqueValues = new Set(values)
+  if (selected) uniqueValues.add(selected)
+  return Array.from(uniqueValues)
+    .sort((a, b) => a.localeCompare(b, 'fr'))
+    .map((value) => ({ label: value, value }))
+}
+
 /**
  * Composant Select pour les provinces avec synchronisation automatique
  */
@@ -29,24 +37,7 @@ export const SelectProvinceComponent = ({ field }: Readonly<{ field: any }>) => 
   const provinceOptions = React.useMemo((): OptionType[] => {
     if (!locations) return []
 
-    const provinces = Object.keys(locations)
-      .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-      .map((province: string): OptionType => ({
-        label: province,
-        value: province
-      }))
-
-    // Si une province est sélectionnée mais n'existe pas dans les options,
-    // l'ajouter temporairement (sera synchronisée via le hook)
-    if (selectedProvince && !provinces.some(p => p.value === selectedProvince)) {
-      provinces.push({
-        label: selectedProvince,
-        value: selectedProvince
-      })
-      provinces.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
-    }
-
-    return provinces
+    return buildSortedOptions(Object.keys(locations), selectedProvince)
   }, [locations, selectedProvince])
 
   // Déterminer si la province actuelle est nouvelle
@@ -94,24 +85,7 @@ export const SelectCityComponent = ({ field }: Readonly<{ field: any }>) => {
     if (!locations || !selectedProvince) return []
 
     const provinceData = locations[selectedProvince] || {}
-    const cities = Object.keys(provinceData)
-      .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-      .map((city: string): OptionType => ({
-        label: city,
-        value: city
-      }))
-
-    // Si une ville est sélectionnée mais n'existe pas dans les options,
-    // l'ajouter temporairement
-    if (selectedCity && !cities.some(c => c.value === selectedCity)) {
-      cities.push({
-        label: selectedCity,
-        value: selectedCity
-      })
-      cities.sort((a, b) => a.label.localeCompare(b.label, 'fr'))
-    }
-
-    return cities
+    return buildSortedOptions(Object.keys(provinceData), selectedCity)
   }, [locations, selectedProvince, selectedCity])
 
   // Déterminer si la ville actuelle est nouvelle
@@ -170,24 +144,7 @@ export const SelectStreetComponent = ({ field }: Readonly<{ field: any }>) => {
     if (!locations || !selectedProvince || !selectedCity) return []
 
     const cityData = locations[selectedProvince]?.[selectedCity] || []
-    const streets = cityData
-      .sort((a: string, b: string) => a.localeCompare(b, 'fr'))
-      .map((street: string): OptionType => ({
-        label: street,
-        value: street
-      }))
-
-    // Si un quartier est sélectionné mais n'existe pas dans les options,
-    // l'ajouter temporairement
-    if (selectedStreet && !streets.some((s: OptionType) => s.value === selectedStreet)) {
-      streets.push({
-        label: selectedStreet,
-        value: selectedStreet
-      })
-      streets.sort((a: OptionType, b: OptionType) => a.label.localeCompare(b.label, 'fr'))
-    }
-
-    return streets
+    return buildSortedOptions(cityData, selectedStreet)
   }, [locations, selectedProvince, selectedCity, selectedStreet])
 
   // Déterminer si le quartier actuel est nouveau

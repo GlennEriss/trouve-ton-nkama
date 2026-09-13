@@ -16,7 +16,10 @@ jest.mock('@/lib/logger', () => ({
   createLogger: () => ({ info: jest.fn(), warn: jest.fn(), error: jest.fn() }),
 }));
 jest.mock('firebase-admin/firestore', () => ({
-  FieldValue: { serverTimestamp: () => 'SERVER_TIME' },
+  FieldValue: {
+    serverTimestamp: () => 'SERVER_TIME',
+    arrayUnion: (value: string) => ({ arrayUnion: value }),
+  },
   getFirestore: () => ({
     collection: (name: string) => {
       if (name === 'listing_claim_reviews') {
@@ -62,7 +65,11 @@ describe('claimListingsByVerifiedPhone', () => {
     expect(mockBatchUpdate).toHaveBeenCalledTimes(1);
     expect(mockBatchUpdate).toHaveBeenCalledWith(
       { id: 'p1' },
-      { claimedBy: 'uid-1', claimedAt: 'SERVER_TIME' },
+      {
+        claimedBy: 'uid-1',
+        claimedAt: 'SERVER_TIME',
+        ownerUids: { arrayUnion: 'uid-1' },
+      },
     );
     expect(mockBatchCommit).toHaveBeenCalledTimes(1);
   });

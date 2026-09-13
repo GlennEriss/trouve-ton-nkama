@@ -15,6 +15,10 @@ function request(query = '') {
   return { nextUrl: new URL(`http://localhost/api/announcer/ads${query}`) } as any
 }
 
+afterEach(() => {
+  delete process.env.ANNOUNCER_ADS_OWNER_UIDS_QUERY
+})
+
 function dbWith(items: Array<Record<string, any>>) {
   return {
     collection: () => ({
@@ -44,6 +48,7 @@ describe('/api/announcer/ads — séparation immobilier / marketplace', () => {
   beforeAll(async () => { ({ GET: getAds } = await import('@/app/api/announcer/ads/route')) })
   beforeEach(() => {
     jest.clearAllMocks()
+    delete process.env.ANNOUNCER_ADS_OWNER_UIDS_QUERY
     ;(auth as jest.Mock).mockResolvedValue({ user: { uid: 'u1' } })
     ;(getFirestore as jest.Mock).mockReturnValue(dbWith(mixedItems))
   })
@@ -193,5 +198,21 @@ describe('/api/announcer/ads', () => {
     const body = await response.json()
     const ids = body.items.map((listing: { id: string }) => listing.id).sort()
     expect(ids).toEqual(['a', 'd', 'e'])
+  })
+
+  it('utilise une seule requête array-contains lorsque ownerUids est activé', async () => {
+    process.env.ANNOUNCER_ADS_OWNER_UIDS_QUERY = 'true'
+    const where = jest.fn(() => ({
+      get: async () => ({
+        docs: [{ id: 'owned', data: () => ({ title: 'Annonce', typeProperty: 'Home' }) }],
+      }),
+    }))
+    ;(getFirestore as jest.Mock).mockReturnValueOnce({ collection: () => ({ where }) })
+
+    const body = await (await getAds(request())).json()
+
+    expect(body.items.map((item: { id: string }) => item.id)).toEqual(['owned'])
+    expect(where).toHaveBeenCalledTimes(1)
+    expect(where).toHaveBeenCalledWith('ownerUids', 'array-contains', 'u1')
   })
 })

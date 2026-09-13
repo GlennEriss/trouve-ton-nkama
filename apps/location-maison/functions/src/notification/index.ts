@@ -9,8 +9,10 @@ import {
 } from './new-announcement-policy';
 import { getChangedFavoritePropertyFields } from './favoris-property-policy';
 import { sendUserPush } from './push';
+import { forEachWithConcurrency } from '../async/for-each-with-concurrency';
 
 const NEW_ANNOUNCEMENT_DISPATCH_COLLECTION = 'new_announcement_dispatch';
+const NOTIFICATION_WRITE_CONCURRENCY = 10;
 
 function sanitizeDocId(value: string): string {
   return value.replace(/[^\w.-]/g, '_').slice(0, 180);
@@ -145,18 +147,18 @@ export const onPropertyCreateNewAnnouncement = functions.firestore
     let notificationsCreated = 0;
     let recipientsSkipped = 0;
 
-    for (const userDoc of usersSnapshot.docs) {
+    await forEachWithConcurrency(usersSnapshot.docs, NOTIFICATION_WRITE_CONCURRENCY, async (userDoc) => {
       const user = userDoc.data() as RawUserRecord;
       const uid = typeof user.uid === 'string' ? user.uid.trim() : '';
 
       if (!uid || uid === createdBy) {
         recipientsSkipped += 1;
-        continue;
+        return;
       }
 
       if (!matchesNewAnnouncementCriteria(user, property)) {
         recipientsSkipped += 1;
-        continue;
+        return;
       }
 
       recipientsMatched += 1;
@@ -172,7 +174,7 @@ export const onPropertyCreateNewAnnouncement = functions.firestore
         const code = (error as { code?: unknown })?.code;
         if (code === 6 || code === 'already-exists') {
           recipientsSkipped += 1;
-          continue;
+          return;
         }
         functions.logger.error('Failed to create dedupe marker for new announcement', {
           propertyId,
@@ -180,7 +182,7 @@ export const onPropertyCreateNewAnnouncement = functions.firestore
           error,
         });
         recipientsSkipped += 1;
-        continue;
+        return;
       }
 
       const notification: Notification = {
@@ -206,7 +208,7 @@ export const onPropertyCreateNewAnnouncement = functions.firestore
         });
         recipientsSkipped += 1;
       }
-    }
+    });
 
     functions.logger.info('New announcement dispatch completed', {
       propertyId,
@@ -258,14 +260,14 @@ export const onPropertyFavorisUpdate = functions.firestore
     let notificationsCreated = 0;
     let recipientsSkipped = 0;
 
-    for (const userDoc of usersSnapshot.docs) {
+    await forEachWithConcurrency(usersSnapshot.docs, NOTIFICATION_WRITE_CONCURRENCY, async (userDoc) => {
       const user = userDoc.data() as RawFavorisUserRecord;
       const uid = typeof user.uid === 'string' ? user.uid.trim() : '';
       const isFavorisEnabled = Boolean(user.notificationParameter?.isFavoris);
 
       if (!uid || !isFavorisEnabled) {
         recipientsSkipped += 1;
-        continue;
+        return;
       }
 
       const notification: Notification = {
@@ -292,7 +294,7 @@ export const onPropertyFavorisUpdate = functions.firestore
         });
         recipientsSkipped += 1;
       }
-    }
+    });
 
     functions.logger.info('Favorite property update notifications completed', {
       propertyId,
@@ -328,7 +330,7 @@ export const onPropertyFavorisDelete = functions.firestore
     let recipientsSkipped = 0;
     let favorisCleaned = 0;
 
-    for (const userDoc of usersSnapshot.docs) {
+    await forEachWithConcurrency(usersSnapshot.docs, NOTIFICATION_WRITE_CONCURRENCY, async (userDoc) => {
       const user = userDoc.data() as RawFavorisUserRecord;
       const uid = typeof user.uid === 'string' ? user.uid.trim() : '';
       const isFavorisEnabled = Boolean(user.notificationParameter?.isFavoris);
@@ -349,7 +351,7 @@ export const onPropertyFavorisDelete = functions.firestore
 
       if (!uid || !isFavorisEnabled) {
         recipientsSkipped += 1;
-        continue;
+        return;
       }
 
       const notification: Notification = {
@@ -375,7 +377,7 @@ export const onPropertyFavorisDelete = functions.firestore
         });
         recipientsSkipped += 1;
       }
-    }
+    });
 
     functions.logger.info('Favorite property delete notifications completed', {
       propertyId,

@@ -257,15 +257,20 @@ function extractQuarters(root: OsmRootRecord): OSMLocation[] {
   // OSM peut retourner le meme quartier via plusieurs types avec des centres
   // legerement differents. Conserver les homonymes eloignes, mais pas ces doublons proches.
   const unique: OSMLocation[] = [];
+  const locationsByNormalizedName = new Map<string, OSMLocation[]>();
   quarters.forEach((loc: OSMLocation) => {
     if (loc.lat === 0 && loc.lon === 0) return;
     const normalizedName = loc.name.trim().toLocaleLowerCase('fr');
-    const isNearbyDuplicate = unique.some(
+    const homonyms = locationsByNormalizedName.get(normalizedName) ?? [];
+    const isNearbyDuplicate = homonyms.some(
       (candidate) =>
-        candidate.name.trim().toLocaleLowerCase('fr') === normalizedName &&
         calculateDistance(candidate, loc) <= 1,
     );
-    if (!isNearbyDuplicate) unique.push(loc);
+    if (!isNearbyDuplicate) {
+      unique.push(loc);
+      homonyms.push(loc);
+      locationsByNormalizedName.set(normalizedName, homonyms);
+    }
   });
 
   return unique;

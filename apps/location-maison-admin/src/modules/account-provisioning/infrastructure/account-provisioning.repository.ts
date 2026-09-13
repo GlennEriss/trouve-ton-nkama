@@ -217,6 +217,7 @@ export async function createPropertyDocumentForAnnouncer(
     isLocExact: input.isLocExact ?? false,
     contact: input.contact,
     createdBy: input.announcerUid,
+    ownerUids: [input.announcerUid],
     searchableName: input.title.trim().toLowerCase(),
     moderationStatus: "APPROVED",
     moderationReviewedAt: FieldValue.serverTimestamp(),

@@ -28,6 +28,18 @@ export const analyticsEventNameSchema = z.enum([
   "search_result_returned",
   "user_presence_heartbeat",
   "platform_visit",
+  // Recommandation ML (docs/recommendation-ml/), Phase 1 — collecte. Voir
+  // recommendation-analytics-adapter.schema.ts côté location-maison-admin.
+  "recommendation_request_served",
+  "recommendation_impression",
+  "recommendation_click",
+  "recommendation_detail_view",
+  "recommendation_favorite_add",
+  "recommendation_favorite_remove",
+  "recommendation_contact_whatsapp",
+  "recommendation_contact_phone",
+  "recommendation_share",
+  "recommendation_hide",
 ]);
 
 export const analyticsSourceSchema = z.enum([
@@ -37,6 +49,7 @@ export const analyticsSourceSchema = z.enum([
   "property_location_form",
   "firebase_analytics",
   "vercel_analytics",
+  "recommendation_engine",
 ]);
 
 export const analyticsEnvironmentSchema = z.enum(["dev", "preprod", "prod"]);
@@ -203,6 +216,41 @@ const platformVisitPayloadSchema = z
     }
   });
 
+const recommendationContextSchema = z.enum(["home", "search", "similar", "reel"]);
+const recommendationCandidateSchema = z
+  .object({
+    listing_id: idSchema,
+    position: z.int().min(0).max(500),
+  })
+  .strict();
+
+// Phase 1 — collecte (docs/recommendation-ml/). Un seul payload servant toutes les
+// interactions (impression/clic/favori/contact/...) : même forme, seul event_name distingue le
+// type. Aucun champ interdit (téléphone, description libre, adresse exacte, URL Storage, UID
+// Firebase brut) — voir docs/recommendation-ml/AVANT-IMPLEMENTATION.md §5.
+const recommendationRequestServedPayloadSchema = z
+  .object({
+    recommendation_request_id: idSchema,
+    context: recommendationContextSchema,
+    ranking_variant: shortStringSchema,
+    ranking_version: shortStringSchema,
+    filters_json: z.record(z.string(), z.unknown()).optional(),
+    candidates: z.array(recommendationCandidateSchema).min(1).max(50),
+  })
+  .strict();
+
+const recommendationEventPayloadSchema = z
+  .object({
+    recommendation_request_id: idSchema,
+    listing_id: idSchema,
+    position: z.int().min(0).max(500).optional(),
+    ranking_variant: shortStringSchema,
+    ranking_version: shortStringSchema,
+    query_id: z.string().trim().max(128).optional(),
+    device_class: deviceTypeSchema.optional(),
+  })
+  .strict();
+
 export const analyticsEventEnvelopeSchema = z
   .object({
     event_id: idSchema,
@@ -244,6 +292,10 @@ export type SearchPerformedPayload = z.infer<typeof searchPerformedPayloadSchema
 export type SearchResultReturnedPayload = z.infer<typeof searchResultReturnedPayloadSchema>;
 export type PresenceHeartbeatPayload = z.infer<typeof presenceHeartbeatPayloadSchema>;
 export type PlatformVisitPayload = z.infer<typeof platformVisitPayloadSchema>;
+export type RecommendationRequestServedPayload = z.infer<
+  typeof recommendationRequestServedPayloadSchema
+>;
+export type RecommendationEventPayload = z.infer<typeof recommendationEventPayloadSchema>;
 export type AnalyticsValidationIssue = {
   path: Array<string | number>;
   message: string;
@@ -253,7 +305,9 @@ export type AnalyticsValidatedPayload =
   | SearchPerformedPayload
   | SearchResultReturnedPayload
   | PresenceHeartbeatPayload
-  | PlatformVisitPayload;
+  | PlatformVisitPayload
+  | RecommendationRequestServedPayload
+  | RecommendationEventPayload;
 
 export type AnalyticsValidatedEvent = Omit<AnalyticsEventEnvelope, "payload"> & {
   payload: AnalyticsValidatedPayload;
@@ -268,6 +322,18 @@ type ValidationFailure = {
   ok: false;
   issues: AnalyticsValidationIssue[];
 };
+
+export const RECOMMENDATION_INTERACTION_EVENT_NAMES = [
+  "recommendation_impression",
+  "recommendation_click",
+  "recommendation_detail_view",
+  "recommendation_favorite_add",
+  "recommendation_favorite_remove",
+  "recommendation_contact_whatsapp",
+  "recommendation_contact_phone",
+  "recommendation_share",
+  "recommendation_hide",
+] as const;
 
 export function validateEventPayload(
   event: AnalyticsEventEnvelope,
@@ -327,6 +393,22 @@ export function validateEventPayload(
     };
   }
 
+  const isRecommendationEventName =
+    event.event_name === "recommendation_request_served" ||
+    (RECOMMENDATION_INTERACTION_EVENT_NAMES as readonly string[]).includes(event.event_name);
+
+  if (isRecommendationEventName && event.source !== "recommendation_engine") {
+    return {
+      ok: false as const,
+      issues: [
+        {
+          path: ["source"],
+          message: "source invalide pour un evenement de recommandation.",
+        },
+      ],
+    };
+  }
+
   if (event.event_name === "search_performed") {
     const parsed = searchPerformedPayloadSchema.safeParse(event.payload);
     return parsed.success
@@ -355,6 +437,32 @@ export function validateEventPayload(
 
   if (event.event_name === "user_presence_heartbeat") {
     const parsed = presenceHeartbeatPayloadSchema.safeParse(event.payload);
+    return parsed.success
+      ? { ok: true as const, payload: parsed.data }
+      : {
+          ok: false as const,
+          issues: parsed.error.issues.map((issue) => ({
+            path: normalizeIssuePath(issue.path),
+            message: issue.message,
+          })),
+        };
+  }
+
+  if (event.event_name === "recommendation_request_served") {
+    const parsed = recommendationRequestServedPayloadSchema.safeParse(event.payload);
+    return parsed.success
+      ? { ok: true as const, payload: parsed.data }
+      : {
+          ok: false as const,
+          issues: parsed.error.issues.map((issue) => ({
+            path: normalizeIssuePath(issue.path),
+            message: issue.message,
+          })),
+        };
+  }
+
+  if (isRecommendationEventName) {
+    const parsed = recommendationEventPayloadSchema.safeParse(event.payload);
     return parsed.success
       ? { ok: true as const, payload: parsed.data }
       : {

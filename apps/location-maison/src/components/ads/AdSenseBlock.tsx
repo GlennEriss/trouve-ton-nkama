@@ -50,6 +50,13 @@ export default function AdSenseBlock({
     actorRef.current = { uid, isAuthenticated, onStatusChange };
   }, [uid, isAuthenticated, onStatusChange]);
 
+  // 'filled' prouve qu'une creation a ete servie dans le slot, pas qu'elle a ete vue. La
+  // vue visible (Active View) est mesuree separement ci-dessous via IntersectionObserver :
+  // au moins 50% de la surface a l'ecran pendant une seconde continue, une seule fois par slot.
+  const filledRef = React.useRef(false);
+  const viewableEmittedRef = React.useRef(false);
+  const viewableTimerRef = React.useRef<number | null>(null);
+
   React.useEffect(() => {
     let retries = 0;
     let cancelled = false;
@@ -129,21 +136,12 @@ export default function AdSenseBlock({
       observer = new MutationObserver(() => {
         const adStatus = adElement.getAttribute('data-ad-status');
         actorRef.current.onStatusChange?.(adStatus);
-        if (adStatus === 'filled') {
+        if (adStatus === 'filled' && !filledRef.current) {
+          filledRef.current = true;
           emitAdsSlotEvent({
             slotId: slot,
             slotKey,
             eventName: 'ad_filled',
-            pathname: pathname || '/',
-            actor: {
-              uid: actorRef.current.uid,
-              isAuthenticated: actorRef.current.isAuthenticated,
-            },
-          });
-          emitAdsSlotEvent({
-            slotId: slot,
-            slotKey,
-            eventName: 'ad_impression',
             pathname: pathname || '/',
             actor: {
               uid: actorRef.current.uid,
@@ -159,10 +157,61 @@ export default function AdSenseBlock({
       });
     }
 
+    let intersectionObserver: IntersectionObserver | null = null;
+    if (adElement && typeof IntersectionObserver !== 'undefined') {
+      intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[entries.length - 1];
+          if (!entry || viewableEmittedRef.current) {
+            return;
+          }
+
+          const isVisibleEnough = entry.isIntersecting && entry.intersectionRatio >= 0.5;
+
+          if (!isVisibleEnough) {
+            if (viewableTimerRef.current !== null) {
+              window.clearTimeout(viewableTimerRef.current);
+              viewableTimerRef.current = null;
+            }
+            return;
+          }
+
+          if (viewableTimerRef.current !== null) {
+            return;
+          }
+
+          viewableTimerRef.current = window.setTimeout(() => {
+            viewableTimerRef.current = null;
+            if (viewableEmittedRef.current || !filledRef.current) {
+              return;
+            }
+            viewableEmittedRef.current = true;
+            emitAdsSlotEvent({
+              slotId: slot,
+              slotKey,
+              eventName: 'ad_viewable_impression',
+              pathname: pathname || '/',
+              actor: {
+                uid: actorRef.current.uid,
+                isAuthenticated: actorRef.current.isAuthenticated,
+              },
+            });
+          }, 1000);
+        },
+        { threshold: 0.5 },
+      );
+      intersectionObserver.observe(adElement);
+    }
+
     if (tryInitialize()) {
       return () => {
         cancelled = true;
         observer?.disconnect();
+        intersectionObserver?.disconnect();
+        if (viewableTimerRef.current !== null) {
+          window.clearTimeout(viewableTimerRef.current);
+          viewableTimerRef.current = null;
+        }
       };
     }
 
@@ -183,6 +232,11 @@ export default function AdSenseBlock({
       cancelled = true;
       window.clearInterval(intervalId);
       observer?.disconnect();
+      intersectionObserver?.disconnect();
+      if (viewableTimerRef.current !== null) {
+        window.clearTimeout(viewableTimerRef.current);
+        viewableTimerRef.current = null;
+      }
     };
     // uid/isAuthenticated/onStatusChange sont volontairement absents : ils n'affectent ni le
     // <ins> ciblé ni le besoin d'un push({}) (lus via actorRef ci-dessus, toujours à jour), et

@@ -6,6 +6,7 @@ import InlineAdUnit from '@/components/ads/InlineAdUnit'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import type { AdCreativePublic, AdPlacement } from '@/models/advertising'
 import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
+import { resolveAdStackingDecision } from '@/lib/ads/stacking-experiment'
 
 type SponsoredSlotProps = Readonly<{
   placement: AdPlacement
@@ -18,15 +19,17 @@ type SponsoredSlotProps = Readonly<{
   fallbackSlot: string
   fallbackSlotKey: string
   fallbackCompact?: boolean
-  /** Conservé pour compatibilité des appels existants ; ne pilote plus AdSense. */
+  /** Position dans le feed (search/immobilier) ; pilote la variante B_ALTERNATE. */
   rotationIndex?: number
   /** Le visuel remplit toute la hauteur du conteneur (hero accueil). */
   fillHeight?: boolean
 }>
 
 /**
- * Affiche l'inventaire pub maison quand une campagne est active, puis affiche
- * toujours l'unité AdSense associée. Les deux inventaires sont indépendants.
+ * Affiche l'inventaire pub maison et/ou l'unité AdSense selon la variante d'expérimentation
+ * active (NEXT_PUBLIC_ADS_STACKING_EXPERIMENT_VARIANT, cf. lib/ads/stacking-experiment.ts).
+ * Sans configuration, le comportement reste l'empilement historique : campagne maison si
+ * active, puis toujours l'unité AdSense associée.
  */
 export default function SponsoredSlot({
   placement,
@@ -37,6 +40,7 @@ export default function SponsoredSlot({
   fallbackSlot,
   fallbackSlotKey,
   fallbackCompact = false,
+  rotationIndex,
   fillHeight = false,
 }: SponsoredSlotProps) {
   const [creative, setCreative] = useState<AdCreativePublic | null>(null)
@@ -65,17 +69,23 @@ export default function SponsoredSlot({
     }
   }, [placement, province, city])
 
+  const { showHouse, showAdSense } = resolveAdStackingDecision({
+    placement,
+    hasHouseCreative: Boolean(creative),
+    rotationIndex,
+  })
+
   // Impression trackée une seule fois quand une pub maison s'affiche.
   useEffect(() => {
-    if (creative && !impressionSent.current) {
+    if (creative && showHouse && !impressionSent.current) {
       impressionSent.current = true
       trackAdEvent('impression', creative.campaignId, placement)
     }
-  }, [creative, placement])
+  }, [creative, placement, showHouse])
 
   return (
     <div className={cn('space-y-3', className)}>
-      {loaded && creative ? (
+      {loaded && creative && showHouse ? (
         <AdCreativeCard
           creative={creative}
           placement={placement}
@@ -85,13 +95,15 @@ export default function SponsoredSlot({
           onClick={() => trackAdEvent('click', creative.campaignId, placement)}
         />
       ) : null}
-      <InlineAdUnit
-        slot={fallbackSlot}
-        slotKey={fallbackSlotKey}
-        surface={surface}
-        compact={fallbackCompact}
-        showLabel
-      />
+      {showAdSense ? (
+        <InlineAdUnit
+          slot={fallbackSlot}
+          slotKey={fallbackSlotKey}
+          surface={surface}
+          compact={fallbackCompact}
+          showLabel
+        />
+      ) : null}
     </div>
   )
 }

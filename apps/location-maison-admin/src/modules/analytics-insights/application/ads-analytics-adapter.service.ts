@@ -39,23 +39,32 @@ function maxDate(values: string[]) {
   return values.reduce((acc, current) => (current > acc ? current : acc), values[0]);
 }
 
+// Doit rester aligne sur inferPageTemplate cote client (location-maison
+// src/features/analytics/ads/services/ads-slot-analytics.client.ts) : n'est utilise que si le
+// client n'a pas deja renseigne page_template (evenement legacy ou echec de calcul cote client).
 function inferPageTemplateFromPath(path: string | null) {
   const normalized = path?.toLowerCase() ?? "";
 
+  if (normalized === "/") {
+    return "home";
+  }
+  if (normalized.startsWith("/reels")) {
+    return "reels_feed";
+  }
   if (normalized.startsWith("/search-with-ia")) {
     return "search_with_ia";
   }
   if (normalized.startsWith("/search")) {
     return "catalog_search";
   }
-  if (normalized.startsWith("/property")) {
+  if (normalized.startsWith("/housedetails")) {
     return "property_detail";
   }
-  if (normalized === "/") {
-    return "home";
+  if (normalized.startsWith("/immobilier")) {
+    return "immobilier_landing";
   }
-  if (normalized.startsWith("/announcer")) {
-    return "announcer_space";
+  if (normalized.startsWith("/blog")) {
+    return "blog";
   }
   return "other";
 }

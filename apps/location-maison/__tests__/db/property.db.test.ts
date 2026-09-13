@@ -10,6 +10,7 @@ const firestore = {
   getCountFromServer: jest.fn(),
   getDoc: jest.fn(),
   doc: jest.fn(),
+  documentId: jest.fn(),
   where: jest.fn(),
   query: jest.fn(),
   startAfter: jest.fn(),
@@ -34,6 +35,7 @@ import {
   deleteProperty,
   getCountStatisticsByPropertyType,
   getProperties,
+  getPropertiesByIds,
   getPropertyById,
   getServerCountByCategoryId,
   getServerCountByPropertyType,
@@ -68,6 +70,7 @@ describe('property database', () => {
     jest.clearAllMocks()
     firestore.collection.mockImplementation((_db, name) => ({ name }))
     firestore.doc.mockImplementation((_db, collectionName, id) => ({ collectionName, id }))
+    firestore.documentId.mockReturnValue('__name__')
     firestore.where.mockImplementation((...args) => ({ kind: 'where', args }))
     firestore.orderBy.mockImplementation((...args) => ({ kind: 'orderBy', args }))
     firestore.limit.mockImplementation((value) => ({ kind: 'limit', value }))
@@ -85,6 +88,7 @@ describe('property database', () => {
       expect.objectContaining({
         moderationStatus: 'PENDING',
         title: 'Studio lumineux',
+        ownerUids: [],
       }),
       'properties',
     )
@@ -93,6 +97,17 @@ describe('property database', () => {
     expect(payload).not.toHaveProperty('moderationReviewedAt')
     expect(payload).not.toHaveProperty('moderationReviewedBy')
     expect(mockInvalidateSeo).toHaveBeenCalledTimes(1)
+  })
+
+  it('materialise les proprietaires interrogeables a la creation', async () => {
+    mockCreateModel.mockResolvedValue('property-1')
+
+    await createProperty({ ...property, createdBy: ' owner-1 ', claimedBy: 'owner-2' })
+
+    expect(mockCreateModel).toHaveBeenCalledWith(
+      expect.objectContaining({ ownerUids: ['owner-1', 'owner-2'] }),
+      'properties',
+    )
   })
 
   it('n invalide pas le cache si la création échoue', async () => {
@@ -174,15 +189,16 @@ describe('property database', () => {
     const firstPage = [
       docSnapshot('property-1', { title: 'Première' }),
       docSnapshot('property-2', { title: 'Deuxième' }),
+      docSnapshot('property-3', { title: 'Troisième' }),
     ]
-    firestore.getDocs
-      .mockResolvedValueOnce(querySnapshot(firstPage))
-      .mockResolvedValueOnce(querySnapshot([docSnapshot('property-3', { title: 'Troisième' })]))
+    firestore.getDocs.mockResolvedValueOnce(querySnapshot(firstPage))
 
     const result = await getProperties({ limitPerPage: 2, lastDoc: null })
 
     expect(result.lastDoc).toBe('property-2')
-    expect(firestore.startAfter).toHaveBeenCalledWith(firstPage[1])
+    expect(result.properties).toHaveLength(2)
+    expect(firestore.limit).toHaveBeenCalledWith(3)
+    expect(firestore.getDocs).toHaveBeenCalledTimes(1)
   })
 
   it('resout un identifiant de curseur avant de paginer', async () => {
@@ -209,13 +225,38 @@ describe('property database', () => {
 
   it('ne renvoie pas de curseur quand la page suivante est vide', async () => {
     const firstPage = [docSnapshot('property-1', { title: 'Unique' })]
-    firestore.getDocs
-      .mockResolvedValueOnce(querySnapshot(firstPage))
-      .mockResolvedValueOnce(querySnapshot([]))
+    firestore.getDocs.mockResolvedValueOnce(querySnapshot(firstPage))
 
     const result = await getProperties({ limitPerPage: 1, lastDoc: null })
 
     expect(result.lastDoc).toBeNull()
+    expect(firestore.getDocs).toHaveBeenCalledTimes(1)
+  })
+
+  it('borne une taille de page invalide dans la couche de données', async () => {
+    firestore.getDocs.mockResolvedValue(querySnapshot([]))
+
+    const result = await getProperties({ limitPerPage: 10_000, lastDoc: null })
+
+    expect(result.limitPerPage).toBe(50)
+    expect(firestore.limit).toHaveBeenCalledWith(51)
+  })
+
+  it('charge les annonces par lots, sans doublons, et conserve l ordre demandé', async () => {
+    const ids = Array.from({ length: 32 }, (_, index) => `property-${index + 1}`)
+    firestore.getDocs
+      .mockResolvedValueOnce(querySnapshot(ids.slice(0, 30).map((id) => docSnapshot(id, { title: id }))))
+      .mockResolvedValueOnce(querySnapshot([
+        docSnapshot('property-32', { title: 'property-32' }),
+        docSnapshot('property-31', { title: 'property-31' }),
+      ]))
+
+    const result = await getPropertiesByIds([...ids, 'property-1', '  '])
+
+    expect(firestore.getDocs).toHaveBeenCalledTimes(2)
+    expect(firestore.where).toHaveBeenCalledWith('__name__', 'in', ids.slice(0, 30))
+    expect(firestore.where).toHaveBeenCalledWith('__name__', 'in', ids.slice(30))
+    expect(result.map((item) => item.id)).toEqual(ids)
   })
 
   it('laisse intact un document sans ancien champ cuisine', async () => {

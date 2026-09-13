@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast'
 import { DirectorFactory } from '@/directors/factory.director'
 import { uploadPropertyImages } from '@/db/file.db'
 import { createProperty } from '@/db/property.db'
+import { createSubmissionPerformanceTracker } from '@/lib/observability/submission-performance'
 import { routes } from '@/constantes/routes'
 import { MAX_IMAGES_UPLOAD } from '@/constantes'
 import type { ProcessedFormData } from '@/services/ai-form.service'
@@ -49,6 +50,17 @@ function getFullSchemaForType(type: TypeProperty) {
     case 'Warehouse': return WarehouseSchema
     default: return PropertySchema
   }
+}
+
+// Progression par phases (voir docs/performance-creation-modification-annonces-reels.md,
+// point 5) — remplace le libellé générique "Génération…" pendant l'attente.
+type GenerationPhase = 'idle' | 'photos' | 'generation' | 'validation' | 'enregistrement'
+const PHASE_LABELS: Record<GenerationPhase, string> = {
+  idle: "Générer l'annonce",
+  photos: 'Envoi des photos…',
+  generation: "Génération par l'IA…",
+  validation: 'Validation…',
+  enregistrement: 'Enregistrement…',
 }
 
 type PropertyDraftResponse = ProcessedFormData & {
@@ -83,6 +95,7 @@ export default function CreatePropertyWithAIPage() {
   const [isOwner, setIsOwner] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [phase, setPhase] = useState<GenerationPhase>('idle')
 
   // Section localisation : LocationPicker lit/écrit via useFormContext, donc
   // on lui fournit son propre petit formulaire RHF isolé (pas de resolver ici
@@ -168,14 +181,19 @@ export default function CreatePropertyWithAIPage() {
     }
 
     setGenerating(true)
+    const perf = createSubmissionPerformanceTracker({
+      dimensions: { journeyType: 'property', mode: 'create', fileCount: images.length },
+    })
     try {
       // Upload AVANT l'appel IA, qui est ce qui débite le crédit (voir /api/ai/property-draft).
       // Dans l'autre sens, un upload qui échoue laisse l'annonceur facturé sans annonce —
       // constaté en prod le 2026-08-17. Concurrence bornée plutôt qu'un Promise.all illimité
       // — voir docs/performance-creation-modification-annonces-reels.md, point 4.
-      const uploadedImages = await uploadPropertyImages(images, user?.uid, 'property')
+      setPhase('photos')
+      const uploadedImages = await perf.measure('image_upload', () => uploadPropertyImages(images, user?.uid, 'property'))
 
-      const aiData = await requestPropertyDraft(description)
+      setPhase('generation')
+      const aiData = await perf.measure('ai', () => requestPropertyDraft(description))
       const skeleton = DirectorFactory.createDirectorProperty(aiData.typeProperty).build()
 
       const rawForValidation = {
@@ -189,14 +207,16 @@ export default function CreatePropertyWithAIPage() {
         ...location,
       }
 
+      setPhase('validation')
       const schema = getFullSchemaForType(aiData.typeProperty)
       const validated = schema.parse(rawForValidation) as Record<string, unknown>
       // Le schéma zod ignore les clés non déclarées (dont typeProperty) — on
       // la remet après coup.
       const finalData = { ...validated, typeProperty: aiData.typeProperty }
 
+      setPhase('enregistrement')
       const propertyMutate = await submitProperty(finalData, uploadedImages)
-      const propertyId = await createProperty(propertyMutate)
+      const propertyId = await perf.measure('property_write', () => createProperty(propertyMutate))
       if (!propertyId) {
         throw new Error("La création de l'annonce a échoué. Réessaie.")
       }
@@ -210,6 +230,7 @@ export default function CreatePropertyWithAIPage() {
       }
     } finally {
       setGenerating(false)
+      setPhase('idle')
     }
   }, [description, images, isOwner, locationForm, missingUpfrontFields, router, submitProperty, user?.phoneNumbers, user?.callNumber, user?.whatsappNumber])
 
@@ -302,7 +323,7 @@ export default function CreatePropertyWithAIPage() {
         <Button onClick={handleGenerate} disabled={!canGenerate}>
           {generating ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Génération…
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {PHASE_LABELS[phase]}
             </>
           ) : (
             "Générer l'annonce"

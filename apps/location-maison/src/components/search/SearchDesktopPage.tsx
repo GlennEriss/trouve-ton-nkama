@@ -17,10 +17,20 @@ import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTr
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import { buildSearchRequestPrefillUrl } from '@/lib/search-request-prefill';
+import { RecommendationRequestProvider } from '@/providers/recommendation-request-provider';
+import { useRegisterRecommendationRequest } from '@/features/recommendation/tracking/use-register-recommendation-request';
 
-export default function 
+export default function
 SearchDesktopPage() {
     const { items, isLastPage, showMore } = useInfiniteHits();
+    const recommendationRequest = useRegisterRecommendationRequest(items, 'search');
+    const recommendationPositionByObjectId = React.useMemo(() => {
+        const map = new Map<string, number>();
+        items.forEach((item: any, index: number) => {
+            if (item?.objectID) map.set(item.objectID, index);
+        });
+        return map;
+    }, [items]);
     const { nbHits } = useStats();
     const { status: searchStatus, refresh } = useInstantSearch();
     const searchParams = useSearchParams();
@@ -280,6 +290,7 @@ SearchDesktopPage() {
                                     cards à une taille énorme pour occuper tout l'espace restant
                                     (signalé par l'utilisateur, 2026-08-16) — auto-fill sans 1fr
                                     laisse l'espace vide plutôt que d'agrandir les cards. */}
+                                <RecommendationRequestProvider value={recommendationRequest}>
                                 <div className="space-y-6 pb-20">
                                     {feedGroups.map((group, groupIndex) =>
                                         group.kind === 'properties' ? (
@@ -295,7 +306,11 @@ SearchDesktopPage() {
                                                         {/* priority sur la toute première card (LCP de la page) — même correctif que
                                                             ImmobilierPropertyCardsGrid.tsx, voir le commentaire de la prop dans
                                                             ListingCard.tsx (LCP mobile 9,5s mesuré sur les pages immobilier/*). */}
-                                                        <PropertyCard property={entry.item} priority={groupIndex === 0 && index === 0} />
+                                                        <PropertyCard
+                                                            property={entry.item}
+                                                            priority={groupIndex === 0 && index === 0}
+                                                            position={recommendationPositionByObjectId.get(entry.item.objectID)}
+                                                        />
                                                     </div>
                                                 ))}
                                             </div>
@@ -313,6 +328,7 @@ SearchDesktopPage() {
                                         )
                                     )}
                                 </div>
+                                </RecommendationRequestProvider>
 
                                 <div ref={sentinelRef} className="h-5" />
 

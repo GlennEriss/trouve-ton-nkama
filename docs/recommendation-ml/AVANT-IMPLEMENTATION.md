@@ -56,15 +56,21 @@ silencieusement les datasets déjà produits.
 
 ## 5. Consentement et confidentialité — bloquant
 
-Décider et documenter :
+Décision validée le 2026-09-13 :
 
-- base et interface de consentement pour la personnalisation ;
-- comportement quand la personnalisation est refusée ;
-- durée de conservation des événements bruts ;
-- durée de la session anonyme ;
-- pseudonymisation de l'UID avant BigQuery ;
-- suppression de l'historique à la demande ;
-- personnes et rôles autorisés à lire les données et métriques.
+- base de consentement : intérêt légitime (mesure d'audience/amélioration produit) avec réglage
+  « Personnalisation » désactivable dans les paramètres du compte ; pas de bandeau bloquant à
+  l'inscription ;
+- personnalisation refusée/désactivée : l'utilisateur garde le score déterministe non
+  personnalisé (pertinence, proximité budget, zone, récence, qualité) — pas de dégradation vers
+  le classement Algolia brut, seules les features basées sur l'historique personnel sont exclues ;
+- rétention des événements bruts : 90 jours puis purge ;
+- rétention des agrégats anonymisés : 2 ans ;
+- durée de la session anonyme : 30 jours ;
+- pseudonymisation : UID hashé (hash + sel) avant écriture dans BigQuery, jamais l'UID brut ;
+- suppression de l'historique à la demande : propagée aux événements bruts et à l'identifiant
+  pseudonymisé associé ;
+- lecture des données et métriques : rôles analytics existants du projet, pas d'accès public.
 
 Valeurs interdites dans les événements et features : téléphone, description libre, adresse
 exacte, coordonnées exactes, URL Storage, nom de fichier et identifiant Firebase brut dans les
@@ -190,11 +196,11 @@ avec historique, annonce nouvelle, promotion, modèle indisponible, pagination, 
 
 | Décision | Recommandation | Responsable | Statut | Preuve/lien |
 |---|---|---|---|---|
-| Surfaces MVP | Accueil + recherche classique | Produit | À valider | — |
-| Métrique principale | Contacts/session exposée | Produit/Data | À valider | — |
-| Impression | 50 % pendant 1 seconde | Produit/Data | À valider | — |
-| Attribution | 30 min vue, 24 h favori/contact | Produit/Data | À valider | — |
-| Consentement/rétention | À définir | Produit/Juridique | Bloquant | — |
+| Surfaces MVP | Accueil + recherche classique | Produit | Validée | Conversation 2026-09-13 |
+| Métrique principale | Contacts/session exposée | Produit/Data | Validée | Conversation 2026-09-13 |
+| Impression | 50 % pendant 1 seconde | Produit/Data | Validée | Conversation 2026-09-13 |
+| Attribution | 30 min vue, 24 h favori/contact | Produit/Data | Validée | Conversation 2026-09-13 |
+| Consentement/rétention | Intérêt légitime + opt-out, 90j bruts/2 ans agrégats, UID hashé | Produit/Juridique | Validée | Conversation 2026-09-13 |
 | Pipeline BigQuery | Réutiliser l'existant s'il est déployé | Tech/Data | À auditer | — |
 | Baseline ranking | Score déterministe versionné | Tech/Produit | Proposé | — |
 | Modèle v1 | Régression logistique offline | Tech/Data | Proposé | — |
@@ -202,11 +208,11 @@ avec historique, annonce nouvelle, promotion, modèle indisponible, pagination, 
 
 ## Checklist GO / NO-GO
 
-- [ ] Surfaces MVP validées.
-- [ ] Métrique principale validée.
-- [ ] Définition d'impression validée.
-- [ ] Fenêtres d'attribution validées.
-- [ ] Consentement, rétention et suppression validés.
+- [x] Surfaces MVP validées.
+- [x] Métrique principale validée.
+- [x] Définition d'impression validée.
+- [x] Fenêtres d'attribution validées.
+- [x] Consentement, rétention et suppression validés.
 - [ ] Pipeline BigQuery audité.
 - [ ] Matrice des événements actuels produite.
 - [ ] Contrat événementiel version 1 approuvé.

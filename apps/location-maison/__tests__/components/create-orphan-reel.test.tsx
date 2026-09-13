@@ -313,4 +313,27 @@ describe('CreateOrphanReelClient', () => {
     // Le bouton redevient cliquable (isFinalSubmitting réinitialisé), pas bloqué en chargement.
     await waitFor(() => expect(publish).not.toBeDisabled())
   })
+
+  // docs/performance-creation-modification-annonces-reels.md, point 6 : la progression doit
+  // être accessible (role=progressbar, valeur exposée) pendant l'upload, puis disparaître.
+  it('affiche une barre de progression accessible pendant l\'upload puis la retire', async () => {
+    let resolveUpload!: (path: string) => void
+    mockUploadRawReelVideo.mockImplementation(
+      (_file: File, _uid: string, _reelId: string, options?: { onProgress?: (p: { percent: number }) => void }) =>
+        new Promise<string>((resolve) => {
+          options?.onProgress?.({ percent: 42 })
+          resolveUpload = resolve
+        }),
+    )
+
+    render(<CreateOrphanReelClient />)
+    await chooseVideo()
+    fireEvent.click(screen.getByRole('button', { name: 'Publier le réel' }))
+
+    const progressbar = await screen.findByRole('progressbar', { name: 'Envoi de la vidéo' })
+    expect(progressbar).toHaveAttribute('aria-valuenow', '42')
+
+    resolveUpload('reels-raw/owner-1/reel-fixed-id.mov')
+    await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  })
 })

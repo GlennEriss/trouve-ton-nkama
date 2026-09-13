@@ -1,23 +1,31 @@
 import { render } from '@testing-library/react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LegalWebViewScreen from '../LegalWebViewScreen';
+import type { ProfileStackParamList } from '../../navigation/types';
 
-jest.mock('react-native-webview', () => {
-  const { View } = require('react-native');
-  return { WebView: (props: { source: { uri: string } }) => <View testID="webview" {...props} /> };
-});
+// Les 3 pages légales sont désormais des écrans natifs (TermsOfUseScreen, PrivacyPolicyScreen,
+// DataDeletionScreen) — voir leurs propres fichiers de test pour le contenu. Ce fichier ne teste
+// que l'aiguillage : le bon écran natif s'affiche pour chaque valeur de `page`.
+const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function routeWith(page: 'terms' | 'privacy' | 'dataDeletion'): any {
-  return { route: { params: { page } } };
+function renderPage(page: 'terms' | 'privacy' | 'dataDeletion') {
+  return render(
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Legal" component={LegalWebViewScreen} initialParams={{ page }} />
+      </Stack.Navigator>
+    </NavigationContainer>,
+  );
 }
 
 describe('LegalWebViewScreen', () => {
   it.each([
-    ['terms', 'https://www.tonnkama.com/terms-of-use'],
-    ['privacy', 'https://www.tonnkama.com/privacy-policy'],
-    ['dataDeletion', 'https://www.tonnkama.com/data-deletion'],
-  ] as const)('charge la bonne URL pour la page "%s"', async (page, expectedUrl) => {
-    const { getByTestId } = await render(<LegalWebViewScreen {...routeWith(page)} />);
-    expect(getByTestId('webview').props.source.uri).toBe(expectedUrl);
+    ['terms', 'screen-legal-terms'],
+    ['privacy', 'screen-legal-privacy'],
+    ['dataDeletion', 'screen-legal-dataDeletion'],
+  ] as const)('affiche l’écran natif attendu pour la page "%s"', async (page, expectedTestID) => {
+    const { getByTestId } = await renderPage(page);
+    expect(getByTestId(expectedTestID)).toBeTruthy();
   });
 });

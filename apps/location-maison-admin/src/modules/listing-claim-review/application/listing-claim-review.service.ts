@@ -96,7 +96,11 @@ export async function approveListingClaimReview(reviewId: string, adminUid: stri
 
   const batch = db.batch();
   for (const doc of candidates) {
-    batch.update(doc.ref, { claimedBy: uid, claimedAt: FieldValue.serverTimestamp() });
+    batch.update(doc.ref, {
+      claimedBy: uid,
+      claimedAt: FieldValue.serverTimestamp(),
+      ownerUids: FieldValue.arrayUnion(uid),
+    });
   }
   batch.update(ref, {
     status: "approved",

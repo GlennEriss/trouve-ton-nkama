@@ -83,6 +83,9 @@ export default function CreateOrphanReelClient() {
   const isFinalSubmittingRef = React.useRef(false)
   const [isFinalSubmitting, setIsFinalSubmitting] = React.useState(false)
   const [reel, setReel] = React.useState<(Reel & { id: string }) | null>(null)
+  // Progression de l'upload vidéo (0-100), null hors upload — voir
+  // docs/performance-creation-modification-annonces-reels.md, point 6.
+  const [uploadPercent, setUploadPercent] = React.useState<number | null>(null)
 
   // Restaure un brouillon vidéo après un retour de redirection externe (OAuth Google, qui
   // démonte entièrement la page) — mirror du chargement IndexedDB du formulaire annonce.
@@ -166,11 +169,16 @@ export default function CreateOrphanReelClient() {
       }
 
       try {
-        await uploadRawReelVideo(file, user.uid, reelId)
+        setUploadPercent(0)
+        await uploadRawReelVideo(file, user.uid, reelId, {
+          onProgress: (progress) => setUploadPercent(progress.percent),
+        })
       } catch (error) {
         const message = error instanceof Error ? error.message : "Échec de l'envoi de la vidéo."
         await markReelUploadFailed(createdId, message)
         throw error
+      } finally {
+        setUploadPercent(null)
       }
 
       void clearDraftVideo()
@@ -366,6 +374,25 @@ export default function CreateOrphanReelClient() {
               disabled={busy}
               className="h-11 w-full rounded-full border-0 bg-white/10 px-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/40"
             />
+          )}
+
+          {uploadPercent !== null && (
+            <div className="flex items-center gap-2 px-1">
+              <div
+                role="progressbar"
+                aria-valuenow={uploadPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Envoi de la vidéo"
+                className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/15"
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${uploadPercent}%` }}
+                />
+              </div>
+              <span className="text-xs tabular-nums text-white/70">{uploadPercent}%</span>
+            </div>
           )}
 
           <div className="flex items-center gap-2">

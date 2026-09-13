@@ -9,6 +9,10 @@ const logger = createLogger('api.announcer.ads');
 const DEFAULT_LIMIT = 12;
 const MAX_LIMIT = 50;
 
+function isOwnerUidsQueryEnabled(): boolean {
+  return process.env.ANNOUNCER_ADS_OWNER_UIDS_QUERY === 'true';
+}
+
 type SortBy = 'createdAt' | 'updatedAt' | 'price' | 'title';
 type SortOrder = 'asc' | 'desc';
 
@@ -308,19 +312,18 @@ export async function GET(request: NextRequest) {
 
     const db = getFirestore(adminApp as any);
     const propertiesCollection = db.collection(firebaseCollectionNames.properties);
-    // "Mes annonces" = originally created by this announcer, OR claimed via a
-    // verified phone number matching the listing's contact (auto-attribution,
-    // see listing-claim.service.ts). Two queries + merge-by-id rather than a
-    // single OR filter, consistent with the rest of this route (loads
-    // everything then filters/sorts in memory — no pagination at the Firestore
-    // query level here).
-    const [createdSnapshot, claimedSnapshot] = await Promise.all([
-      propertiesCollection.where('createdBy', '==', uid).get(),
-      propertiesCollection.where('claimedBy', '==', uid).get(),
-    ]);
-
     const byId = new Map<string, PropertyRecord>();
-    for (const doc of [...createdSnapshot.docs, ...claimedSnapshot.docs]) {
+    // Bascule réversible : après backfill, `ownerUids` ramène les annonces créées
+    // et revendiquées en une seule lecture. Le repli historique reste disponible
+    // jusqu'à validation en production de la double écriture et des imports.
+    const ownedDocs = isOwnerUidsQueryEnabled()
+      ? (await propertiesCollection.where('ownerUids', 'array-contains', uid).get()).docs
+      : (await Promise.all([
+          propertiesCollection.where('createdBy', '==', uid).get(),
+          propertiesCollection.where('claimedBy', '==', uid).get(),
+        ])).flatMap((snapshot) => snapshot.docs);
+
+    for (const doc of ownedDocs) {
       byId.set(doc.id, { id: doc.id, ...(doc.data() as Property) } as PropertyRecord);
     }
     const allItems = Array.from(byId.values());

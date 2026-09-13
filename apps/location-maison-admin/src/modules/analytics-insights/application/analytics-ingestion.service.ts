@@ -2,10 +2,13 @@ import { createHash, randomUUID } from "node:crypto";
 
 import {
   analyticsEventEnvelopeSchema,
+  RECOMMENDATION_INTERACTION_EVENT_NAMES,
   type AnalyticsEventEnvelope,
   type AnalyticsIngestionBody,
   type PlatformVisitPayload,
   type PresenceHeartbeatPayload,
+  type RecommendationEventPayload,
+  type RecommendationRequestServedPayload,
   type SearchPerformedPayload,
   type SearchResultReturnedPayload,
   type AnalyticsValidatedEvent,
@@ -21,12 +24,16 @@ import type {
 import {
   insertPresenceProjectionRows,
   insertRawAnalyticsEvents,
+  insertRecommendationEventRows,
+  insertRecommendationRequestRows,
   insertRejectedAnalyticsEvents,
   insertSearchProjectionRows,
   insertTrafficProjectionRows,
   upsertIdempotencyRegistryRow,
   type PresenceProjectionRow,
   type RawAnalyticsEventRow,
+  type RecommendationEventRow,
+  type RecommendationRequestRow,
   type RejectedAnalyticsEventRow,
   type SearchProjectionRow,
   type TrafficProjectionRow,
@@ -69,6 +76,16 @@ type PresenceHeartbeatEvent = AnalyticsValidatedEvent & {
 type PlatformVisitEvent = AnalyticsValidatedEvent & {
   event_name: "platform_visit";
   payload: PlatformVisitPayload;
+};
+
+type RecommendationRequestServedEvent = AnalyticsValidatedEvent & {
+  event_name: "recommendation_request_served";
+  payload: RecommendationRequestServedPayload;
+};
+
+type RecommendationInteractionEvent = AnalyticsValidatedEvent & {
+  event_name: (typeof RECOMMENDATION_INTERACTION_EVENT_NAMES)[number];
+  payload: RecommendationEventPayload;
 };
 
 function normalizeIssuePath(path: PropertyKey[]): Array<string | number> {
@@ -172,6 +189,20 @@ function isPlatformVisitEvent(event: AnalyticsValidatedEvent): event is Platform
   return event.event_name === "platform_visit";
 }
 
+function isRecommendationRequestServedEvent(
+  event: AnalyticsValidatedEvent,
+): event is RecommendationRequestServedEvent {
+  return event.event_name === "recommendation_request_served";
+}
+
+function isRecommendationInteractionEvent(
+  event: AnalyticsValidatedEvent,
+): event is RecommendationInteractionEvent {
+  return (RECOMMENDATION_INTERACTION_EVENT_NAMES as readonly string[]).includes(
+    event.event_name,
+  );
+}
+
 function isSourceCompatible(
   sourceHeader: AnalyticsIngestionHeaders["sourceHeader"],
   event: AnalyticsEventEnvelope,
@@ -188,7 +219,8 @@ function isSourceCompatible(
     event.source === "catalog_search_page" ||
     event.source === "location_maison_search_bar" ||
     event.source === "search_with_ia_page" ||
-    event.source === "property_location_form"
+    event.source === "property_location_form" ||
+    event.source === "recommendation_engine"
   );
 }
 
@@ -465,6 +497,70 @@ function toPresenceProjectionRows(
   return rows;
 }
 
+function toRecommendationRequestRows(
+  acceptedEvents: AnalyticsValidatedEvent[],
+  receivedAt: string,
+): RecommendationRequestRow[] {
+  const rows: RecommendationRequestRow[] = [];
+
+  for (const event of acceptedEvents) {
+    if (!isRecommendationRequestServedEvent(event)) {
+      continue;
+    }
+
+    const payload = event.payload;
+    rows.push({
+      recommendation_request_id: payload.recommendation_request_id,
+      event_id: event.event_id,
+      occurred_at: event.occurred_at,
+      received_at: receivedAt,
+      subject_id_hash: event.actor?.actor_id ?? null,
+      session_id: event.session?.session_id ?? null,
+      context: payload.context,
+      ranking_variant: payload.ranking_variant,
+      ranking_version: payload.ranking_version,
+      filters_json: payload.filters_json ? toObject(payload.filters_json) : null,
+      candidates_json: payload.candidates,
+      correlation_id: event.correlation_id,
+    });
+  }
+
+  return rows;
+}
+
+function toRecommendationEventRows(
+  acceptedEvents: AnalyticsValidatedEvent[],
+  receivedAt: string,
+): RecommendationEventRow[] {
+  const rows: RecommendationEventRow[] = [];
+
+  for (const event of acceptedEvents) {
+    if (!isRecommendationInteractionEvent(event)) {
+      continue;
+    }
+
+    const payload = event.payload;
+    rows.push({
+      event_id: event.event_id,
+      recommendation_request_id: payload.recommendation_request_id,
+      listing_id: payload.listing_id,
+      event_name: event.event_name,
+      occurred_at: event.occurred_at,
+      received_at: receivedAt,
+      subject_id_hash: event.actor?.actor_id ?? null,
+      session_id: event.session?.session_id ?? null,
+      position: payload.position ?? null,
+      ranking_variant: payload.ranking_variant,
+      ranking_version: payload.ranking_version,
+      query_id: payload.query_id ?? null,
+      device_class: payload.device_class ?? null,
+      correlation_id: event.correlation_id,
+    });
+  }
+
+  return rows;
+}
+
 function toTrafficProjectionRows(acceptedEvents: AnalyticsValidatedEvent[]): TrafficProjectionRow[] {
   const rows: TrafficProjectionRow[] = [];
 
@@ -554,6 +650,8 @@ export async function ingestAnalyticsEvents(
   const searchRows = toSearchProjectionRows(prepared.acceptedEvents);
   const presenceRows = toPresenceProjectionRows(prepared.acceptedEvents);
   const trafficRows = toTrafficProjectionRows(prepared.acceptedEvents);
+  const recommendationRequestRows = toRecommendationRequestRows(prepared.acceptedEvents, nowIso);
+  const recommendationEventRows = toRecommendationEventRows(prepared.acceptedEvents, nowIso);
 
   try {
     const rawRows = [...rawAcceptedRows, ...rawRejectedRows];
@@ -562,6 +660,8 @@ export async function ingestAnalyticsEvents(
     await insertSearchProjectionRows(searchRows);
     await insertPresenceProjectionRows(presenceRows);
     await insertTrafficProjectionRows(trafficRows);
+    await insertRecommendationRequestRows(recommendationRequestRows);
+    await insertRecommendationEventRows(recommendationEventRows);
 
     const summary: AnalyticsIngestionSummary = {
       batchId: input.body.batch_id,

@@ -16,6 +16,7 @@ type SlotEventName =
   | 'ad_slot_rendered'
   | 'ad_request_sent'
   | 'ad_filled'
+  | 'ad_viewable_impression'
   | 'ad_impression'
   | 'ad_click';
 
@@ -46,9 +47,17 @@ function resolveEnvironment(): 'dev' | 'preprod' | 'prod' {
   return 'dev';
 }
 
+// Taxonomie publicitaire propre (audit AUDIT-ADSENSE-REVENUS-2026-09.md §5.3) : avant ce
+// correctif, `/houseDetails` (page detail annonce, seule page qui porte reellement le slot
+// `property_detail`) n'etait couvert par aucun cas et retombait sur `other`, tandis que
+// `/property` (back-office annonceur, jamais monetise) etait classe a tort `property_detail`.
+// `/reels` n'avait pas de cas dedie non plus.
 function inferPageTemplate(pathname: string) {
   if (pathname === '/') {
     return 'home';
+  }
+  if (pathname.startsWith('/reels')) {
+    return 'reels_feed';
   }
   if (pathname.startsWith('/search-with-ia')) {
     return 'search_with_ia';
@@ -56,30 +65,40 @@ function inferPageTemplate(pathname: string) {
   if (pathname.startsWith('/search')) {
     return 'catalog_search';
   }
-  if (pathname.startsWith('/property')) {
+  if (pathname.startsWith('/houseDetails')) {
     return 'property_detail';
   }
-  if (pathname.startsWith('/announcer')) {
-    return 'announcer_space';
+  if (pathname.startsWith('/immobilier')) {
+    return 'immobilier_landing';
+  }
+  if (pathname.startsWith('/blog')) {
+    return 'blog';
   }
   return 'other';
 }
 
-function inferSlotPosition(slotKey: string) {
+// Les diapositives pub des Reels utilisent des slotKey generiques (`ad-0`, `ad-1`...) qui ne
+// contiennent aucun indice textuel sur Reels : la position doit donc etre deduite de la page
+// (pathname), pas seulement du slotKey, sous peine de retomber systematiquement sur `unknown`.
+function inferSlotPosition(slotKey: string, pathname: string) {
+  if (pathname.startsWith('/reels')) {
+    return 'reels_fullscreen';
+  }
+
   const normalized = slotKey.toLowerCase();
   if (normalized.includes('footer')) {
     return 'footer';
   }
-  if (normalized.includes('search')) {
+  if (normalized.includes('home')) {
+    return 'home_inline';
+  }
+  if (normalized.includes('search') || normalized.includes('immobilier')) {
     return 'in_feed';
   }
-  if (normalized.includes('property')) {
+  if (normalized.includes('property') || normalized.includes('category-listing')) {
     return 'detail_inline';
   }
-  if (normalized.includes('mobile')) {
-    return 'mobile_inline';
-  }
-  return 'unknown';
+  return 'other';
 }
 
 function cleanupRecentEvents(now: number) {
@@ -142,7 +161,7 @@ export function emitAdsSlotEvent(input: EmitAdsSlotEventInput) {
         page_path: input.pathname,
         page_template: inferPageTemplate(input.pathname),
         slot_id: input.slotId,
-        slot_position: inferSlotPosition(input.slotKey),
+        slot_position: inferSlotPosition(input.slotKey, input.pathname),
         latency_ms:
           typeof input.latencyMs === 'number' && Number.isFinite(input.latencyMs)
             ? Math.max(0, Math.trunc(input.latencyMs))

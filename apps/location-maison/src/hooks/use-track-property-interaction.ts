@@ -5,6 +5,18 @@ import { trackEvent, trackingEvents } from '@/features/analytics/tracking';
 import { trackMetaPixelEvent, metaPixelEvents } from '@/features/analytics/meta-pixel';
 import { createLogger } from '@/lib/logger';
 import { trackPropertyInteractionStatistic } from '@/lib/statistics/property-statistics.client';
+import { trackRecommendationEvent, type RecommendationEventName } from '@/features/recommendation/tracking/recommendation-tracking.client';
+import { useRecommendationCardContext } from '@/providers/recommendation-request-provider';
+
+const RECOMMENDATION_EVENT_BY_INTERACTION: Partial<Record<InteractionType, RecommendationEventName>> = {
+  favorite_add: 'recommendation_favorite_add',
+  favorite_remove: 'recommendation_favorite_remove',
+  whatsapp_contact: 'recommendation_contact_whatsapp',
+  phone_contact: 'recommendation_contact_phone',
+  whatsapp_share: 'recommendation_share',
+  facebook_share: 'recommendation_share',
+  native_share: 'recommendation_share',
+};
 
 const logger = createLogger('hooks.use-track-property-interaction');
 
@@ -20,6 +32,8 @@ export type InteractionType =
   | 'recommendation_click';
 
 export function useTrackPropertyInteraction(propertyId: string | undefined) {
+  const recommendationCard = useRecommendationCardContext();
+
   const trackInteraction = useCallback(
     (type: InteractionType, metadata?: Record<string, any>) => {
       if (!propertyId) {
@@ -31,6 +45,20 @@ export function useTrackPropertyInteraction(propertyId: string | undefined) {
         ...metadata,
         timestamp: new Date().toISOString(),
       });
+
+      // Event recommandation corrélé au recommendationRequestId ambiant, en plus (jamais à la
+      // place) du tracking GA4/property_statistics ci-dessus — voir docs/recommendation-ml/.
+      const recommendationEventName = RECOMMENDATION_EVENT_BY_INTERACTION[type];
+      if (recommendationEventName && recommendationCard && recommendationCard.listingId === propertyId) {
+        trackRecommendationEvent({
+          eventName: recommendationEventName,
+          recommendationRequestId: recommendationCard.recommendationRequestId,
+          listingId: propertyId,
+          position: recommendationCard.position,
+          rankingVariant: recommendationCard.rankingVariant,
+          rankingVersion: recommendationCard.rankingVersion,
+        });
+      }
 
       const analyticsParams = {
         property_id: propertyId,
@@ -60,7 +88,7 @@ export function useTrackPropertyInteraction(propertyId: string | undefined) {
         void trackEvent(trackingEvents.CTA_PROPERTY_FAVORITE_REMOVE_CLICK, analyticsParams);
       }
     },
-    [propertyId]
+    [propertyId, recommendationCard]
   );
 
   return { trackInteraction };

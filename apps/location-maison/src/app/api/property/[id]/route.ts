@@ -12,7 +12,7 @@ const logger = createLogger('api.property');
 // Champs qu'un simple "Modifier" (crayon EditableField, formulaire de mise à jour) ne doit
 // jamais pouvoir écraser — propriété de l'annonce et decision de modération, gérées par des
 // routes/flux dédiés (promotion, review admin), pas par un patch générique.
-const PROTECTED_FIELDS = new Set(['createdBy', 'claimedBy', 'id', 'currentPromotion']);
+const PROTECTED_FIELDS = new Set(['createdBy', 'claimedBy', 'ownerUids', 'id', 'currentPromotion']);
 
 /**
  * Suppression d'une annonce — Admin SDK côté serveur.

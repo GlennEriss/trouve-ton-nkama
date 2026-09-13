@@ -179,9 +179,10 @@ export function useOSMLocations(): UseOSMLocationsReturn {
 
       // Quartiers via villes de la province
       const citiesInProvince = getCitiesByProvince(province);
+      const cityNames = new Set(citiesInProvince.map((city) => city.name));
       const viaCityQuarters = data.quarters.filter((quarter) => {
         const quarterCity = data.quarterToCity.get(quarter.name);
-        return quarterCity && citiesInProvince.some((city) => city.name === quarterCity);
+        return Boolean(quarterCity && cityNames.has(quarterCity));
       });
 
       // Fusionner et dédupliquer
