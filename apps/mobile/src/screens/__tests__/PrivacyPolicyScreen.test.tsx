@@ -83,11 +83,9 @@ describe('PrivacyPolicyScreen', () => {
 
     fireEvent.press(link);
 
-    // Même route ("Legal"), nouveaux params -> LegalWebViewScreen re-rend en WebView(dataDeletion)
-    // (dataDeletion est la seule page légale restée en WebView).
-    await waitFor(() =>
-      expect(getByTestId('webview').props.source.uri).toBe('https://www.tonnkama.com/data-deletion'),
-    );
+    // Même route ("Legal"), nouveaux params -> LegalWebViewScreen re-rend en DataDeletionScreen
+    // (écran natif, plus de WebView pour aucune des 3 pages légales).
+    await waitFor(() => expect(getByTestId('screen-legal-dataDeletion')).toBeTruthy());
     expect(queryByTestId('screen-legal-privacy')).toBeNull();
   });
 

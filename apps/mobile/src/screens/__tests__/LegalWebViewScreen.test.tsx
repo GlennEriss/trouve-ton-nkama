@@ -4,19 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LegalWebViewScreen from '../LegalWebViewScreen';
 import type { ProfileStackParamList } from '../../navigation/types';
 
+// Les 3 pages légales sont désormais des écrans natifs (TermsOfUseScreen, PrivacyPolicyScreen,
+// DataDeletionScreen) — voir leurs propres fichiers de test pour le contenu. Ce fichier ne teste
+// que l'aiguillage : le bon écran natif s'affiche pour chaque valeur de `page`.
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
-jest.mock('react-native-webview', () => {
-  const { View } = require('react-native');
-  return { WebView: (props: { source: { uri: string } }) => <View testID="webview" {...props} /> };
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function routeWith(page: 'terms' | 'privacy' | 'dataDeletion'): any {
-  return { route: { params: { page } } };
-}
-
-function renderNative(page: 'terms' | 'privacy') {
+function renderPage(page: 'terms' | 'privacy' | 'dataDeletion') {
   return render(
     <NavigationContainer>
       <Stack.Navigator>
@@ -27,23 +20,12 @@ function renderNative(page: 'terms' | 'privacy') {
 }
 
 describe('LegalWebViewScreen', () => {
-  // "terms" et "privacy" sont des écrans natifs dédiés (TermsOfUseScreen, PrivacyPolicyScreen),
-  // pas des WebView — voir leurs propres fichiers de test. Seule "dataDeletion" passe encore
-  // par le WebView.
-  it('charge la bonne URL pour la page "dataDeletion"', async () => {
-    const { getByTestId } = await render(<LegalWebViewScreen {...routeWith('dataDeletion')} />);
-    expect(getByTestId('webview').props.source.uri).toBe('https://www.tonnkama.com/data-deletion');
-  });
-
-  it('affiche l’écran natif des CGU (pas de WebView) pour la page "terms"', async () => {
-    const { getByTestId, queryByTestId } = await renderNative('terms');
-    expect(getByTestId('screen-legal-terms')).toBeTruthy();
-    expect(queryByTestId('webview')).toBeNull();
-  });
-
-  it('affiche l’écran natif de la politique de confidentialité (pas de WebView) pour la page "privacy"', async () => {
-    const { getByTestId, queryByTestId } = await renderNative('privacy');
-    expect(getByTestId('screen-legal-privacy')).toBeTruthy();
-    expect(queryByTestId('webview')).toBeNull();
+  it.each([
+    ['terms', 'screen-legal-terms'],
+    ['privacy', 'screen-legal-privacy'],
+    ['dataDeletion', 'screen-legal-dataDeletion'],
+  ] as const)('affiche l’écran natif attendu pour la page "%s"', async (page, expectedTestID) => {
+    const { getByTestId } = await renderPage(page);
+    expect(getByTestId(expectedTestID)).toBeTruthy();
   });
 });
