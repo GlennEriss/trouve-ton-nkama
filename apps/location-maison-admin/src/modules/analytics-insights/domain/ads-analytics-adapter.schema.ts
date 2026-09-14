@@ -83,6 +83,10 @@ const adsSlotEventSchema = z
     latency_ms: z.number().int().min(0).max(120000).optional(),
     country: z.string().trim().regex(/^[A-Z]{2}$/).optional(),
     device_category: z.enum(["mobile", "desktop", "tablet", "unknown"]).optional(),
+    // Tag d'experience A/B (location-maison src/lib/ads/stacking-experiment.ts), mappe dans
+    // AdsSlotEventRow et persiste en BigQuery (voir buildAdsSlotEventRows).
+    experiment_id: z.string().trim().max(100).optional(),
+    experiment_variant: z.string().trim().max(50).optional(),
   })
   .strict();
 

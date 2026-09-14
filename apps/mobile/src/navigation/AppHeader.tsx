@@ -20,6 +20,11 @@ export function AppHeader(_props: DrawerHeaderProps) {
     navigationRef.navigate('Main', { screen: 'MainTabs', params: { screen: 'Recherche' } });
   };
 
+  const openHome = () => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', { screen: 'MainTabs', params: { screen: 'Accueil' } });
+  };
+
   const openNotifications = () => {
     if (!navigationRef.isReady()) return;
     navigationRef.navigate('Main', { screen: 'Notifications' });
@@ -45,7 +50,13 @@ export function AppHeader(_props: DrawerHeaderProps) {
         <View style={styles.left}>
           <DrawerToggleButton testID="header-hamburger" tintColor={colors.foreground} />
 
-          <View style={styles.brand}>
+          <TouchableOpacity
+            testID="header-logo"
+            style={styles.brand}
+            onPress={openHome}
+            accessibilityRole="link"
+            accessibilityLabel="Accueil"
+          >
             <Logo size={28} />
             {/* Empilement délibéré sur 3 lignes (Navbar.tsx web, variante mobile, lignes
                 103-115) — pas un retour à la ligne accidentel : 3 <span> séparés, text-xs
@@ -55,7 +66,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
               <Text style={styles.wordmark}>Ton</Text>
               <Text style={styles.wordmark}>Nkama</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.actions}>

@@ -16,6 +16,8 @@ export type SearchFilters = {
   status?: 'FOR_RENT' | 'FOR_SALE';
   city?: string;
   province?: string;
+  // Quartier — immobilier uniquement (voir IMMOBILIER_ONLY_PARAMS, search-filter-query.ts web).
+  street?: string;
   budgetMinXaf?: number;
   budgetMaxXaf?: number;
   // Multi-catégories (voir search-filter-query.ts, web) : `category` porte le NOM exact de la
@@ -60,6 +62,9 @@ export function buildFilters(filters: SearchFilters): string {
   }
   if (isImmobilierScope && filters.province?.trim()) {
     clauses.push(`province:"${escapeAlgoliaFilterValue(filters.province.trim())}"`);
+  }
+  if (isImmobilierScope && filters.street?.trim()) {
+    clauses.push(`street:"${escapeAlgoliaFilterValue(filters.street.trim())}"`);
   }
   if (filters.city?.trim()) {
     // Hors scope immobilier (Mode, etc.), une annonce peut vendre dans plusieurs villes
@@ -137,4 +142,73 @@ export async function searchProperties(
 
   const result = response.results[0];
   return { hits: result?.hits ?? [], nbPages: result?.nbPages ?? 0 };
+}
+
+export type LocationOption = { label: string; value: string };
+
+type FacetSearchResponse = {
+  results: Array<{ facets?: Record<string, Record<string, number>> }>;
+};
+
+// Même requête de facette qu'useAlgoliaLocationOptions.ts côté web (facets + hitsPerPage: 0,
+// aucun hit renvoyé, seulement le décompte par valeur) — via le MÊME proxy que searchProperties,
+// jamais Algolia en direct. Les provinces/villes/quartiers viennent ainsi des vraies annonces
+// indexées (une valeur n'apparaît que si au moins une annonce l'a), pas d'une liste codée en
+// dur qui proposerait des villes sans aucune annonce.
+async function fetchLocationFacet(attribute: string, extraFilter?: string): Promise<LocationOption[]> {
+  const filters = extraFilter ? `${ALGOLIA_BASE_FILTER} AND ${extraFilter}` : ALGOLIA_BASE_FILTER;
+
+  try {
+    const response = await apiFetch<FacetSearchResponse>('/api/algolia/search', {
+      method: 'POST',
+      body: {
+        requests: [
+          {
+            indexName: ALGOLIA_INDEX_NAME,
+            params: {
+              query: '',
+              facets: [attribute],
+              filters,
+              hitsPerPage: 0,
+              attributesToRetrieve: [],
+              attributesToHighlight: [],
+            },
+          },
+        ],
+      },
+    });
+
+    const facets = response.results[0]?.facets?.[attribute] ?? {};
+    return Object.keys(facets)
+      .filter(Boolean)
+      .map((name) => ({ label: name, value: name }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+  } catch {
+    return [];
+  }
+}
+
+export function getProvinceOptions(): Promise<LocationOption[]> {
+  return fetchLocationFacet('province');
+}
+
+// Cascade Province -> Ville (immobilier) : vide tant qu'aucune province n'est choisie, comme
+// useAlgoliaCityOptions côté web (enabled: !!province).
+export function getCityOptions(province: string | undefined): Promise<LocationOption[]> {
+  if (!province) return Promise.resolve([]);
+  return fetchLocationFacet('city', `province:"${escapeAlgoliaFilterValue(province)}"`);
+}
+
+// Villes toutes provinces confondues, sans cascade — pour Mode (voir
+// useAlgoliaAllCityOptions côté web : une annonce Mode n'a pas de province fiable, `cities` est
+// un tableau car une annonce peut vendre dans plusieurs villes).
+export function getAllCityOptions(): Promise<LocationOption[]> {
+  return fetchLocationFacet('cities');
+}
+
+// Cascade Province + Ville -> Quartier (immobilier) : vide tant que la ville n'est pas choisie,
+// comme useAlgoliaStreetOptions côté web.
+export function getStreetOptions(province: string | undefined, city: string | undefined): Promise<LocationOption[]> {
+  if (!city) return Promise.resolve([]);
+  return fetchLocationFacet('street', `province:"${escapeAlgoliaFilterValue(province ?? '')}" AND city:"${escapeAlgoliaFilterValue(city)}"`);
 }

@@ -1,4 +1,7 @@
-import { buildFilters } from '../algolia';
+import { getAuth } from '@react-native-firebase/auth';
+import { buildFilters, getProvinceOptions, getCityOptions, getAllCityOptions, getStreetOptions } from '../algolia';
+
+jest.mock('@react-native-firebase/auth');
 
 // Syntaxe vérifiée contre buildPublicSearchFilters côté web (src/lib/search/
 // search-filter-query.ts) : une seule chaîne `filters` jointe par AND, types multiples
@@ -66,6 +69,12 @@ describe('buildFilters', () => {
     );
   });
 
+  it('ajoute le quartier entre guillemets (scope Immobilier)', () => {
+    expect(buildFilters({ street: 'Glass' })).toBe(
+      'state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND street:"Glass"',
+    );
+  });
+
   it('ajoute la catégorie racine sur categoryPath.lvl0', () => {
     expect(buildFilters({ category: 'Mode' })).toBe(
       'state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND categoryPath.lvl0:"Mode"',
@@ -106,13 +115,14 @@ describe('buildFilters', () => {
   // filtre immobilier resté dans le state après un changement de catégorie ne doit jamais
   // atteindre la requête Algolia en scope Mode — aucune annonce Mode n'a ces champs, ça
   // donnerait 0 résultat sans explication visible pour l'utilisateur.
-  it('ignore typeProperty/status/province en scope Mode même si présents dans les filtres', () => {
+  it('ignore typeProperty/status/province/street en scope Mode même si présents dans les filtres', () => {
     expect(
       buildFilters({
         category: 'Mode',
         typeProperty: ['Villa'],
         status: 'FOR_RENT',
         province: 'Estuaire',
+        street: 'Glass',
       }),
     ).toBe('state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND categoryPath.lvl0:"Mode"');
   });
@@ -129,5 +139,109 @@ describe('buildFilters', () => {
     expect(buildFilters({ category: 'Immobilier', typeProperty: ['Villa'] })).toBe(
       'state:"IN_PROGRESS" AND moderationStatus:"APPROVED" AND typeProperty:"Villa" AND categoryPath.lvl0:"Immobilier"',
     );
+  });
+});
+
+// Provinces/villes/quartiers proposés dans les filtres viennent d'une vraie requête de facette
+// Algolia (via le même proxy que la recherche, jamais Algolia en direct) — jamais une liste
+// codée en dur. Vérifié ici : bon attribut de facette interrogé, tri alphabétique du résultat,
+// cascade Province -> Ville -> Quartier vide tant que le niveau parent n'est pas choisi.
+describe('options de localisation (facettes Algolia)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getAuth as jest.Mock).mockReturnValue({ currentUser: null });
+  });
+
+  function mockFacetResponse(attribute: string, values: Record<string, number>) {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ results: [{ facets: { [attribute]: values } }] }),
+    });
+  }
+
+  function lastRequestParams(): Record<string, unknown> {
+    const calls = (global.fetch as jest.Mock).mock.calls;
+    const body = JSON.parse(calls[calls.length - 1][1].body);
+    return body.requests[0].params;
+  }
+
+  it('getProvinceOptions interroge la facette "province" et trie par ordre alphabétique', async () => {
+    mockFacetResponse('province', { 'Haut-Ogooué': 3, Estuaire: 12 });
+
+    const result = await getProvinceOptions();
+
+    expect(lastRequestParams()).toMatchObject({ facets: ['province'], hitsPerPage: 0 });
+    expect(result).toEqual([
+      { label: 'Estuaire', value: 'Estuaire' },
+      { label: 'Haut-Ogooué', value: 'Haut-Ogooué' },
+    ]);
+  });
+
+  it('getCityOptions (immobilier) est vide tant qu’aucune province n’est fournie — aucune requête envoyée', async () => {
+    global.fetch = jest.fn();
+
+    const result = await getCityOptions(undefined);
+
+    expect(result).toEqual([]);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('getCityOptions (immobilier) filtre la facette "city" par la province choisie', async () => {
+    mockFacetResponse('city', { Owendo: 4, Libreville: 8 });
+
+    const result = await getCityOptions('Estuaire');
+
+    const params = lastRequestParams();
+    expect(params.facets).toEqual(['city']);
+    expect(params.filters).toContain('province:"Estuaire"');
+    expect(result).toEqual([
+      { label: 'Libreville', value: 'Libreville' },
+      { label: 'Owendo', value: 'Owendo' },
+    ]);
+  });
+
+  it('getAllCityOptions (Mode) interroge la facette "cities" (tableau, zones multiples), sans cascade province', async () => {
+    mockFacetResponse('cities', { Franceville: 2, Libreville: 6 });
+
+    const result = await getAllCityOptions();
+
+    expect(lastRequestParams()).toMatchObject({ facets: ['cities'] });
+    expect(result).toEqual([
+      { label: 'Franceville', value: 'Franceville' },
+      { label: 'Libreville', value: 'Libreville' },
+    ]);
+  });
+
+  it('getStreetOptions est vide tant qu’aucune ville n’est fournie — aucune requête envoyée', async () => {
+    global.fetch = jest.fn();
+
+    const result = await getStreetOptions('Estuaire', undefined);
+
+    expect(result).toEqual([]);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('getStreetOptions filtre la facette "street" par province ET ville', async () => {
+    mockFacetResponse('street', { Glass: 2, Batterie: 1 });
+
+    const result = await getStreetOptions('Estuaire', 'Libreville');
+
+    const params = lastRequestParams();
+    expect(params.facets).toEqual(['street']);
+    expect(params.filters).toContain('province:"Estuaire"');
+    expect(params.filters).toContain('city:"Libreville"');
+    expect(result).toEqual([
+      { label: 'Batterie', value: 'Batterie' },
+      { label: 'Glass', value: 'Glass' },
+    ]);
+  });
+
+  it('retourne une liste vide (pas une erreur) si le proxy échoue', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('network down'));
+
+    const result = await getProvinceOptions();
+
+    expect(result).toEqual([]);
   });
 });

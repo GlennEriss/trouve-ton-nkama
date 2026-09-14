@@ -13,10 +13,21 @@ jest.mock('next/link', () => ({
 
 jest.mock('@/components/ads/InlineAdUnit', () => ({
   __esModule: true,
-  default: ({ slotKey }: { slotKey: string }) => (
-    <div data-testid="adsense-unit">AdSense {slotKey}</div>
+  default: ({ slot, slotKey }: { slot: string; slotKey: string }) => (
+    <div data-testid="adsense-unit" data-slot={slot}>AdSense {slotKey}</div>
   ),
 }))
+
+let stackingExperimentVariantBSlotOverride: string | null = null
+jest.mock('@/lib/ads/config', () => {
+  // Object.assign / spread evaluerait la propriete getter tout de suite (TDZ sur la variable
+  // module-level ci-dessus, executee plus tard) : defineProperty garde un vrai getter paresseux.
+  const actual = jest.requireActual('@/lib/ads/config')
+  return Object.defineProperty({ ...actual }, 'ADSENSE_SLOT_STACKING_EXPERIMENT_B', {
+    enumerable: true,
+    get: () => stackingExperimentVariantBSlotOverride,
+  })
+})
 
 jest.mock('@/components/ads/AdSenseBlock', () => ({
   __esModule: true,
@@ -27,10 +38,11 @@ jest.mock('@/components/ads/AdSenseBlock', () => ({
   ),
 }))
 
-let stackingDecisionOverride: { showHouse: boolean; showAdSense: boolean } | null = null
+let stackingDecisionOverride: { showHouse: boolean; showAdSense: boolean; variant?: string } | null = null
 jest.mock('@/lib/ads/stacking-experiment', () => ({
+  AD_STACKING_EXPERIMENT_ID: null,
   resolveAdStackingDecision: (input: { hasHouseCreative: boolean }) =>
-    stackingDecisionOverride ?? { showHouse: input.hasHouseCreative, showAdSense: true },
+    stackingDecisionOverride ?? { showHouse: input.hasHouseCreative, showAdSense: true, variant: 'A_STACK' },
 }))
 
 jest.mock('@/components/ads/AdCreativeCard', () => ({
@@ -96,6 +108,7 @@ describe('Lot 6B - rendu publicitaire', () => {
   afterEach(() => {
     jest.restoreAllMocks()
     stackingDecisionOverride = null
+    stackingExperimentVariantBSlotOverride = null
   })
 
   it('affiche la campagne maison et conserve l unite AdSense independante', async () => {
@@ -162,6 +175,86 @@ describe('Lot 6B - rendu publicitaire', () => {
     expect(screen.queryByTestId('adsense-unit')).not.toBeInTheDocument()
 
     stackingDecisionOverride = null
+  })
+
+  it('bucket B avec unite AdSense dediee configuree : utilise le slot variante B, pas le slot A', async () => {
+    // Point 3 des raccordements analytiques (attribution revenu AdSense par variante) :
+    // sans slot dedie, A et B partageraient le meme data-ad-slot et Google ne pourrait pas
+    // distinguer leur revenu.
+    fetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/advertising/active')) {
+        return successfulJson({ creative: null })
+      }
+      return successfulJson({ success: true })
+    })
+    stackingDecisionOverride = { showHouse: false, showAdSense: true, variant: 'B_ALTERNATE' }
+    stackingExperimentVariantBSlotOverride = '5664198630'
+
+    render(
+      <SponsoredSlot
+        placement="search_infeed"
+        fallbackSlot="123"
+        fallbackSlotKey="search-6b"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('adsense-unit')).toHaveAttribute('data-slot', '5664198630')
+    })
+
+    stackingDecisionOverride = null
+    stackingExperimentVariantBSlotOverride = null
+  })
+
+  it('bucket B sans unite dediee configuree : retombe sur le slot normal du placement', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/advertising/active')) {
+        return successfulJson({ creative: null })
+      }
+      return successfulJson({ success: true })
+    })
+    stackingDecisionOverride = { showHouse: false, showAdSense: true, variant: 'B_ALTERNATE' }
+    stackingExperimentVariantBSlotOverride = null
+
+    render(
+      <SponsoredSlot
+        placement="search_infeed"
+        fallbackSlot="123"
+        fallbackSlotKey="search-6b"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('adsense-unit')).toHaveAttribute('data-slot', '123')
+    })
+
+    stackingDecisionOverride = null
+  })
+
+  it('bucket A : utilise toujours le slot normal du placement, jamais le slot variante B', async () => {
+    fetchMock.mockImplementation((url: string) => {
+      if (url.startsWith('/api/advertising/active')) {
+        return successfulJson({ creative: null })
+      }
+      return successfulJson({ success: true })
+    })
+    stackingDecisionOverride = { showHouse: false, showAdSense: true, variant: 'A_STACK' }
+    stackingExperimentVariantBSlotOverride = '5664198630'
+
+    render(
+      <SponsoredSlot
+        placement="search_infeed"
+        fallbackSlot="123"
+        fallbackSlotKey="search-6b"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('adsense-unit')).toHaveAttribute('data-slot', '123')
+    })
+
+    stackingDecisionOverride = null
+    stackingExperimentVariantBSlotOverride = null
   })
 
   it('garde AdSense sans envoyer de metrique maison quand il n y a pas de campagne', async () => {

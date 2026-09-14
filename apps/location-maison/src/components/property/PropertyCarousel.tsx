@@ -10,7 +10,8 @@ import PropertyCard from "../home-page/PropertyCard";
 import { Property } from "@/models/annonce";
 import { cn } from "@/lib/utils";
 import { RecommendationRequestProvider } from "@/providers/recommendation-request-provider";
-import { useRegisterRecommendationRequest } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { useRankedListings } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { toRecommendationCandidate } from "@/features/recommendation/scoring/candidate-mapper";
 
 // Même largeur fixe que ListingCardsCarousel (2026-08-15, demande utilisateur explicite :
 // une seule taille de card dans toute la plateforme) — plus de slidesToShow par breakpoint.
@@ -54,10 +55,33 @@ const PropertyCarousel: React.FC<CarouselProps> = ({
   recommendationContext,
 }) => {
   const router = useRouter();
-  const recommendationRequest = useRegisterRecommendationRequest(properties, recommendationContext);
+  const { displayItems, recommendationRequest } = useRankedListings(
+    properties,
+    recommendationContext,
+    (property, index) =>
+      property.id
+        ? toRecommendationCandidate(
+            {
+              objectID: property.id,
+              categoryPath: property.categoryPath,
+              city: property.city,
+              province: property.province,
+              price: property.price,
+              area: property.area,
+              createdAt: property.createdAt as never,
+              state: property.state,
+              moderationStatus: property.moderationStatus,
+              isPromoted: property.isPromoted,
+              images: property.images,
+              createdBy: property.createdBy,
+            },
+            index,
+          )
+        : null,
+  );
 
   /* ----- Comptage & helpers ----- */
-  const count = properties.length;
+  const count = displayItems.length;
   const hasMultiple = count > 1;
 
   /* Navigation mémoïsée */
@@ -96,7 +120,7 @@ const PropertyCarousel: React.FC<CarouselProps> = ({
     <div className="container-page px-4 relative">
       {hasMultiple ? (
         <Slider {...settings}>
-          {properties.map((p, index) => (
+          {displayItems.map((p, index) => (
             <div
               key={p.id ?? `property-${Math.random()}`}
               className="p-3 text-left focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
@@ -118,22 +142,22 @@ const PropertyCarousel: React.FC<CarouselProps> = ({
         </Slider>
       ) : (
         /* 1 seule carte : largeur contrôlée */
-        properties[0] && (
+        displayItems[0] && (
           <div
             className="mx-auto block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg transition-all duration-200"
             style={{ width: CARD_WIDTH }}
-            onClick={() => handleCardClick(properties[0].id)}
+            onClick={() => handleCardClick(displayItems[0].id)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                handleCardClick(properties[0].id);
+                handleCardClick(displayItems[0].id);
               }
             }}
             role="button"
             tabIndex={0}
-            aria-label={`Voir les détails de ${properties[0].title}`}
+            aria-label={`Voir les détails de ${displayItems[0].title}`}
           >
-            <PropertyCard property={properties[0]} hideDate={hideDate} position={0} />
+            <PropertyCard property={displayItems[0]} hideDate={hideDate} position={0} />
           </div>
         )
       )}

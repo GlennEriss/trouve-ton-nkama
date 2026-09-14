@@ -11,7 +11,8 @@ import {
 import { useAlgoliaContext } from "@/providers/AlgoliaContext";
 import PropertyCard from "../home-page/PropertyCard";
 import { RecommendationRequestProvider } from "@/providers/recommendation-request-provider";
-import { useRegisterRecommendationRequest } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { useRankedListings } from "@/features/recommendation/tracking/use-register-recommendation-request";
+import { toRecommendationCandidate } from "@/features/recommendation/scoring/candidate-mapper";
 import { FilterModal } from "../home-page/FilterModal";
 import { TypeProperty } from "@/constantes/property-type";
 
@@ -164,7 +165,17 @@ export default function SearchPage() {
 
   // 5. Infinite hits + intersection observer
   const { items, isLastPage, showMore } = useInfiniteHits();
-  const recommendationRequest = useRegisterRecommendationRequest(items, "search");
+  const { displayItems, recommendationRequest } = useRankedListings(
+    items,
+    "search",
+    (item: any, index) => (item?.objectID ? toRecommendationCandidate(item, index) : null),
+    {
+      categoryLvl0: "Immobilier",
+      city: city || undefined,
+      budgetMin: minPrice ? Number(minPrice) : undefined,
+      budgetMax: maxPrice ? Number(maxPrice) : undefined,
+    },
+  );
   useEffect(() => {
     if (!sentinelRef.current) return;
     const obs = new IntersectionObserver(
@@ -315,7 +326,7 @@ export default function SearchPage() {
               Largeur en % sous sm (2 cards par ligne sur mobile étroit) puis fixe. */}
           <RecommendationRequestProvider value={recommendationRequest}>
             <div className="flex flex-wrap gap-4">
-              {items.map((propertyData, i) => (
+              {displayItems.map((propertyData: any, i) => (
                 <div key={propertyData.objectID} className="w-[calc(50%-0.5rem)] sm:w-[220px]">
                   <PropertyCard property={propertyData} position={i} />
                 </div>

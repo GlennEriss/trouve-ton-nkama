@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast'
 import { readVideoDurationSeconds } from '@/hooks/useVideoDropzone'
 import { VideoTrimEditor } from '@/components/reels/VideoTrimEditor'
 import { createLogger } from '@/lib/logger'
+import { createSubmissionPerformanceTracker } from '@/lib/observability/submission-performance'
 
 const logger = createLogger('components.edit-reel-client')
 
@@ -127,15 +128,23 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
     if (!canEdit || isSaving || !hasChanges || !user?.uid) return
 
     setIsSaving(true)
+    // Instrumentation par phase (voir docs/performance-creation-modification-annonces-reels.md,
+    // point 8) — un nouvel identifiant par tentative, jamais de contenu utilisateur dans les
+    // dimensions, jamais d'impact sur le résultat de la soumission (best-effort).
+    const perf = createSubmissionPerformanceTracker({ dimensions: { journeyType: 'reel', mode: 'update' } })
     try {
       if (isTrimChanged && videoFile) {
         const rawVideoPath = buildRawReelVideoPath(videoFile, user.uid, reelId)
-        await retrimReel(reelId, rawVideoPath, trimStart, trimEnd, muted, contact, description)
+        await perf.measure('reel_create', () =>
+          retrimReel(reelId, rawVideoPath, trimStart, trimEnd, muted, contact, description),
+        )
         try {
           setUploadPercent(0)
-          await uploadRawReelVideo(videoFile, user.uid, reelId, {
-            onProgress: (progress) => setUploadPercent(progress.percent),
-          })
+          await perf.measure('video_upload', () =>
+            uploadRawReelVideo(videoFile, user.uid, reelId, {
+              onProgress: (progress) => setUploadPercent(progress.percent),
+            }),
+          )
         } catch (uploadError) {
           const message = uploadError instanceof Error ? uploadError.message : "Échec de l'envoi de la vidéo."
           await markReelUploadFailed(reelId, message)
@@ -144,7 +153,7 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
           setUploadPercent(null)
         }
       } else {
-        await updateReelDetails(reelId, contact, description)
+        await perf.measure('reel_create', () => updateReelDetails(reelId, contact, description))
       }
 
       // Le cache est mis à jour tout de suite (après la réussite serveur, jamais avant —
@@ -163,16 +172,20 @@ export default function EditReelClient({ reelId }: EditReelClientProps) {
       // Invalidations lancées en arrière-plan, jamais sur le chemin critique de la
       // redirection : la mutation a déjà réussi, un échec d'invalidation ne doit ni bloquer
       // ni faire échouer la modification déjà enregistrée.
-      void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] }),
-        queryClient.invalidateQueries({ queryKey: reelQueryKey }),
-        queryClient.invalidateQueries({ queryKey: ['reels-feed'] }),
-      ]).catch((invalidationError) => {
-        logger.warn('Reel cache invalidation failed after a successful edit', {
-          error: invalidationError,
-          reelId,
+      void perf
+        .measure('cache_invalidation', () =>
+          Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['reels-mine', user?.uid] }),
+            queryClient.invalidateQueries({ queryKey: reelQueryKey }),
+            queryClient.invalidateQueries({ queryKey: ['reels-feed'] }),
+          ]),
+        )
+        .catch((invalidationError) => {
+          logger.warn('Reel cache invalidation failed after a successful edit', {
+            error: invalidationError,
+            reelId,
+          })
         })
-      })
 
       toast({
         title: "Réel modifié",

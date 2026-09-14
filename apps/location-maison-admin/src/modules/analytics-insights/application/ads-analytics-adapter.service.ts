@@ -153,6 +153,8 @@ export function buildAdsSlotEventRows(input: AdsSlotEventsAdapterBody) {
       is_authenticated: input.actor?.is_authenticated ?? null,
       country: event.country ?? null,
       device_category: event.device_category ?? null,
+      experiment_id: event.experiment_id ?? null,
+      experiment_variant: event.experiment_variant ?? null,
     };
   });
 

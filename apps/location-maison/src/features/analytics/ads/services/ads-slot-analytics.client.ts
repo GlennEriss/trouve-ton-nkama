@@ -31,6 +31,13 @@ type EmitAdsSlotEventInput = {
     isAuthenticated: boolean;
   };
   keepalive?: boolean;
+  /**
+   * Tag d'experience A/B (empilement/alternance, cf. lib/ads/stacking-experiment.ts). Persiste
+   * dans `ads_slot_events.experiment_id`/`.experiment_variant` cote admin depuis l'ajout de
+   * ces 2 colonnes STRING nullable le 2026-09-14 (voir buildAdsSlotEventRows).
+   */
+  experimentId?: string;
+  experimentVariant?: string;
 };
 
 function resolveEnvironment(): 'dev' | 'preprod' | 'prod' {
@@ -169,6 +176,8 @@ export function emitAdsSlotEvent(input: EmitAdsSlotEventInput) {
         device_category: /mobile/i.test(navigator.userAgent)
           ? ('mobile' as const)
           : ('desktop' as const),
+        experiment_id: input.experimentId,
+        experiment_variant: input.experimentVariant,
       },
     ],
   };

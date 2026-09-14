@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import { routes } from '@/constantes/routes'
 import { isAnnouncer } from '@/lib/auth/role-routing'
 import { resolveListingScopeLabel } from '@/lib/listing-scope'
+import { createSubmissionPerformanceTracker } from '@/lib/observability/submission-performance'
 import type { Reel, ReelProcessingStatus } from '@/models/reel'
 
 const REJECTION_MESSAGES: Record<VideoDropzoneRejectionReason, string> = {
@@ -142,26 +143,34 @@ export default function CreateOrphanReelClient() {
   const runFinalSubmission = React.useCallback(async (file: File) => {
     if (!user?.uid) return
 
+    // Instrumentation par phase (voir docs/performance-creation-modification-annonces-reels.md,
+    // point 8) — un nouvel identifiant par tentative, jamais de contenu utilisateur dans les
+    // dimensions, jamais d'impact sur le résultat de la soumission (best-effort).
+    const perf = createSubmissionPerformanceTracker({
+      dimensions: { journeyType: 'reel', mode: propertyId ? 'update' : 'create' },
+    })
     try {
       const reelId = crypto.randomUUID()
       const trimmedContact = contact.trim() || undefined
       const trimmedDescription = description.trim() || undefined
       const rawVideoPath = buildRawReelVideoPath(file, user.uid, reelId)
       const isTrimmed = trimStart > 0 || trimEnd < videoDurationSeconds
-      const createdId = await createReel(
-        reelId,
-        propertyId,
-        user.uid,
-        rawVideoPath,
-        trimmedContact,
-        trimmedDescription,
-        {
-          ...(isTrimmed ? { trimStartSeconds: trimStart, trimEndSeconds: trimEnd } : {}),
-          ...(muted ? { muted: true } : {}),
-        },
-        // Ignoré côté serveur si propertyId est fourni (voir /api/reels/route.ts) — inutile de
-        // le conditionner ici, plus simple à lire.
-        categoryOverride ?? undefined
+      const createdId = await perf.measure('reel_create', () =>
+        createReel(
+          reelId,
+          propertyId,
+          user.uid,
+          rawVideoPath,
+          trimmedContact,
+          trimmedDescription,
+          {
+            ...(isTrimmed ? { trimStartSeconds: trimStart, trimEndSeconds: trimEnd } : {}),
+            ...(muted ? { muted: true } : {}),
+          },
+          // Ignoré côté serveur si propertyId est fourni (voir /api/reels/route.ts) — inutile de
+          // le conditionner ici, plus simple à lire.
+          categoryOverride ?? undefined
+        ),
       )
 
       if (!createdId) {
@@ -170,9 +179,11 @@ export default function CreateOrphanReelClient() {
 
       try {
         setUploadPercent(0)
-        await uploadRawReelVideo(file, user.uid, reelId, {
-          onProgress: (progress) => setUploadPercent(progress.percent),
-        })
+        await perf.measure('video_upload', () =>
+          uploadRawReelVideo(file, user.uid, reelId, {
+            onProgress: (progress) => setUploadPercent(progress.percent),
+          }),
+        )
       } catch (error) {
         const message = error instanceof Error ? error.message : "Échec de l'envoi de la vidéo."
         await markReelUploadFailed(createdId, message)

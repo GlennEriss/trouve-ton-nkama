@@ -15,12 +15,127 @@ appartient à un autre chantier en cours en parallèle).
 | 5 — Parcours IA | `property/create/page.tsx`, `category-listing/create/page.tsx` | Garde-fou "état de requête catégories inconnu" (bug réel trouvé en e2e), progression par phases (photos/génération/validation/enregistrement). |
 | 6 — Upload Reel reprenable | `reel.db.ts` (`uploadRawReelVideo`), `CreateOrphanReelClient.tsx`, `EditReelClient.tsx` | `uploadBytesResumable` + progression 0-100 + annulation (signal/timeout), barre `role="progressbar"` accessible dans les deux écrans. |
 | 7 — Invalidations Reel non bloquantes | `EditReelClient.tsx` | `setQueryData` immédiat + invalidations en arrière-plan (`void ... .catch(logger.warn)`). |
-| 8 — Instrumentation | `src/lib/observability/submission-performance.ts` | Module testé (11 tests), câblé dans `property.form.provider.tsx` et les 2 pages IA (phases `image_upload`/`ai`/`property_write`). Pas encore câblé dans les Reels. |
+| 8 — Instrumentation | `src/lib/observability/submission-performance.ts` | Module testé (11 tests), câblé dans `property.form.provider.tsx`, les 2 pages IA **et les 2 parcours Reel** (`CreateOrphanReelClient.tsx` phases `reel_create`/`video_upload`, `EditReelClient.tsx` phases `reel_create`/`video_upload`/`cache_invalidation`). |
 
-**Non fait, hors code applicatif** : déploiement de la Cloud Function `onPropertyLocationSync`
-(`firebase deploy --only functions`) ; câblage de l'instrumentation dans les parcours Reel ;
-mesure réelle en développement pour établir une baseline avant/après (le doc le demande
-explicitement — c'est la suite naturelle une fois déployé). Rien n'est commité.
+**Déployé (2026-09-13)** : Cloud Function `onPropertyLocationSync` (point 1) déployée sur
+`location-maison-dev` **et** `location-maison-prod-167da`, vérifiée en écrivant une annonce
+test réelle en dev (province → ville → rue créées avec les bons identifiants et la bonne
+hiérarchie parent/enfant, données de test nettoyées ensuite).
+
+## Mesure réelle avant/après (2026-09-13, dev Firestore)
+
+Mesure demandée explicitement par le document avant de considérer une optimisation validée
+(§ « Critère de sortie », point 8). Réalisée contre le **vrai** projet Firestore de
+développement (`location-maison-dev`), pas simulée.
+
+### Point 1 — géographie hors chemin critique
+
+Méthode : appel direct de `syncPropertyLocation()` (le service exact utilisé par la Cloud
+Function déployée) avec l'Admin SDK, sur une localité tantôt inédite (chemin défavorable —
+3 `create()` séquentiels) tantôt déjà connue (chemin courant — 3 lectures, 0 écriture),
+comparé à une écriture Firestore isolée équivalente à `createProperty()` (ce qui reste seul
+sur le chemin critique aujourd'hui). Trois exécutions :
+
+| Mesure | Run 1 | Run 2 | Run 3 | Sens |
+|---|---:|---:|---:|---|
+| A. Geo sync — localité inédite (pire cas, ex-chemin critique) | 2074 ms | 2357 ms | 2346 ms | **AVANT** — bloquait la réponse |
+| B. Geo sync — localité déjà connue (cas courant, ex-chemin critique) | 620 ms | 530 ms | 589 ms | **AVANT** — bloquait la réponse |
+| C. Écriture de l'annonce seule (chemin critique actuel) | 469 ms | 517 ms | 392 ms | **APRÈS** — seul ce qui reste |
+
+**Lecture** : sur une ville/province déjà vues (l'immense majorité des annonces, Libreville
+en tête), le point 1 retire environ **530-620 ms** du délai perçu avant confirmation. Sur une
+localité inédite (nouvelle ville jamais publiée), il en retire **plus de 2 secondes**. Ces
+deux chiffres s'ajoutent en plus à celui du point 2 (voir ci-dessous) — ils ne se recouvrent
+pas, la géo-sync et les suggestions étaient deux attentes distinctes et toutes deux
+séquentielles avec l'écriture principale dans l'ancien code.
+
+**Biais assumé, à charge contre le gain plutôt que pour** : mesuré avec l'Admin SDK
+(Node → Firestore), pas le SDK Web que l'ancien code client utilisait (navigateur →
+Firestore, généralement plus lent, en particulier sur mobile). Le gain réellement perçu par
+un utilisateur est donc probablement **supérieur** à ces chiffres, pas inférieur.
+
+### Point 2 — suggestions non bloquantes
+
+Pas remesuré séparément : le code retiré (`updateOrCreateSuggestion` + `withTimeout(...,
+8_000, ...)`) imposait un **plafond documenté de 8 000 ms** avant confirmation en cas de
+lenteur/timeout de cette écriture — entièrement supprimé du chemin critique. Gain plancher
+garanti par construction (plus d'attente du tout), pas seulement mesuré.
+
+### Point 3 — pipeline vignette parallèle (mesure réelle, réseau throttlé, 2026-09-14)
+
+Méthode : e2e Playwright réel (vrai Storage + vrai Firestore, `location-maison-dev`),
+formulaire immobilier manuel (`/property/add/studio`), une photo de 185 Ko (taille réaliste,
+compressée depuis un original 1,9 Mo via `sips`). Le throttle réseau (CDP
+`Network.emulateNetworkConditions` : 128 kbps upload / 750 kbps download / 150 ms de
+latence — profil "3G lente") n'est activé qu'une fois le formulaire rempli, juste avant le
+clic sur "Enregistrer", pour isoler la phase d'upload sans faire échouer le chargement du
+bundle Next dev par la même occasion. Mesure via l'instrumentation du point 8 (phase
+`image_upload`, qui englobe tout `createFile`/`uploadPropertyImages`). Comparaison AVANT
+(code temporairement remis en séquentiel — vignette démarrée seulement après la fin de
+l'upload principal — puis restauré à l'identique, `git diff` vide confirmé après coup) vs
+APRÈS (code actuellement déployé, vignette démarrée en parallèle) :
+
+| Mesure | Run 1 | Run 2 | Run 3 | Moyenne |
+|---|---:|---:|---:|---:|
+| AVANT (vignette séquentielle) | 20 477 ms | 19 932 ms | 20 711 ms | **20 373 ms** |
+| APRÈS (vignette parallèle, code actuel) | 19 352 ms | 18 015 ms | 17 929 ms | **18 432 ms** |
+
+**Lecture** : gain réel d'environ **1,9 s (~9,5 %)** sur la phase `image_upload` pour une
+image, sous une connexion mobile lente simulée. Le gain est borné par la durée de la branche
+vignette (compression + upload d'un fichier nettement plus petit) : sur une bonne connexion
+de développement (non throttlée), les deux branches sont si rapides que l'écart n'est pas
+mesurable de façon fiable, ce qui explique pourquoi ce point nécessitait spécifiquement un
+réseau dégradé pour être objectivé (comme le document l'anticipe : « le temps médian ne doit
+pas régresser sur une bonne connexion »).
+
+### Point 4 — concurrence contrôlée (mesure réelle, réseau throttlé, 2026-09-14)
+
+Méthode : même dispositif que le point 3 (e2e Playwright réel, `/property/add/studio`, vrai
+Storage + vrai Firestore, throttle CDP activé juste avant "Enregistrer"), mais avec **6
+images** (même photo de 185 Ko dupliquée 6 fois) et un throttle upload à **400 kbps** (750
+kbps download, 150 ms latence — un peu moins sévère que le point 3 pour laisser une chance de
+succès à la concurrence 3). AVANT = `DEFAULT_UPLOAD_CONCURRENCY` temporairement remonté à 6
+dans `file.db.ts` (donc les 6 images démarrent en même temps, comme l'ancien `Promise.all`
+illimité — code restauré à l'identique juste après, `git diff` vide vérifié) ; APRÈS = code
+actuel (concurrence 3). Deux runs chacun :
+
+| Mesure | Run 1 | Run 2 | Issue |
+|---|---:|---:|---|
+| AVANT (concurrence 6, illimitée) | 20 861 ms | 20 865 ms | **Échec systématique** — timeout 20 s sur les 6 uploads (principaux ET vignettes) |
+| APRÈS (concurrence 3, code actuel) | 34 207 ms | 34 685 ms | **Succès systématique** |
+
+**Lecture** : sous une connexion mobile lente partagée entre plusieurs uploads simultanés, la
+bande passante par upload s'effondre proportionnellement au nombre de connexions actives —
+avec 6 images en parallèle, chaque upload individuel n'obtient plus qu'1/6 de la bande
+passante totale et dépasse systématiquement le délai interne de 20 s (`withTimeout` dans
+`createFile`), faisant échouer **la totalité** de la publication (aucune image, ni annonce,
+n'est enregistrée). Avec la concurrence bornée à 3, chaque upload actif obtient assez de
+bande passante pour rester sous ce délai, et l'annonce est publiée avec succès — au prix d'un
+temps total plus long (~34 s vs un échec immédiat après ~21 s), ce qui est le compromis
+attendu et documenté (§ Critère de validation : « le temps médian ne doit pas régresser sur
+une bonne connexion et le percentile 95 doit s'améliorer sur mobile, **avec moins de
+timeouts** »). C'est exactement le scénario que le point 4 visait à éviter, reproduit et
+confirmé en conditions réelles : sans lui, un vendeur ajoutant plusieurs photos sur une
+connexion mobile lente perdait entièrement sa publication (aucun message d'erreur
+actionnable au-delà d'un toast générique), avec lui il publie avec succès.
+
+**Biais assumé** : le seuil exact de bande passante où l'échec apparaît dépend du nombre
+d'images et de leur poids ; ce test isole un point de rupture net (400 kbps / 6 images) pour
+objectiver le mécanisme, pas une courbe complète bande-passante × nombre d'images.
+
+### Point 6 — upload Reel reprenable
+
+**Non isolé séparément** dans cette passe (même méthode possible, hors budget). Référence
+disponible en attendant : les runs e2e réels de ce chantier
+(`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore) publient une annonce
+immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**, et une annonce Mode
+par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de bout en bout après
+l'ensemble des optimisations de ce document.
+
+### Suite recommandée
+
+Établir une baseline chiffrée pour le point 6 (upload vidéo Reel reprenable) sous un profil
+réseau throttlé — même méthode que les points 3 et 4 ci-dessus, hors budget de cette passe.
 
 ## Objet du document
 

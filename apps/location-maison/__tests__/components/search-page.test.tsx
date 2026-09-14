@@ -13,6 +13,9 @@ let contextState: Record<string, any>
 let hitsState: Record<string, any>
 let observerCallback: IntersectionObserverCallback
 
+jest.mock('@/features/recommendation/tracking/use-register-recommendation-request', () => ({
+  useRankedListings: (items: any[]) => ({ displayItems: items, isRanking: false, recommendationRequest: null }),
+}))
 jest.mock('next/navigation', () => ({
   useSearchParams: () => ({ get: (key: string) => params.get(key), toString: () => params.toString() }),
 }))

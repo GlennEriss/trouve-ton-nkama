@@ -233,6 +233,10 @@ export type AdsSlotEventRow = {
   is_authenticated: boolean | null;
   country: string | null;
   device_category: string | null;
+  // Tag d'experience A/B (location-maison src/lib/ads/stacking-experiment.ts). Colonnes
+  // STRING nullable ajoutees a `ads_slot_events` le 2026-09-14 pour ce besoin.
+  experiment_id: string | null;
+  experiment_variant: string | null;
 };
 
 function resolveRuntimeDataset() {

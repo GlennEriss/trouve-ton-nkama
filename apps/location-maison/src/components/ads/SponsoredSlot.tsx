@@ -6,7 +6,9 @@ import InlineAdUnit from '@/components/ads/InlineAdUnit'
 import AdCreativeCard from '@/components/ads/AdCreativeCard'
 import type { AdCreativePublic, AdPlacement } from '@/models/advertising'
 import { trackAdEvent } from '@/lib/statistics/ad-tracking.client'
-import { resolveAdStackingDecision } from '@/lib/ads/stacking-experiment'
+import { resolveAdStackingDecision, AD_STACKING_EXPERIMENT_ID } from '@/lib/ads/stacking-experiment'
+import { getPresenceSessionId } from '@/features/analytics/presence/services/presence-admin-analytics.client'
+import { ADSENSE_SLOT_STACKING_EXPERIMENT_B } from '@/lib/ads/config'
 
 type SponsoredSlotProps = Readonly<{
   placement: AdPlacement
@@ -69,10 +71,11 @@ export default function SponsoredSlot({
     }
   }, [placement, province, city])
 
-  const { showHouse, showAdSense } = resolveAdStackingDecision({
+  const { showHouse, showAdSense, variant } = resolveAdStackingDecision({
     placement,
     hasHouseCreative: Boolean(creative),
     rotationIndex,
+    sessionId: AD_STACKING_EXPERIMENT_ID ? getPresenceSessionId() : undefined,
   })
 
   // Impression trackée une seule fois quand une pub maison s'affiche.
@@ -97,11 +100,17 @@ export default function SponsoredSlot({
       ) : null}
       {showAdSense ? (
         <InlineAdUnit
-          slot={fallbackSlot}
+          // Bucket B de l'experience A/B : unite AdSense dediee (si configuree) pour que
+          // Google attribue le revenu a la bonne variante, distinctement du slot A normal.
+          slot={variant === 'B_ALTERNATE' && ADSENSE_SLOT_STACKING_EXPERIMENT_B
+            ? ADSENSE_SLOT_STACKING_EXPERIMENT_B
+            : fallbackSlot}
           slotKey={fallbackSlotKey}
           surface={surface}
           compact={fallbackCompact}
           showLabel
+          experimentId={AD_STACKING_EXPERIMENT_ID ?? undefined}
+          experimentVariant={variant}
         />
       ) : null}
     </div>
