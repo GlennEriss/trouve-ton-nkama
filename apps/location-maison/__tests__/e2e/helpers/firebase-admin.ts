@@ -168,6 +168,7 @@ export type SeedProperty = {
   // /api/announcer/ads/route.ts) — categoryId seul n'est donc PAS un discriminant fiable
   // immobilier/Mode. Permet de reproduire cette donnée réaliste dans un seed de test.
   categoryId?: string
+  images?: Array<{ filePATH: string; fileURL: string; thumbPATH?: string; thumbURL?: string }>
 }
 
 /**
@@ -183,7 +184,7 @@ export async function seedProperties(createdBy: string, properties: SeedProperty
   const now = admin.firestore.Timestamp.now()
 
   await Promise.all(
-    properties.map(({ id, tags, ...data }) =>
+    properties.map(({ id, tags, images, ...data }) =>
       db
         .collection('properties')
         .doc(id)
@@ -191,7 +192,7 @@ export async function seedProperties(createdBy: string, properties: SeedProperty
           ...data,
           tags: tags ?? [],
           createdBy,
-          images: [],
+          images: images ?? [],
           currentPromotion: null,
           createdAt: now,
           updatedAt: now,
@@ -214,6 +215,7 @@ export type SeedCategoryListing = {
   // Optionnel, défaut 'IN_PROGRESS' — pour reproduire une annonce déjà archivée (tests de
   // désarchivage) sans avoir à la repatcher séparément après le seed.
   state?: 'IN_PROGRESS' | 'ARCHIVED'
+  images?: Array<{ filePATH: string; fileURL: string; thumbPATH?: string; thumbURL?: string }>
 }
 
 /**
@@ -228,7 +230,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
   const app = ensureAdminApp()
   const db = admin.firestore(app)
   const now = admin.firestore.Timestamp.now()
-  const { id, categoryLeaf, state, ...data } = listing
+  const { id, categoryLeaf, state, images, ...data } = listing
 
   // lvl0 dérivé de categoryLeaf ("Mode > Vêtements" -> "Mode") : le vrai flux de création
   // (category-listing/create/page.tsx) pose toujours les deux (`categoryPath: { lvl0:
@@ -246,7 +248,7 @@ export async function seedCategoryListing(createdBy: string, listing: SeedCatego
       moderationStatus: 'APPROVED',
       state: state ?? 'IN_PROGRESS',
       categoryPath: { lvl0: rootName, lvl1: categoryLeaf },
-      images: [],
+      images: images ?? [],
       currentPromotion: null,
       createdAt: now,
       updatedAt: now,
@@ -279,7 +281,33 @@ export async function findPropertiesByOwner(uid: string): Promise<{ id: string; 
 export async function deleteProperties(ids: string[]): Promise<void> {
   const app = ensureAdminApp()
   const db = admin.firestore(app)
-  await Promise.all(ids.map((id) => db.collection('properties').doc(id).delete()))
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET
+  const bucket = bucketName ? admin.storage(app).bucket(bucketName) : null
+
+  await Promise.all(ids.map(async (id) => {
+    const ref = db.collection('properties').doc(id)
+    const snapshot = await ref.get()
+    const images: Array<Record<string, unknown>> = Array.isArray(snapshot.data()?.images)
+      ? snapshot.data()!.images as Array<Record<string, unknown>>
+      : []
+    const paths = images.flatMap((image: Record<string, unknown>) => [image.filePATH, image.thumbPATH])
+      .filter((value: unknown): value is string => typeof value === 'string' && value.trim().length > 0)
+
+    await Promise.all([
+      ref.delete(),
+      ...(bucket ? paths.map((filePath) => bucket.file(filePath).delete({ ignoreNotFound: true })) : []),
+    ])
+  }))
+}
+
+/** Nettoie le préfixe Storage isolé de l'annonceur E2E, sans parcourir le bucket. */
+export async function deletePropertyImagesByOwner(ownerUid: string): Promise<void> {
+  const app = ensureAdminApp()
+  const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET
+  if (!bucketName) return
+
+  const bucket = admin.storage(app).bucket(bucketName)
+  await bucket.deleteFiles({ prefix: `property/${ownerUid}/`, force: true })
 }
 
 /**

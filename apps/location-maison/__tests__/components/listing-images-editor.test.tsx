@@ -25,7 +25,7 @@ describe.each(['Immobilier', 'Mode'])('modification des photos — annonce %s', 
     const file = new File(['photo'], 'new.jpg', { type: 'image/jpeg' })
     fireEvent.change(screen.getByLabelText('Choisir des photos à ajouter'), { target: { files: [file] } })
 
-    await waitFor(() => expect(uploadPropertyImagesMock).toHaveBeenCalledWith([file], 'owner-1', 'property'))
+    await waitFor(() => expect(uploadPropertyImagesMock).toHaveBeenCalledWith([file], 'owner-1', 'property/owner-1'))
     await waitFor(() => expect(onSave).toHaveBeenCalledWith([...existingImages, uploaded]))
   })
 

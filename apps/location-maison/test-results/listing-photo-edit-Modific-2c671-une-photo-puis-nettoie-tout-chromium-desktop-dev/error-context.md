@@ -1,0 +1,196 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: listing-photo-edit.spec.ts >> Modification réelle des photos — cycle de vie maîtrisé >> Immobilier : crée une annonce, ajoute/supprime une photo, puis nettoie tout
+- Location: __tests__/e2e/listing-photo-edit.spec.ts:43:7
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - banner [ref=e5]:
+        - generic [ref=e6]:
+          - link "Accueil - Trouve Ton Nkama" [ref=e7] [cursor=pointer]:
+            - /url: /
+            - img [ref=e8]
+            - generic [ref=e18]: Trouve Ton Nkama
+          - generic [ref=e19]:
+            - generic [ref=e20]:
+              - button "Ouvrir les notifications" [ref=e21] [cursor=pointer]:
+                - img
+              - button "Ouvrir le menu du profil" [ref=e22] [cursor=pointer]:
+                - generic [ref=e23]:
+                  - generic [ref=e25]: G
+                  - img
+            - link "Poster une annonce" [ref=e26] [cursor=pointer]:
+              - /url: /publish
+              - img
+              - text: Poster une annonce
+        - navigation "Main" [ref=e29]:
+          - list [ref=e31]:
+            - listitem [ref=e32]:
+              - link "Mes annonces" [ref=e33] [cursor=pointer]:
+                - /url: /property
+              - link "Catalogue" [ref=e34] [cursor=pointer]:
+                - /url: /search
+              - link "Demandes" [ref=e35] [cursor=pointer]:
+                - /url: /demandes-recherche
+              - link "Réels" [ref=e36] [cursor=pointer]:
+                - /url: /reels
+              - link "Mes réels" [ref=e37] [cursor=pointer]:
+                - /url: /reels/mine
+              - link "Publicité" [ref=e38] [cursor=pointer]:
+                - /url: /advertising
+      - generic [ref=e39]:
+        - navigation "breadcrumb" [ref=e41]:
+          - list [ref=e42]:
+            - listitem [ref=e43]:
+              - link "Accueil" [ref=e44] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e45]:
+              - img [ref=e46]
+            - listitem [ref=e48]:
+              - link "Propriétés" [ref=e49] [cursor=pointer]:
+                - /url: /property
+            - listitem [ref=e50]:
+              - img [ref=e51]
+            - listitem [ref=e53]:
+              - link "Créer" [ref=e54] [cursor=pointer]:
+                - /url: /property/create
+            - listitem [ref=e55]:
+              - img [ref=e56]
+            - listitem [ref=e58]:
+              - link "Preview" [ref=e59] [cursor=pointer]:
+                - /url: /property/create/preview
+            - listitem [ref=e60]:
+              - img [ref=e61]
+            - listitem [ref=e63]:
+              - link "E2e-photo-property-5e18426f-05fb-4ad0-bf7d-39dc44b510c4" [ref=e64] [cursor=pointer]:
+                - /url: /property/create/preview/e2e-photo-property-5e18426f-05fb-4ad0-bf7d-39dc44b510c4
+        - main [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: Modifie ce que tu veux avec les crayons ci-dessous — chaque champ s'enregistre séparément.
+              - button "Terminé — voir mes annonces" [ref=e69] [cursor=pointer]:
+                - img
+                - text: Terminé — voir mes annonces
+            - generic [ref=e72]: A LOUER
+            - generic [ref=e73]:
+              - generic [ref=e74]:
+                - heading "Annonce immobilière E2E modification photos Modifier" [level=1] [ref=e75]:
+                  - generic [ref=e76]:
+                    - text: Annonce immobilière E2E modification photos
+                    - button "Modifier" [ref=e77] [cursor=pointer]:
+                      - img [ref=e78]
+                - heading "FCFA 120 000 Modifier" [level=1] [ref=e81]:
+                  - text: FCFA
+                  - generic [ref=e82]:
+                    - text: 120 000
+                    - button "Modifier" [ref=e83] [cursor=pointer]:
+                      - img [ref=e84]
+              - generic [ref=e87]:
+                - img [ref=e88]
+                - heading "Glass, Libreville Estuaire" [level=2] [ref=e91]
+              - region "carousel" [ref=e93]:
+                - button "Agrandir la photo 1" [ref=e97]:
+                  - img "Photo 1 de l'annonce" [ref=e98]
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]:
+                  - heading "Photos de l'annonce" [level=2] [ref=e102]
+                  - paragraph [ref=e103]: 1/10 photos · au moins une photo requise
+                - button "Choisir des photos à ajouter" [ref=e104]
+                - button "Ajouter des photos" [ref=e105] [cursor=pointer]:
+                  - img
+                  - text: Ajouter des photos
+              - generic [ref=e107]:
+                - img "Photo 1 de l'annonce" [ref=e108]
+                - button "Supprimer la photo 1" [ref=e109] [cursor=pointer]:
+                  - img [ref=e110]
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - heading "Description" [level=1] [ref=e115]
+                - paragraph [ref=e116]:
+                  - generic [ref=e117]:
+                    - text: Fixture temporaire supprimée à la fin du test.
+                    - button "Modifier" [ref=e118] [cursor=pointer]:
+                      - img [ref=e119]
+              - generic [ref=e122]:
+                - heading "Aperçu" [level=1] [ref=e123]
+                - paragraph [ref=e124]:
+                  - generic [ref=e125]: "Créé le: lun. 14 septembre 2026"
+                - generic [ref=e127]:
+                  - generic [ref=e128]:
+                    - img [ref=e129]
+                    - generic [ref=e131]: Chambres
+                  - generic [ref=e132]:
+                    - img [ref=e133]
+                    - generic [ref=e136]: "0"
+                    - generic [ref=e137]: Cuisines
+                  - generic [ref=e138]:
+                    - img [ref=e139]
+                    - generic [ref=e141]: Salles de bain
+                  - generic [ref=e142]:
+                    - img [ref=e143]
+                    - generic [ref=e145]: Toilettes
+              - generic [ref=e146]:
+                - heading "Numéros de contact" [level=1] [ref=e147]
+                - generic [ref=e148]:
+                  - generic [ref=e149]:
+                    - paragraph [ref=e150]: Numéro principal
+                    - button "Modifier" [ref=e152] [cursor=pointer]:
+                      - img [ref=e153]
+                  - generic [ref=e156]:
+                    - paragraph [ref=e157]: WhatsApp (si différent — sinon le numéro principal est utilisé)
+                    - button "Modifier" [ref=e159] [cursor=pointer]:
+                      - img [ref=e160]
+                  - generic [ref=e163]:
+                    - paragraph [ref=e164]: Appel (si différent — sinon le numéro principal est utilisé)
+                    - button "Modifier" [ref=e166] [cursor=pointer]:
+                      - img [ref=e167]
+                  - generic [ref=e170]:
+                    - paragraph [ref=e171]: Autres numéros (propriétaire, agent, famille... chacun aura ses propres boutons)
+                    - button "Ajouter un numéro" [ref=e172] [cursor=pointer]:
+                      - img
+                      - text: Ajouter un numéro
+              - generic [ref=e173]:
+                - heading "Choisissez un moyen de contact" [level=1] [ref=e174]
+                - generic [ref=e177]:
+                  - link "WhatsApp" [ref=e178] [cursor=pointer]:
+                    - /url: "#"
+                    - generic [ref=e179]:
+                      - img [ref=e180]
+                      - generic [ref=e182]: WhatsApp
+                  - button "Appeler" [ref=e183] [cursor=pointer]:
+                    - img [ref=e184]
+                    - generic [ref=e186]: Appeler
+              - generic [ref=e188]:
+                - button "Marker" [ref=e189] [cursor=pointer]
+                - generic:
+                  - generic [ref=e190]:
+                    - button "Zoom in" [ref=e191] [cursor=pointer]: +
+                    - button "Zoom out" [ref=e192] [cursor=pointer]: −
+                    - button "[object Object]" [ref=e193] [cursor=pointer]
+                  - generic [ref=e194]:
+                    - link "Leaflet" [ref=e195] [cursor=pointer]:
+                      - /url: https://leafletjs.com
+                      - img [ref=e196]
+                      - text: Leaflet
+                    - text: "| ©"
+                    - link "OpenStreetMap" [ref=e200] [cursor=pointer]:
+                      - /url: https://www.openstreetmap.org/copyright
+                    - text: contributors
+              - button "Terminé — voir mes annonces" [ref=e201] [cursor=pointer]:
+                - img
+                - text: Terminé — voir mes annonces
+    - region "Notifications (F8)":
+      - list
+  - alert [ref=e202]
+```
