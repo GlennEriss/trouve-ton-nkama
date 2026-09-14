@@ -220,10 +220,11 @@ CASES.push({
     typeText('10000');
     await tapTestID('filters-budget-max');
     typeText('900000000');
-    if (isSoftKeyboardShown()) {
-      adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
-      await sleep(300);
-    }
+    // Pas de KEYCODE_BACK ici pour fermer le clavier : la modale Filtres traite le bouton
+    // retour matériel via son propre onRequestClose (voir SearchScreen.tsx), donc un BACK la
+    // fermerait entièrement au lieu de juste masquer le clavier (constaté : "filters-apply"
+    // disparaissait de l'arbre après ce BACK). Taper directement sur le bouton fonctionne
+    // tel quel, clavier ouvert ou non.
 
     await tapTestID('filters-apply');
     const settled = await waitForResultsSettled();
@@ -264,10 +265,8 @@ CASES.push({
 
     await tapTestID('filters-budget-min');
     typeText('5000');
-    if (isSoftKeyboardShown()) {
-      adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
-      await sleep(300);
-    }
+    // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK,
+    // ça fermerait la modale via son onRequestClose au lieu de juste masquer le clavier.
 
     await tapTestID('filters-apply');
     const settled = await waitForResultsSettled();
