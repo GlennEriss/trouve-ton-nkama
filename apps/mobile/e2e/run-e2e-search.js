@@ -229,9 +229,13 @@ CASES.push({
     // retour matériel via son propre onRequestClose (voir SearchScreen.tsx), donc un BACK la
     // fermerait entièrement au lieu de juste masquer le clavier (constaté : "filters-apply"
     // disparaissait de l'arbre après ce BACK). Taper directement sur le bouton fonctionne
-    // tel quel, clavier ouvert ou non — mais laisser le temps au layout de se stabiliser après
-    // la saisie (adjustResize peut encore être en train de repositionner la ScrollView), sinon
-    // les coordonnées calculées par tapTestID peuvent viser une position déjà obsolète.
+    // tel quel, clavier ouvert ou non. En revanche `uiautomator dump` a lui-même pour effet de
+    // masquer le clavier logiciel (effet de bord connu) — ce qui redéclenche un resize
+    // (adjustResize) de la fenêtre APRÈS que le dump a déjà renvoyé des bounds "compressées",
+    // rendant obsolètes les coordonnées calculées pour ce tap. On absorbe ce dump+resize ici
+    // avec un dump jetable suivi d'une pause, pour que le dump utilisé par tapTestID (juste
+    // après) reflète la mise en page définitive (clavier fermé, pleine hauteur).
+    await dumpTree();
     await sleep(500);
 
     await tapTestID('filters-apply');
@@ -273,9 +277,10 @@ CASES.push({
 
     await tapTestID('filters-budget-min');
     typeText('5000');
-    // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK,
-    // ça fermerait la modale via son onRequestClose au lieu de juste masquer le clavier ; le
-    // sleep laisse le temps au layout (adjustResize) de se stabiliser avant de taper.
+    // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK
+    // (fermerait la modale), et un dump jetable + pause pour absorber le masquage du clavier
+    // déclenché par `uiautomator dump` lui-même avant de calculer les coordonnées du tap.
+    await dumpTree();
     await sleep(500);
 
     await tapTestID('filters-apply');
