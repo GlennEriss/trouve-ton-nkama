@@ -29,12 +29,16 @@ const {
   waitForTestID,
   waitForTestIDGone,
   tapTestID,
+  tapTestIDWhenStable,
+  tapUntilVisible,
+  tapUntilGone,
   relaunchApp,
   bringAppToForeground,
   isSoftKeyboardShown,
   keepScreenAwake,
   releaseScreenAwake,
   startAppAndDismissLogBox,
+  dismissLogBoxNoticeIfPresent,
 } = require('./lib');
 
 // Attend que la liste de résultats soit stabilisée après un changement de filtre : au moins une
@@ -59,6 +63,10 @@ async function waitForResultsSettled(timeoutMs = 45000, pollMs = 300) {
 // échouer toute la suite (fenêtre MainActivity masquée, tous les dumps montrant le launcher).
 async function recoverToStableState() {
   await bringAppToForeground();
+  // La bulle LogBox (voir dismissLogBoxNoticeIfPresent, lib.js) peut réapparaître entre deux
+  // cas (nouveau console.warn) et chevauche la bottom nav — sans ce dismiss, le tap suivant sur
+  // un onglet est absorbé par elle et échoue silencieusement.
+  await dismissLogBoxNoticeIfPresent();
   if (isSoftKeyboardShown()) {
     adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
     await sleep(400);
@@ -182,8 +190,7 @@ CASES.push({
 
     // Province : première option réelle, peu importe laquelle (vient d'Algolia, voir
     // firstRealOptionTestID).
-    await tapTestID('filters-province');
-    await waitForTestID('filters-province-modal', 8000);
+    await tapUntilVisible('filters-province', 'filters-province-modal', 8000);
     let xml = await dumpTree();
     const provinceOption = firstRealOptionTestID(xml, 'filters-province');
     if (!provinceOption) throw new Error("Aucune province renvoyée par Algolia (facette 'province' vide).");
@@ -191,9 +198,10 @@ CASES.push({
     await tapTestID(provinceOption);
     await waitForTestIDGone('filters-province-modal', 8000);
 
-    // Ville : ne devient choisissable qu'une fois la province sélectionnée (cascade).
-    await tapTestID('filters-city');
-    await waitForTestID('filters-city-modal', 8000);
+    // Ville : ne devient choisissable qu'une fois la province sélectionnée (cascade) — le
+    // trigger reste `disabled` tant que la requête de facettes "city" (relancée pour cette
+    // province) n'a pas résolu, d'où tapUntilVisible plutôt qu'un tap unique.
+    await tapUntilVisible('filters-city', 'filters-city-modal', 12000);
     xml = await dumpTree();
     const cityOption = firstRealOptionTestID(xml, 'filters-city');
     if (!cityOption) throw new Error('Aucune ville renvoyée par Algolia pour cette province.');
@@ -202,8 +210,7 @@ CASES.push({
 
     // Quartier : cascade sur province + ville — peut légitimement être vide pour une ville
     // donnée (pas toutes les annonces ont un quartier renseigné), donc pas une erreur en soi.
-    await tapTestID('filters-street');
-    await waitForTestID('filters-street-modal', 8000);
+    await tapUntilVisible('filters-street', 'filters-street-modal', 12000);
     xml = await dumpTree();
     const streetOption = firstRealOptionTestID(xml, 'filters-street');
     let streetPicked = false;
@@ -224,9 +231,12 @@ CASES.push({
     // retour matériel via son propre onRequestClose (voir SearchScreen.tsx), donc un BACK la
     // fermerait entièrement au lieu de juste masquer le clavier (constaté : "filters-apply"
     // disparaissait de l'arbre après ce BACK). Taper directement sur le bouton fonctionne
-    // tel quel, clavier ouvert ou non.
-
-    await tapTestID('filters-apply');
+    // tel quel, clavier ouvert ou non. En revanche `uiautomator dump` a lui-même pour effet de
+    // masquer le clavier logiciel (effet de bord connu) — ce qui redéclenche un resize
+    // (adjustResize) de la fenêtre APRÈS qu'un dump a déjà renvoyé des bounds "compressées",
+    // rendant obsolètes des coordonnées calculées à partir d'un seul dump. tapTestIDWhenStable
+    // n'appuie qu'une fois deux dumps consécutifs d'accord sur la position.
+    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply', 30000);
     const settled = await waitForResultsSettled();
 
     return `cascade province→ville→quartier en ${cascadeMs} ms (quartier ${streetPicked ? 'choisi' : 'vide pour cette ville'}), budget min/max appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;
@@ -248,8 +258,7 @@ CASES.push({
       throw new Error("Province/Quartier ne devraient pas apparaître en scope Mode.");
     }
 
-    await tapTestID('filters-city');
-    await waitForTestID('filters-city-modal', 8000);
+    await tapUntilVisible('filters-city', 'filters-city-modal', 12000);
     xml = await dumpTree();
     const cityOption = firstRealOptionTestID(xml, 'filters-city');
     let cityPicked = false;
@@ -265,10 +274,10 @@ CASES.push({
 
     await tapTestID('filters-budget-min');
     typeText('5000');
-    // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK,
-    // ça fermerait la modale via son onRequestClose au lieu de juste masquer le clavier.
-
-    await tapTestID('filters-apply');
+    // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK
+    // (fermerait la modale), tapTestIDWhenStable pour absorber le masquage du clavier déclenché
+    // par `uiautomator dump` lui-même et le resize qui s'ensuit.
+    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply', 30000);
     const settled = await waitForResultsSettled();
 
     return `ville ${cityPicked ? `choisie en ${cityMs} ms (Algolia, facette "cities")` : 'vide pour Mode'}, budget minimum appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;

@@ -86,6 +86,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     {
       width: 1200,
       height: 630,
+      // next/og met par défaut `cache-control: public, immutable, max-age=31536000` (1 an) —
+      // sans ça, l'image de secours générique (annonce sans photo au moment du tout premier
+      // partage) reste mise en cache jusqu'à un an après l'ajout d'une vraie photo, y compris
+      // côté WhatsApp/Facebook. 1h de fraîcheur + revalidation en arrière-plan jusqu'à 1 jour :
+      // une photo ajoutée/changée se reflète dans l'aperçu de partage en quelques heures au pire.
+      headers: {
+        'cache-control': 'public, max-age=3600, stale-while-revalidate=86400',
+      },
     }
   )
 }

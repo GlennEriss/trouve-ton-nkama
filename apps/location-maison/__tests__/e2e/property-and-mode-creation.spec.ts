@@ -235,6 +235,52 @@ test.describe('Publication d\'une annonce immobilière et d\'une annonce Mode �
     }, { timeout: 15000 }).toEqual(['Libreville', 'Port-Gentil'])
   })
 
+  test('modifie les photos de l’annonce immobilière — ajout puis suppression confirmée', async ({ page }) => {
+    test.skip(!propertyId, 'Dépend de la publication immobilière précédente (même run, mode serial).')
+    test.setTimeout(90_000)
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/property/create/preview/${propertyId}`, { waitUntil: 'domcontentloaded' })
+
+    const before = ((await getProperty(propertyId))?.images as unknown[] | undefined)?.length ?? 0
+    await page.getByLabel('Choisir des photos à ajouter').setInputFiles(
+      path.join(process.cwd(), 'public', 'apple-touch-icon.png'),
+    )
+    await expect.poll(async () => {
+      return ((await getProperty(propertyId))?.images as unknown[] | undefined)?.length ?? 0
+    }, { timeout: 40_000 }).toBe(before + 1)
+
+    await page.getByRole('button', { name: `Supprimer la photo ${before + 1}` }).click()
+    await expect(page.getByRole('dialog')).toContainText('Supprimer cette photo ?')
+    await page.getByRole('button', { name: 'Supprimer la photo', exact: true }).click()
+    await expect.poll(async () => {
+      return ((await getProperty(propertyId))?.images as unknown[] | undefined)?.length ?? 0
+    }, { timeout: 15_000 }).toBe(before)
+  })
+
+  test('modifie les photos de l’annonce Mode — ajout puis suppression confirmée', async ({ page }) => {
+    test.skip(!modeListingId, 'Dépend de la publication Mode précédente (même run, mode serial).')
+    test.setTimeout(90_000)
+    await signInAsAnnouncer(page.context(), 'http://localhost:3000', { ...E2E_ANNOUNCER, uid: OWNER_UID })
+    await mockCommonAppNoise(page, { mockFirebaseToken: false })
+    await page.goto(`/category-listing/create/preview/${modeListingId}`, { waitUntil: 'domcontentloaded' })
+
+    const before = ((await getProperty(modeListingId))?.images as unknown[] | undefined)?.length ?? 0
+    await page.getByLabel('Choisir des photos à ajouter').setInputFiles(
+      path.join(process.cwd(), 'public', 'apple-touch-icon.png'),
+    )
+    await expect.poll(async () => {
+      return ((await getProperty(modeListingId))?.images as unknown[] | undefined)?.length ?? 0
+    }, { timeout: 40_000 }).toBe(before + 1)
+
+    await page.getByRole('button', { name: `Supprimer la photo ${before + 1}` }).click()
+    await expect(page.getByRole('dialog')).toContainText('Supprimer cette photo ?')
+    await page.getByRole('button', { name: 'Supprimer la photo', exact: true }).click()
+    await expect.poll(async () => {
+      return ((await getProperty(modeListingId))?.images as unknown[] | undefined)?.length ?? 0
+    }, { timeout: 15_000 }).toBe(before)
+  })
+
   test('les deux annonces apparaissent bien sur /property, respectivement sous Immobilier et Mode', async ({
     page,
   }) => {

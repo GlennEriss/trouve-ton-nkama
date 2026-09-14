@@ -47,6 +47,18 @@ describe('/api/og/property/[id]', () => {
     expect(ImageResponse).toHaveBeenCalledTimes(1)
   })
 
+  it("remplace le cache-control par defaut (1 an, immuable) par une fraicheur courte, pour qu'une photo ajoutee/changee se reflete dans l'apercu de partage sans attendre un an", async () => {
+    getPublicPropertyById.mockResolvedValueOnce({
+      images: ['p1.jpg'],
+      status: 'IN_PROGRESS',
+      price: 250000,
+    })
+    const response = (await GET({} as any, { params: params('prop-1') })) as unknown as { options: { headers?: Record<string, string> } }
+    expect(response.options.headers).toMatchObject({
+      'cache-control': 'public, max-age=3600, stale-while-revalidate=86400',
+    })
+  })
+
   it('retombe sur l image de secours quand l annonce est introuvable', async () => {
     getPublicPropertyById.mockResolvedValueOnce(null)
     await GET({} as any, { params: params('missing') })

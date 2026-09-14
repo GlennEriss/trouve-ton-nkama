@@ -123,19 +123,47 @@ actionnable au-delà d'un toast générique), avec lui il publie avec succès.
 d'images et de leur poids ; ce test isole un point de rupture net (400 kbps / 6 images) pour
 objectiver le mécanisme, pas une courbe complète bande-passante × nombre d'images.
 
-### Point 6 — upload Reel reprenable
+### Point 6 — upload Reel reprenable (mesure réelle, réseau throttlé, 2026-09-14)
 
-**Non isolé séparément** dans cette passe (même méthode possible, hors budget). Référence
-disponible en attendant : les runs e2e réels de ce chantier
-(`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore) publient une annonce
-immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**, et une annonce Mode
-par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de bout en bout après
-l'ensemble des optimisations de ce document.
+Contrairement aux points 3/4, le document précise explicitement que ce point ne vise pas la
+vitesse brute (§ Critère de validation : « la durée brute peut rester liée au réseau ») mais
+la fiabilité perçue (progression visible, pas d'impression de blocage) — la mesure ci-dessous
+cible donc ce que le point 6 change réellement : la résilience du transfert et le délai avant
+abandon, pas un gain de secondes.
 
-### Suite recommandée
+Méthode : e2e Playwright réel (`/reels/add`, vrai Storage + vrai Firestore), vidéo de test
+générée par ffmpeg (2,4 Mo, 12 s, 480×854) pour être représentative d'un vrai réel plutôt
+qu'un fichier trivial. Throttle CDP appliqué juste avant "Publier le réel" (128 kbps
+upload / 750 kbps download / 150 ms latence — même profil "3G lente" que le point 3).
+Comparaison AVANT (`RAW_VIDEO_UPLOAD_TIMEOUT_MS` temporairement ramené de 600 000 à 120 000 ms
+— l'ancienne valeur documentée dans le code source lui-même — puis restauré à l'identique,
+`git diff` vide vérifié) vs APRÈS (valeur actuelle, 600 000 ms) :
 
-Établir une baseline chiffrée pour le point 6 (upload vidéo Reel reprenable) sous un profil
-réseau throttlé — même méthode que les points 3 et 4 ci-dessus, hors budget de cette passe.
+| Mesure | Résultat | Progression au moment de l'issue |
+|---|---|---|
+| AVANT (timeout 2 min, ancienne valeur) | **Échec** à 132 821 ms — "Upload vidéo a pris trop de temps." | **92 %** — l'upload était presque terminé |
+| APRÈS (timeout 10 min, valeur actuelle) | **Succès** à 163 363 ms | 0→11→26→33→48→64→76→92→100 %, progression continue |
+
+**Lecture** : sur cette même connexion lente réelle, avec ce même fichier réel, l'ancien
+délai de 2 minutes interrompait l'upload à 92 % — à quelques secondes de la fin — et
+l'utilisateur perdait l'intégralité de sa vidéo (aucune reprise possible, il fallait tout
+reposter). Le nouveau délai de 10 minutes laisse le transfert aboutir. Ce n'est pas un gain
+de vitesse (l'upload met le même temps, ~163 s, dans les deux cas jusqu'au point de coupure)
+mais un gain de **réussite** : un cas qui échouait systématiquement sur cette connexion
+réussit désormais. Un run supplémentaire à 10 minutes de timeout a par ailleurs montré la
+progression rester bloquée à 76 % pendant plus de 2 minutes avant de reprendre et
+d'atteindre 100 % (`uploadBytesResumable` a repris le transfert après un aléa réseau sans
+qu'aucune action ne soit nécessaire côté utilisateur) — preuve supplémentaire, en conditions
+réelles, que le "reprenable" du point 6 n'est pas qu'un mot : un `uploadBytes` classique
+n'aurait pas repris de lui-même après ce type d'aléa, il aurait fallu relancer l'upload à
+zéro.
+
+**Biais assumé** : mesuré avec un seul fichier et un seul profil réseau ; le seuil exact
+auquel l'ancien timeout de 2 minutes commence à poser problème dépend du poids de la vidéo et
+du débit réel de l'utilisateur — ce test montre qu'il existe, en conditions plausibles
+(connexion mobile lente + réel de quelques Mo), pas une courbe complète.
+
+## Objet du document
 
 ## Objet du document
 

@@ -193,6 +193,78 @@ async function tapTestID(testID, timeoutMs = 10000, pollMs = 200) {
   throw new Error(`Timeout (${timeoutMs}ms) : impossible de localiser le testID "${testID}" pour taper dessus.`);
 }
 
+// Comme tapTestID, mais n'appuie qu'une fois les coordonnées confirmées stables sur deux dumps
+// consécutifs — utile juste après une saisie clavier, où `uiautomator dump` lui-même masque le
+// clavier (effet de bord connu) et redéclenche un resize (adjustResize) de la fenêtre après
+// coup : un simple dump-puis-tap risque de viser des coordonnées déjà obsolètes une fois le
+// resize terminé. Constaté en pratique sur la modale Filtres (bouton "Appliquer" manqué après
+// saisie du budget) : voir run-e2e-search.js.
+async function tapTestIDWhenStable(testID, timeoutMs = 10000, pollMs = 200) {
+  const start = Date.now();
+  let previous = null;
+  while (Date.now() - start < timeoutMs) {
+    const xml = await dumpTree();
+    const center = findNodeCenter(xml, testID);
+    if (center) {
+      if (previous && previous.x === center.x && previous.y === center.y) {
+        // Constaté : un `input tap` enchaîné immédiatement après plusieurs `uiautomator dump`
+        // consécutifs (ce qu'on vient de faire, deux fois, pour confirmer la stabilité) peut
+        // être silencieusement perdu sous charge (même hôte, même appareil) — un tap manuel
+        // isolé aux mêmes coordonnées, quelques secondes plus tard, fonctionne systématiquement
+        // à tous les coups. Cette pause laisse le sous-système d'injection d'événements/
+        // accessibilité de l'appareil se libérer avant le tap réel.
+        await sleep(300);
+        if (process.env.E2E_DEBUG) console.error(`[tap-stable ${testID}] center=(${center.x},${center.y})`);
+        adb(['shell', 'input', 'tap', String(center.x), String(center.y)]);
+        return;
+      }
+      previous = center;
+    } else {
+      previous = null;
+    }
+    await sleep(pollMs);
+  }
+  throw new Error(`Timeout (${timeoutMs}ms) : le testID "${testID}" n'a jamais atteint une position stable pour taper dessus.`);
+}
+
+// Tape sur `tapTestID` jusqu'à ce que `waitTestID` apparaisse — nécessaire pour les triggers
+// LocationSelect (province/ville/quartier) : leur bouton reste présent mais passe `disabled`
+// tant que la requête de facettes Algolia sous-jacente est en `isLoading` (juste après un choix
+// en cascade, qui redéclenche cette requête), donc un tap pile à ce moment-là ne fait rien —
+// même défaut constaté côté Jest avec RNTL (voir mémoire feedback-mobile-reuse-pwa-design). Un
+// nouveau tap une fois la requête résolue (options chargées, trigger réactivé) rouvre la voie.
+async function tapUntilVisible(tapTestID_, waitTestID, timeoutMs = 15000, retryMs = 1200) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await tapTestID(tapTestID_, Math.max(1000, timeoutMs - (Date.now() - start)));
+    try {
+      await waitForTestID(waitTestID, retryMs);
+      return;
+    } catch {
+      // Retente : le trigger était probablement encore `disabled` (requête en cours).
+    }
+  }
+  throw new Error(`Timeout (${timeoutMs}ms) : "${waitTestID}" jamais apparu après taps répétés sur "${tapTestID_}".`);
+}
+
+// Inverse de tapUntilVisible : retape tant que `goneTestID` n'a pas disparu — nécessaire pour
+// "Appliquer" (voir tapTestIDWhenStable) où un `input tap` enchaîné juste après plusieurs
+// `uiautomator dump` peut être silencieusement perdu sous charge (constaté : coordonnées
+// correctes confirmées manuellement, mais la modale reste ouverte après le tap du script).
+async function tapUntilGone(tapFn, goneTestID, timeoutMs = 15000, retryMs = 2000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await tapFn();
+    try {
+      await waitForTestIDGone(goneTestID, retryMs);
+      return;
+    } catch {
+      // Retente : le tap précédent a probablement été perdu.
+    }
+  }
+  throw new Error(`Timeout (${timeoutMs}ms) : "${goneTestID}" toujours présent après taps répétés.`);
+}
+
 // Ramène l'app au premier plan SANS la tuer (contrairement à relaunchApp) : `am start` sur une
 // activité déjà au premier plan est un no-op ("brought to the front"), et si l'app a été mise en
 // arrière-plan entre-temps (un KEYCODE_BACK émis à vide sur ce Samsung agit comme un retour et
@@ -275,6 +347,9 @@ module.exports = {
   waitForTestID,
   waitForTestIDGone,
   tapTestID,
+  tapTestIDWhenStable,
+  tapUntilVisible,
+  tapUntilGone,
   relaunchApp,
   bringAppToForeground,
   isSoftKeyboardShown,

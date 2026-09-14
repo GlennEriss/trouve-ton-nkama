@@ -1,6 +1,12 @@
 import { useQuery, queryOptions } from '@tanstack/react-query';
+import type { Property } from '@/models/annonce';
 
-export function useProperty(id: string | undefined) {
+// `initialData` : quand le Server Component parent a deja recupere la propriete (ex.
+// /annonce/[id]/page.tsx via getPublicPropertyById, meme forme que Property), on l'injecte ici
+// pour eviter le waterfall client isLoading -> fetch -> rendu qui retardait le LCP de plusieurs
+// secondes (skeleton affiche pendant tout l'aller-retour /api/property/id, alors que la donnee
+// etait deja disponible cote serveur).
+export function useProperty(id: string | undefined, initialData?: Property) {
   return useQuery(queryOptions({
     queryKey: ['property', id],
     queryFn: async () => {
@@ -13,6 +19,7 @@ export function useProperty(id: string | undefined) {
       }
       return data;
     },
+    initialData,
     enabled: !!id,
     staleTime: 1000 * 60 * 10, // 10 minutes
     gcTime: 1000 * 60 * 15, // 15 minutes
