@@ -50,6 +50,33 @@ function toMillis(value: unknown): number {
   return 0;
 }
 
+type PlainTimestamp = { seconds: number; nanoseconds: number };
+
+// `snapshot.data()` (firebase-admin/firestore) renvoie de vraies instances de la classe
+// `Timestamp` pour les champs datés — pas des objets simples. Next.js refuse de faire
+// traverser une instance de classe la frontière Server → Client Component ("Only plain
+// objects, and a few built-ins, can be passed..."), ce qui casse toute page qui passe
+// l'annonce à un composant client (HouseDetails, GiftSection, ContactSection...). On les
+// convertit ici, une seule fois à la lecture, en objets {seconds, nanoseconds} ordinaires —
+// `toMillis()` ci-dessus les comprend déjà nativement, aucun appelant n'a besoin de changer.
+function toPlainTimestamp(value: unknown): PlainTimestamp | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  if (value instanceof Date) {
+    const millis = value.getTime();
+    return { seconds: Math.floor(millis / 1000), nanoseconds: (millis % 1000) * 1_000_000 };
+  }
+
+  const seconds = (value as { seconds?: unknown }).seconds;
+  const nanoseconds = (value as { nanoseconds?: unknown }).nanoseconds;
+
+  return typeof seconds === 'number'
+    ? { seconds, nanoseconds: typeof nanoseconds === 'number' ? nanoseconds : 0 }
+    : undefined;
+}
+
 function normalizeText(value: unknown): string {
   if (typeof value !== 'string') {
     return '';
@@ -67,7 +94,30 @@ function mapDocToPublicProperty(id: string, data: unknown): PublicProperty | nul
     return null;
   }
 
-  const property = { ...(data as Property), id } as PublicProperty;
+  const raw = data as Property;
+  const property = {
+    ...raw,
+    id,
+    createdAt: toPlainTimestamp(raw.createdAt),
+    updatedAt: toPlainTimestamp(raw.updatedAt),
+    moderationReviewedAt: toPlainTimestamp(raw.moderationReviewedAt),
+    claimedAt: toPlainTimestamp(raw.claimedAt),
+    sortTimestamp: toPlainTimestamp(raw.sortTimestamp),
+    lastBoostedAt: toPlainTimestamp(raw.lastBoostedAt),
+    currentPromotion: raw.currentPromotion
+      ? {
+          ...raw.currentPromotion,
+          startDate: toPlainTimestamp(raw.currentPromotion.startDate),
+          endDate: toPlainTimestamp(raw.currentPromotion.endDate),
+        }
+      : raw.currentPromotion,
+    promotionHistory: raw.promotionHistory?.map((promotion) => ({
+      ...promotion,
+      startDate: toPlainTimestamp(promotion.startDate),
+      endDate: toPlainTimestamp(promotion.endDate),
+    })),
+  } as PublicProperty;
+
   return property.state === 'IN_PROGRESS' && property.moderationStatus === 'APPROVED' ? property : null;
 }
 

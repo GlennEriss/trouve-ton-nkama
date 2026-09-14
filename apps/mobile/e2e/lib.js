@@ -254,12 +254,14 @@ async function tapUntilVisible(tapTestID_, waitTestID, timeoutMs = 15000, retryM
 async function tapUntilGone(tapFn, goneTestID, timeoutMs = 15000, retryMs = 2000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    await tapFn();
     try {
+      await tapFn();
       await waitForTestIDGone(goneTestID, retryMs);
       return;
     } catch {
-      // Retente : le tap précédent a probablement été perdu.
+      // Retente : soit le tap lui-même a échoué (ex. position jamais stabilisée sous charge),
+      // soit il a été délivré mais perdu — dans les deux cas, un nouvel essai est la bonne
+      // réaction tant qu'il reste du budget.
     }
   }
   throw new Error(`Timeout (${timeoutMs}ms) : "${goneTestID}" toujours présent après taps répétés.`);

@@ -49,7 +49,8 @@ export default function ListingImagesEditor({ images, ownerId, onSave }: Listing
     setError(null)
     setIsUploading(true)
     try {
-      const uploaded = await uploadPropertyImages(selected.slice(0, remainingSlots), ownerId, 'property')
+      const storageLocation = ownerId ? `property/${ownerId}` : 'property'
+      const uploaded = await uploadPropertyImages(selected.slice(0, remainingSlots), ownerId, storageLocation)
       await onSave([...images, ...uploaded])
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Impossible d'ajouter les photos.")
