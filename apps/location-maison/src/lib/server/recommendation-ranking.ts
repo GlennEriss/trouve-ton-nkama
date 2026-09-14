@@ -34,3 +34,21 @@ export function resolveRankingVariant(
 
   return bucket < trafficPercent ? 'baseline' : 'control'
 }
+
+// Force certains comptes (QA, démo produit) dans la variante "baseline", indépendamment du
+// tirage stable normal — utile pour observer le reclassement sans attendre d'y être exposé par
+// hasard. Liste blanche d'emails, séparés par des virgules :
+// RECOMMENDATION_FORCED_BASELINE_EMAILS=glenneriss@gmail.com,autre@exemple.com
+export function isForcedBaselineEmail(email: string | null | undefined): boolean {
+  if (!email) return false
+
+  const raw = process.env.RECOMMENDATION_FORCED_BASELINE_EMAILS
+  if (!raw) return false
+
+  const allowlist = raw
+    .split(',')
+    .map((entry) => entry.trim().toLowerCase())
+    .filter((entry) => entry.length > 0)
+
+  return allowlist.includes(email.trim().toLowerCase())
+}

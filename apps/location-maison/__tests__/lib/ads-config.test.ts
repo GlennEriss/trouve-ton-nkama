@@ -13,6 +13,7 @@ const ENV_KEYS = [
   'NEXT_PUBLIC_ADSENSE_SLOT_SEARCH_AI',
   'NEXT_PUBLIC_ADSENSE_SLOT_IMMOBILIER_INLINE',
   'NEXT_PUBLIC_ADSENSE_SLOT_REELS_INLINE',
+  'NEXT_PUBLIC_ADSENSE_SLOT_STACKING_EXPERIMENT_B',
 ] as const
 
 type EnvOverrides = Partial<Record<(typeof ENV_KEYS)[number], string>>
@@ -94,5 +95,23 @@ describe('lib/ads/config', () => {
 
     expect(ADSENSE_SLOTS.reelsInline).toBe('footer-id')
     expect(loggerError).not.toHaveBeenCalled()
+  })
+
+  describe('ADSENSE_SLOT_STACKING_EXPERIMENT_B', () => {
+    it('vaut null sans configuration, sans aucune alerte (pas un slot requis)', () => {
+      const { ADSENSE_SLOT_STACKING_EXPERIMENT_B } = loadConfigWithEnv({ NODE_ENV: 'production' })
+
+      expect(ADSENSE_SLOT_STACKING_EXPERIMENT_B).toBeNull()
+      expect(loggerError).not.toHaveBeenCalled()
+    })
+
+    it('expose l identifiant configure tel quel', () => {
+      const { ADSENSE_SLOT_STACKING_EXPERIMENT_B } = loadConfigWithEnv({
+        NODE_ENV: 'production',
+        NEXT_PUBLIC_ADSENSE_SLOT_STACKING_EXPERIMENT_B: '5664198630',
+      })
+
+      expect(ADSENSE_SLOT_STACKING_EXPERIMENT_B).toBe('5664198630')
+    })
   })
 })

@@ -1,4 +1,4 @@
-import { resolveBaselineTrafficPercent, resolveRankingVariant } from '@/lib/server/recommendation-ranking'
+import { isForcedBaselineEmail, resolveBaselineTrafficPercent, resolveRankingVariant } from '@/lib/server/recommendation-ranking'
 
 describe('resolveRankingVariant', () => {
   it('est stable : le même actorId reçoit toujours la même variante', () => {
@@ -72,5 +72,37 @@ describe('resolveBaselineTrafficPercent', () => {
   it('retombe sur la valeur par défaut si la variable est invalide', () => {
     process.env = { ...originalEnv, RECOMMENDATION_BASELINE_TRAFFIC_PERCENT: 'not-a-number' }
     expect(resolveBaselineTrafficPercent()).toBe(20)
+  })
+})
+
+describe('isForcedBaselineEmail', () => {
+  const originalEnv = process.env
+
+  afterEach(() => {
+    process.env = originalEnv
+  })
+
+  it('renvoie false quand aucune liste blanche n’est configurée', () => {
+    process.env = { ...originalEnv, RECOMMENDATION_FORCED_BASELINE_EMAILS: undefined }
+    delete process.env.RECOMMENDATION_FORCED_BASELINE_EMAILS
+    expect(isForcedBaselineEmail('glenneriss@gmail.com')).toBe(false)
+  })
+
+  it('renvoie true pour un email présent dans la liste, insensible à la casse', () => {
+    process.env = { ...originalEnv, RECOMMENDATION_FORCED_BASELINE_EMAILS: 'glenneriss@gmail.com, autre@exemple.com' }
+    expect(isForcedBaselineEmail('glenneriss@gmail.com')).toBe(true)
+    expect(isForcedBaselineEmail('GlennEriss@Gmail.com')).toBe(true)
+    expect(isForcedBaselineEmail('autre@exemple.com')).toBe(true)
+  })
+
+  it('renvoie false pour un email absent de la liste', () => {
+    process.env = { ...originalEnv, RECOMMENDATION_FORCED_BASELINE_EMAILS: 'glenneriss@gmail.com' }
+    expect(isForcedBaselineEmail('quelquun-dautre@exemple.com')).toBe(false)
+  })
+
+  it('renvoie false sans email (visiteur anonyme)', () => {
+    process.env = { ...originalEnv, RECOMMENDATION_FORCED_BASELINE_EMAILS: 'glenneriss@gmail.com' }
+    expect(isForcedBaselineEmail(undefined)).toBe(false)
+    expect(isForcedBaselineEmail(null)).toBe(false)
   })
 })

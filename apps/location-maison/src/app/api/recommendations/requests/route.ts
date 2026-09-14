@@ -7,7 +7,8 @@ import { handleApiError, jsonApiError } from '@/lib/api/error-response'
 import { createLogger } from '@/lib/logger'
 import { forwardToRecommendationAnalytics } from '@/lib/server/recommendation-analytics-forwarder'
 import { resolveRecommendationActor } from '@/lib/server/recommendation-actor'
-import { resolveBaselineTrafficPercent, resolveRankingVariant } from '@/lib/server/recommendation-ranking'
+import { isForcedBaselineEmail, resolveBaselineTrafficPercent, resolveRankingVariant } from '@/lib/server/recommendation-ranking'
+import { auth } from '@/next-auth/auth'
 import { storeServedCandidates } from '@/lib/server/recommendation-cache'
 import { rankCandidates } from '@/features/recommendation/scoring/rank'
 import { BASELINE_SCORE_CONFIG_V1 } from '@/features/recommendation/scoring/score-config'
@@ -94,8 +95,11 @@ export async function POST(request: NextRequest) {
     const recommendationRequestId = randomUUID()
     const occurredAt = new Date().toISOString()
 
+    const session = await auth().catch(() => null)
     const trafficPercent = resolveBaselineTrafficPercent()
-    const rankingVariant = resolveRankingVariant(actorId, trafficPercent, BASELINE_SCORE_CONFIG_V1.version)
+    const rankingVariant = isForcedBaselineEmail(session?.user?.email)
+      ? 'baseline'
+      : resolveRankingVariant(actorId, trafficPercent, BASELINE_SCORE_CONFIG_V1.version)
     const rankingVersion = rankingVariant === 'baseline' ? BASELINE_SCORE_CONFIG_V1.version : CONTROL_RANKING_VERSION
 
     let orderedListingIds: string[] | null = null
