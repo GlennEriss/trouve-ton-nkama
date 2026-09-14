@@ -12,14 +12,25 @@ import { useTrackPropertyView } from "@/hooks/use-track-property-view"
 import { useMetaPixelViewContent } from "@/features/analytics/meta-pixel"
 import SponsoredSlot from '@/components/ads/SponsoredSlot'
 import { ADSENSE_SLOTS } from '@/lib/ads/config'
+import type { Property } from '@/models/annonce'
 
-export default function HouseDetails() {
+type HouseDetailsProps = {
+    /**
+     * Deja recuperee par /annonce/[id]/page.tsx (Server Component). Sert d'initialData a
+     * useProperty pour eviter le waterfall skeleton -> fetch client qui faisait grimper le LCP
+     * mobile a plus de 10s (Vercel Speed Insights, 2026-09-14) : sans elle, la premiere image
+     * ne commence a charger qu'apres la resolution du fetch /api/property/id cote client.
+     */
+    property?: Property
+}
+
+export default function HouseDetails({ property: initialProperty }: HouseDetailsProps) {
     const size = useWindowSize()
     const { id } = useParams<{ id: string }>()
     if (!id) {
         notFound()
     }
-    const { data: property, isLoading, error } = useProperty(id)
+    const { data: property, isLoading, error } = useProperty(id, initialProperty)
 
     // Tracking des vues sur la page publique
     useTrackPropertyView(id)

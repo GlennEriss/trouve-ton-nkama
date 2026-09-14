@@ -155,7 +155,7 @@ export default async function Page({ params }: { params: AnnonceParams }) {
           __html: JSON.stringify(isCategoryListing ? categoryStructuredData : realEstateStructuredData),
         }}
       />
-      <HouseDetails />
+      <HouseDetails property={property} />
     </>
   );
 }

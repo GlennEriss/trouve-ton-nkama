@@ -3,6 +3,9 @@ import { Property } from '@/models/annonce'
 import React from 'react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { useTrackPropertyInteraction } from "@/hooks/use-track-property-interaction"
+import { PLATFORM_SOCIAL_LINKS } from "@/constantes/social-links"
+
+const WHATSAPP_CHANNEL_URL = PLATFORM_SOCIAL_LINKS.find((link) => link.key === 'whatsapp_channel')!.url
 
 export default function ButtonShareToWhatsapp({ property }: Readonly<{ property: Property }>) {
   const { trackInteraction } = useTrackPropertyInteraction(property.id)
@@ -13,8 +16,10 @@ export default function ButtonShareToWhatsapp({ property }: Readonly<{ property:
 
     const message = `🏠 Découvrez cette annonce sur Trouve Ton Nkama :
 ${property.title}
-${property.description?.slice(0, 100)}...
-📍 ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}`
+${property.description}
+Cliquez ici pour voir l'annonce : ${process.env.NEXT_PUBLIC_HOST}/annonce/${property.id}
+
+Cliquez ici pour rejoindre la chaîne WhatsApp : ${WHATSAPP_CHANNEL_URL}`
 
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, '_blank')

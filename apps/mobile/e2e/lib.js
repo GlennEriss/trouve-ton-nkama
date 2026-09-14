@@ -207,6 +207,13 @@ async function tapTestIDWhenStable(testID, timeoutMs = 10000, pollMs = 200) {
     const center = findNodeCenter(xml, testID);
     if (center) {
       if (previous && previous.x === center.x && previous.y === center.y) {
+        // Constaté : un `input tap` enchaîné immédiatement après plusieurs `uiautomator dump`
+        // consécutifs (ce qu'on vient de faire, deux fois, pour confirmer la stabilité) peut
+        // être silencieusement perdu sous charge (même hôte, même appareil) — un tap manuel
+        // isolé aux mêmes coordonnées, quelques secondes plus tard, fonctionne systématiquement
+        // à tous les coups. Cette pause laisse le sous-système d'injection d'événements/
+        // accessibilité de l'appareil se libérer avant le tap réel.
+        await sleep(300);
         if (process.env.E2E_DEBUG) console.error(`[tap-stable ${testID}] center=(${center.x},${center.y})`);
         adb(['shell', 'input', 'tap', String(center.x), String(center.y)]);
         return;
@@ -238,6 +245,24 @@ async function tapUntilVisible(tapTestID_, waitTestID, timeoutMs = 15000, retryM
     }
   }
   throw new Error(`Timeout (${timeoutMs}ms) : "${waitTestID}" jamais apparu après taps répétés sur "${tapTestID_}".`);
+}
+
+// Inverse de tapUntilVisible : retape tant que `goneTestID` n'a pas disparu — nécessaire pour
+// "Appliquer" (voir tapTestIDWhenStable) où un `input tap` enchaîné juste après plusieurs
+// `uiautomator dump` peut être silencieusement perdu sous charge (constaté : coordonnées
+// correctes confirmées manuellement, mais la modale reste ouverte après le tap du script).
+async function tapUntilGone(tapFn, goneTestID, timeoutMs = 15000, retryMs = 2000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    await tapFn();
+    try {
+      await waitForTestIDGone(goneTestID, retryMs);
+      return;
+    } catch {
+      // Retente : le tap précédent a probablement été perdu.
+    }
+  }
+  throw new Error(`Timeout (${timeoutMs}ms) : "${goneTestID}" toujours présent après taps répétés.`);
 }
 
 // Ramène l'app au premier plan SANS la tuer (contrairement à relaunchApp) : `am start` sur une
@@ -324,6 +349,7 @@ module.exports = {
   tapTestID,
   tapTestIDWhenStable,
   tapUntilVisible,
+  tapUntilGone,
   relaunchApp,
   bringAppToForeground,
   isSoftKeyboardShown,
