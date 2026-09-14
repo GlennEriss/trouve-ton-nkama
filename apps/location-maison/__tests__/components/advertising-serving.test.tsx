@@ -19,11 +19,15 @@ jest.mock('@/components/ads/InlineAdUnit', () => ({
 }))
 
 let stackingExperimentVariantBSlotOverride: string | null = null
-jest.mock('@/lib/ads/config', () => ({
-  get ADSENSE_SLOT_STACKING_EXPERIMENT_B() {
-    return stackingExperimentVariantBSlotOverride
-  },
-}))
+jest.mock('@/lib/ads/config', () => {
+  // Object.assign / spread evaluerait la propriete getter tout de suite (TDZ sur la variable
+  // module-level ci-dessus, executee plus tard) : defineProperty garde un vrai getter paresseux.
+  const actual = jest.requireActual('@/lib/ads/config')
+  return Object.defineProperty({ ...actual }, 'ADSENSE_SLOT_STACKING_EXPERIMENT_B', {
+    enumerable: true,
+    get: () => stackingExperimentVariantBSlotOverride,
+  })
+})
 
 jest.mock('@/components/ads/AdSenseBlock', () => ({
   __esModule: true,

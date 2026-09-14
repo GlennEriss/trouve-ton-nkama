@@ -240,6 +240,11 @@ function getAdsMetricsDailyTableRef() {
   return `\`${runtime.projectId}.${runtime.datasetId}.ads_metrics_daily\``;
 }
 
+function getAdsSlotEventsTableRef() {
+  const runtime = getBigQueryRuntimeContext();
+  return `\`${runtime.projectId}.${runtime.datasetId}.ads_slot_events\``;
+}
+
 function getAdSenseReportingRawTableRef() {
   const runtime = getBigQueryRuntimeContext();
   return `\`${runtime.projectId}.${runtime.datasetId}.adsense_reporting_raw\``;
@@ -1157,4 +1162,107 @@ ORDER BY CASE period_key WHEN "J-1" THEN 1 WHEN "7j" THEN 2 WHEN "30j" THEN 3 WH
 export async function listAdsExportRows(input: AdsAnalyticsBaseInput) {
   const timeseries = await listAdsRevenueTimeseries(input);
   return timeseries.points;
+}
+
+// Point 4 des raccordements analytiques de l'experience A_STACK vs B_ALTERNATE (audit §5.4/
+// §9 Lot 3, decision 2026-09-14) : metriques d'engagement/qualite d'integration par variante,
+// calculees depuis `ads_slot_events` (instrumentation interne, PAS la source de verite
+// financiere — cf. audit §12 "utiliser le rapport Google comme source de verite financiere").
+//
+// L'attribution du REVENU AdSense par variante ne necessite aucune colonne supplementaire :
+// A et B utilisent des ad units AdSense distinctes (raccordement 3), donc filtrer
+// `adsense_reporting_raw`/`ads_metrics_daily` par `dimension_ad_unit`/`slot_id` separe deja
+// leurs revenus (voir listAdsPlacements). Cette fonction couvre uniquement ce que le revenu
+// AdSense ne donne pas : fill rate/CTR/viewable rate proxies et guardrails d'engagement,
+// par variante, issus de nos propres evenements de slot.
+export type AdsExperimentSummaryInput = AdsAnalyticsBaseInput & {
+  experimentId: string;
+};
+
+export type AdsExperimentVariantRow = {
+  variant: string;
+  sessions: number;
+  adRequests: number;
+  adFilled: number;
+  viewableImpressions: number;
+  clicks: number;
+  /** Proxy interne (ad_filled / ad_request_sent) — PAS le fill rate AdSense officiel. */
+  fillRateProxy: number | null;
+  /** Proxy interne (ad_viewable_impression / ad_filled). */
+  viewableRateProxy: number | null;
+  /** Proxy interne (ad_click / ad_viewable_impression). */
+  ctrProxy: number | null;
+};
+
+export type AdsExperimentSummaryResult = {
+  experimentId: string;
+  period: {
+    range: AdsAnalyticsRange;
+    startAt: string;
+    endAt: string;
+  };
+  rows: AdsExperimentVariantRow[];
+  available: boolean;
+};
+
+function mapExperimentVariantRow(row: Record<string, unknown>): AdsExperimentVariantRow {
+  return {
+    variant: toNullableString(row.variant) ?? "unknown",
+    sessions: toSafeNumber(row.sessions, 0),
+    adRequests: toSafeNumber(row.ad_requests, 0),
+    adFilled: toSafeNumber(row.ad_filled, 0),
+    viewableImpressions: toSafeNumber(row.viewable_impressions, 0),
+    clicks: toSafeNumber(row.clicks, 0),
+    fillRateProxy: toNullableNumber(row.fill_rate_proxy),
+    viewableRateProxy: toNullableNumber(row.viewable_rate_proxy),
+    ctrProxy: toNullableNumber(row.ctr_proxy),
+  };
+}
+
+export async function getAdsExperimentSummary(
+  input: AdsExperimentSummaryInput,
+): Promise<AdsExperimentSummaryResult> {
+  const window = resolveDateWindow(input);
+  const tables = await getAdsTablesAvailability();
+
+  if (!tables.adsSlotEvents) {
+    return {
+      experimentId: input.experimentId,
+      period: { range: window.range, startAt: window.startAt, endAt: window.endAt },
+      rows: [],
+      available: false,
+    };
+  }
+
+  const result = await runBigQueryQuery({
+    query: `
+SELECT
+  COALESCE(NULLIF(experiment_variant, ""), "unknown") AS variant,
+  COUNT(DISTINCT session_id) AS sessions,
+  COUNTIF(event_name = "ad_request_sent") AS ad_requests,
+  COUNTIF(event_name = "ad_filled") AS ad_filled,
+  COUNTIF(event_name = "ad_viewable_impression") AS viewable_impressions,
+  COUNTIF(event_name = "ad_click") AS clicks,
+  SAFE_DIVIDE(COUNTIF(event_name = "ad_filled"), NULLIF(COUNTIF(event_name = "ad_request_sent"), 0)) AS fill_rate_proxy,
+  SAFE_DIVIDE(COUNTIF(event_name = "ad_viewable_impression"), NULLIF(COUNTIF(event_name = "ad_filled"), 0)) AS viewable_rate_proxy,
+  SAFE_DIVIDE(COUNTIF(event_name = "ad_click"), NULLIF(COUNTIF(event_name = "ad_viewable_impression"), 0)) AS ctr_proxy
+FROM ${getAdsSlotEventsTableRef()}
+WHERE experiment_id = @experimentId
+  AND date_key >= DATE(@startDate)
+  AND date_key <= DATE(@endDate)
+GROUP BY variant
+ORDER BY variant ASC`,
+    parameters: [
+      ...getDateParameters(window),
+      { name: "experimentId", type: "STRING", value: input.experimentId },
+    ],
+    maxResults: 20,
+  });
+
+  return {
+    experimentId: input.experimentId,
+    period: { range: window.range, startAt: window.startAt, endAt: window.endAt },
+    rows: result.rows.map(mapExperimentVariantRow),
+    available: true,
+  };
 }

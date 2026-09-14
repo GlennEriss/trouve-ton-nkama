@@ -4,6 +4,7 @@ let requestsPOST: typeof import('@/app/api/recommendations/requests/route').POST
 let eventsPOST: typeof import('@/app/api/recommendations/events/route').POST
 
 const forwardToRecommendationAnalytics = jest.fn(async (..._args: unknown[]) => undefined)
+const authMock = jest.fn(async () => null as { user?: { email?: string } } | null)
 
 jest.mock('next/server', () => ({
   NextResponse: {
@@ -15,6 +16,7 @@ jest.mock('next/server', () => ({
   },
 }))
 jest.mock('@/lib/logger', () => ({ createLogger: () => ({ warn: jest.fn(), error: jest.fn(), info: jest.fn() }) }))
+jest.mock('@/next-auth/auth', () => ({ auth: () => authMock() }))
 jest.mock('@/lib/server/recommendation-analytics-forwarder', () => ({
   forwardToRecommendationAnalytics: (...args: unknown[]) => forwardToRecommendationAnalytics(...args),
 }))
@@ -248,6 +250,34 @@ describe('POST /api/recommendations/requests + /api/recommendations/events', () 
         expect.objectContaining({ ranking_variant: 'baseline', ranking_version: 'baseline-v1' }),
         expect.any(String),
       )
+    })
+  })
+
+  describe('Compte forcé en baseline (RECOMMENDATION_FORCED_BASELINE_EMAILS)', () => {
+    beforeEach(() => {
+      process.env.RECOMMENDATION_FORCED_BASELINE_EMAILS = 'glenneriss@gmail.com'
+    })
+
+    afterEach(() => {
+      delete process.env.RECOMMENDATION_FORCED_BASELINE_EMAILS
+      authMock.mockResolvedValue(null)
+    })
+
+    it('place un compte de la liste blanche en baseline même si le tirage normal dirait control', async () => {
+      authMock.mockResolvedValue({ user: { email: 'glenneriss@gmail.com' } })
+
+      const { payload } = await registerRequest()
+
+      expect(payload.rankingVariant).toBe('baseline')
+      expect(payload.rankingVersion).toBe('baseline-v1')
+    })
+
+    it("n'affecte pas un compte hors liste blanche", async () => {
+      authMock.mockResolvedValue({ user: { email: 'quelquun-dautre@exemple.com' } })
+
+      const { payload } = await registerRequest()
+
+      expect(payload.rankingVariant).toBe('control')
     })
   })
 })
