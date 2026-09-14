@@ -307,7 +307,17 @@ export async function deletePropertyImagesByOwner(ownerUid: string): Promise<voi
   if (!bucketName) return
 
   const bucket = admin.storage(app).bucket(bucketName)
-  await bucket.deleteFiles({ prefix: `property/${ownerUid}/`, force: true })
+  let lastError: unknown
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await bucket.deleteFiles({ prefix: `property/${ownerUid}/`, force: true })
+      return
+    } catch (error) {
+      lastError = error
+      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** attempt))
+    }
+  }
+  throw lastError
 }
 
 /**
