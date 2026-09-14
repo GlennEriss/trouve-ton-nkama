@@ -29,6 +29,25 @@ export function getListingStatusLabel(status: Property['status']): string {
   return status === 'FOR_RENT' ? 'À louer' : 'À vendre';
 }
 
+// Longueur de repli sûre pour og:description/twitter:description — les crawlers de partage
+// (WhatsApp en particulier, plus agressif que Facebook) tronquent eux-mêmes une description trop
+// longue, souvent en plein milieu d'un mot ("...Le logem..."). En tronquant nous-mêmes ici, à une
+// coupure de mot propre suivie d'une seule ellipse, l'aperçu reste lisible quel que soit le
+// crawler — au lieu de dépendre d'un comportement de troncature externe non garanti.
+const SHARE_DESCRIPTION_MAX_LENGTH = 155;
+
+export function buildListingShareDescription(description: string): string {
+  const normalized = description.trim();
+  if (normalized.length <= SHARE_DESCRIPTION_MAX_LENGTH) {
+    return normalized;
+  }
+
+  const truncated = normalized.slice(0, SHARE_DESCRIPTION_MAX_LENGTH);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  const clean = lastSpaceIndex > 0 ? truncated.slice(0, lastSpaceIndex) : truncated;
+  return `${clean.trimEnd()}…`;
+}
+
 export function buildListingShareTitle(
   property: Pick<Property, 'title' | 'price' | 'street' | 'city' | 'province' | 'latitude' | 'longitude' | 'zones'>,
 ): string {
