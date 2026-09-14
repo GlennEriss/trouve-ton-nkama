@@ -29,7 +29,9 @@ jobs:
   application:
     name: Application, metier et couverture
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # La suite Jest avec couverture prend deja environ 17 minutes, auxquelles
+    # s'ajoutent l'installation et la verification TypeScript.
+    timeout-minutes: 35
 
     steps:
       - uses: actions/checkout@v4

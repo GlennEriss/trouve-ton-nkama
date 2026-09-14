@@ -35,6 +35,7 @@ const {
   keepScreenAwake,
   releaseScreenAwake,
   startAppAndDismissLogBox,
+  dismissLogBoxNoticeIfPresent,
 } = require('./lib');
 
 // Attend que la liste de résultats soit stabilisée après un changement de filtre : au moins une
@@ -59,6 +60,10 @@ async function waitForResultsSettled(timeoutMs = 45000, pollMs = 300) {
 // échouer toute la suite (fenêtre MainActivity masquée, tous les dumps montrant le launcher).
 async function recoverToStableState() {
   await bringAppToForeground();
+  // La bulle LogBox (voir dismissLogBoxNoticeIfPresent, lib.js) peut réapparaître entre deux
+  // cas (nouveau console.warn) et chevauche la bottom nav — sans ce dismiss, le tap suivant sur
+  // un onglet est absorbé par elle et échoue silencieusement.
+  await dismissLogBoxNoticeIfPresent();
   if (isSoftKeyboardShown()) {
     adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
     await sleep(400);
