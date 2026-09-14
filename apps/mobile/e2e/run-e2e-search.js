@@ -229,7 +229,10 @@ CASES.push({
     // retour matériel via son propre onRequestClose (voir SearchScreen.tsx), donc un BACK la
     // fermerait entièrement au lieu de juste masquer le clavier (constaté : "filters-apply"
     // disparaissait de l'arbre après ce BACK). Taper directement sur le bouton fonctionne
-    // tel quel, clavier ouvert ou non.
+    // tel quel, clavier ouvert ou non — mais laisser le temps au layout de se stabiliser après
+    // la saisie (adjustResize peut encore être en train de repositionner la ScrollView), sinon
+    // les coordonnées calculées par tapTestID peuvent viser une position déjà obsolète.
+    await sleep(500);
 
     await tapTestID('filters-apply');
     const settled = await waitForResultsSettled();
@@ -271,7 +274,9 @@ CASES.push({
     await tapTestID('filters-budget-min');
     typeText('5000');
     // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK,
-    // ça fermerait la modale via son onRequestClose au lieu de juste masquer le clavier.
+    // ça fermerait la modale via son onRequestClose au lieu de juste masquer le clavier ; le
+    // sleep laisse le temps au layout (adjustResize) de se stabiliser avant de taper.
+    await sleep(500);
 
     await tapTestID('filters-apply');
     const settled = await waitForResultsSettled();

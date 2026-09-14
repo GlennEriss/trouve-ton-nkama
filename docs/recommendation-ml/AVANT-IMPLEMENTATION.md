@@ -168,12 +168,13 @@ Premier test recommandé : 80 % classement actuel, 20 % baseline déterministe, 
 stable par sujet/session. Le modèle entraîné commence ensuite en shadow mode, puis 1 %, 5 %, 25 %
 et 50 %. Un groupe contrôle permanent est conservé.
 
-**Décision produit du 2026-09-14 : appliqué à 100 % dès le lancement de la baseline**
-(`RECOMMENDATION_BASELINE_TRAFFIC_PERCENT=100`), sans groupe témoin — écart assumé par rapport à
-la recommandation ci-dessus. Conséquence explicite : aucune comparaison avant/après possible tant
-qu'aucun trafic n'est repassé en `control`. Le mécanisme d'affectation par pourcentage reste en
-place (variable d'environnement, kill switch à 0 %) si un groupe témoin doit être réintroduit plus
-tard.
+**Historique de la décision (2026-09-14)** : d'abord passé à 100 % (aucun groupe témoin), puis
+revenu le même jour à la recommandation initiale — **80 % contrôle / 20 % baseline** — pour
+pouvoir mesurer l'impact réel du reclassement plutôt que de se fier à une impression subjective.
+Aucun compte n'est plus forcé dans une variante particulière (le mécanisme
+`RECOMMENDATION_FORCED_BASELINE_EMAILS` reste disponible dans le code mais n'est plus configuré) :
+tous les comptes, y compris ceux de l'équipe produit, sont soumis au même tirage aléatoire stable
+que le reste du trafic.
 
 Définir avant lancement : durée minimale, taille minimale, métrique principale, garde-fous,
 critère d'arrêt et personne habilitée à augmenter le trafic.
@@ -211,7 +212,7 @@ avec historique, annonce nouvelle, promotion, modèle indisponible, pagination, 
 | Pipeline BigQuery | Réutiliser l'existant s'il est déployé | Tech/Data | À auditer | — |
 | Baseline ranking | Score déterministe versionné | Tech/Produit | Proposé | — |
 | Modèle v1 | Régression logistique offline | Tech/Data | Proposé | — |
-| Expérience initiale | 100 % baseline, pas de groupe témoin | Produit/Data | Validée (écart assumé) | Conversation 2026-09-14 |
+| Expérience initiale | 80 % contrôle / 20 % baseline, aucun compte forcé | Produit/Data | Validée | Conversation 2026-09-14 |
 
 ## Checklist GO / NO-GO
 
