@@ -77,6 +77,31 @@ function toPlainTimestamp(value: unknown): PlainTimestamp | undefined {
     : undefined;
 }
 
+/**
+ * Convertit récursivement les valeurs Firestore en valeurs transmissibles à un Client
+ * Component. Une liste de champs ne suffit pas : les migrations ajoutent régulièrement des
+ * dates techniques (`contactBackfilledAt`, `imageShapeBackfilledAt`, etc.) et une seule instance
+ * `Timestamp` oubliée fait échouer toute la page détail.
+ */
+function toSerializableValue(value: unknown): unknown {
+  if (value === null || value === undefined || typeof value !== 'object') {
+    return value;
+  }
+
+  const timestamp = toPlainTimestamp(value);
+  if (timestamp) {
+    return timestamp;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(toSerializableValue);
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nestedValue]) => [key, toSerializableValue(nestedValue)]),
+  );
+}
+
 function normalizeText(value: unknown): string {
   if (typeof value !== 'string') {
     return '';
@@ -94,29 +119,7 @@ function mapDocToPublicProperty(id: string, data: unknown): PublicProperty | nul
     return null;
   }
 
-  const raw = data as Property;
-  const property = {
-    ...raw,
-    id,
-    createdAt: toPlainTimestamp(raw.createdAt),
-    updatedAt: toPlainTimestamp(raw.updatedAt),
-    moderationReviewedAt: toPlainTimestamp(raw.moderationReviewedAt),
-    claimedAt: toPlainTimestamp(raw.claimedAt),
-    sortTimestamp: toPlainTimestamp(raw.sortTimestamp),
-    lastBoostedAt: toPlainTimestamp(raw.lastBoostedAt),
-    currentPromotion: raw.currentPromotion
-      ? {
-          ...raw.currentPromotion,
-          startDate: toPlainTimestamp(raw.currentPromotion.startDate),
-          endDate: toPlainTimestamp(raw.currentPromotion.endDate),
-        }
-      : raw.currentPromotion,
-    promotionHistory: raw.promotionHistory?.map((promotion) => ({
-      ...promotion,
-      startDate: toPlainTimestamp(promotion.startDate),
-      endDate: toPlainTimestamp(promotion.endDate),
-    })),
-  } as PublicProperty;
+  const property = { ...(toSerializableValue(data) as Property), id } as PublicProperty;
 
   return property.state === 'IN_PROGRESS' && property.moderationStatus === 'APPROVED' ? property : null;
 }

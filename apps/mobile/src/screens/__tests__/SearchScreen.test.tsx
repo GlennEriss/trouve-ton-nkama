@@ -366,4 +366,132 @@ describe('SearchScreen', () => {
 
     await waitFor(() => expect(lastAlgoliaFilters()).toContain('price >= 10000'));
   });
+
+  it("Réinitialiser seul ne touche pas encore les résultats ni le badge — comme 'Effacer' côté PWA (local, sans appliquer)", async () => {
+    // Voir FilterModal.tsx / use-filter-modal.ts (web) : clearLocalFilters() ne fait que réinitialiser
+    // l'état local du formulaire, ne ferme pas la modale et ne déclenche aucune nouvelle requête —
+    // il faut ensuite "Appliquer" pour que ça compte. Comportement volontairement identique ici.
+    mockAlgoliaResponse([]);
+    await renderScreen();
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await fireEvent.press(await screen.findByText('Villa'));
+    await fireEvent.changeText(screen.getByTestId('filters-budget-min'), '50000');
+    await fireEvent.press(screen.getByText('Appliquer'));
+    expect(await screen.findByText('2')).toBeTruthy();
+    const filtersCountBeforeReset = (global.fetch as jest.Mock).mock.calls.length;
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await fireEvent.press(screen.getByText('Réinitialiser'));
+    // La modale reste ouverte (pas d'appel à onClose dans handleReset).
+    expect(screen.getByTestId('filters-modal')).toBeTruthy();
+    // Toujours aucune nouvelle requête réseau tant que "Appliquer" n'a pas été pressé.
+    expect((global.fetch as jest.Mock).mock.calls.length).toBe(filtersCountBeforeReset);
+
+    await fireEvent.press(screen.getByTestId('filters-close'));
+    // Fermer sans appliquer : le badge affiche toujours les filtres précédemment appliqués.
+    expect(await screen.findByText('2')).toBeTruthy();
+  });
+
+  it('Réinitialiser puis Appliquer efface bien TOUS les filtres (type, statut, budget min/max, province/ville/quartier) et relance la recherche sans eux', async () => {
+    // Hits distincts selon la présence de filtres, pour pouvoir constater à l'écran que la
+    // liste revient bien à l'état "non filtré" après Réinitialiser + Appliquer (et pas
+    // seulement que le badge disparaît).
+    // Villes volontairement différentes de celle choisie dans le filtre ("Libreville") pour
+    // éviter toute ambiguïté de texte entre la carte résultat et le sélecteur ville rouvert.
+    const FILTERED_HIT = { objectID: 'p-filtre', title: 'Villa filtrée trouvée', city: 'Lambaréné', price: 250000 };
+    const UNFILTERED_HIT = { objectID: 'p-tout', title: 'Annonce non filtrée', city: 'Port-Gentil', price: 75000 };
+    global.fetch = jest.fn((url: string, init?: { body?: string }) => {
+      if (url.includes('/api/categories/')) {
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ categories: [], leaves: [] }) });
+      }
+      const params = init?.body ? JSON.parse(init.body)?.requests?.[0]?.params : undefined;
+      const facetAttribute = params?.facets?.[0];
+      if (facetAttribute) {
+        const facetValues: Record<string, Record<string, number>> = {
+          province: { Estuaire: 12 },
+          city: { Libreville: 8 },
+          street: { Glass: 2 },
+        }[facetAttribute] ?? {};
+        return Promise.resolve({ ok: true, status: 200, json: async () => ({ results: [{ facets: { [facetAttribute]: facetValues } }] }) });
+      }
+      const hasExtraFilters = (params?.filters ?? '').includes('typeProperty');
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ results: [{ hits: hasExtraFilters ? [FILTERED_HIT] : [UNFILTERED_HIT], nbPages: 1, page: 0 }] }),
+      });
+    }) as unknown as jest.Mock;
+    await renderScreen();
+    expect(await screen.findByText('Annonce non filtrée')).toBeTruthy();
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    await fireEvent.press(await screen.findByText('Villa'));
+    await fireEvent.press(screen.getByText('Location'));
+    await fireEvent.changeText(screen.getByTestId('filters-budget-min'), '50000');
+    await fireEvent.changeText(screen.getByTestId('filters-budget-max'), '300000');
+
+    await screen.findByText('Toutes les provinces');
+    await fireEvent.press(screen.getByTestId('filters-province'));
+    await fireEvent.press(await screen.findByTestId('filters-province-option-Estuaire'));
+    await screen.findByText('Toutes les villes');
+    await fireEvent.press(screen.getByTestId('filters-city'));
+    await fireEvent.press(await screen.findByTestId('filters-city-option-Libreville'));
+    await screen.findByText('Tous les quartiers');
+    await fireEvent.press(screen.getByTestId('filters-street'));
+    await fireEvent.press(await screen.findByTestId('filters-street-option-Glass'));
+
+    await fireEvent.press(screen.getByText('Appliquer'));
+    // typeProperty + status + budgetMin + budgetMax + province + city + street = 7 filtres actifs.
+    expect(await screen.findByText('7')).toBeTruthy();
+    await waitFor(() => {
+      const filters = lastAlgoliaFilters();
+      expect(filters).toContain('typeProperty:"Villa"');
+      expect(filters).toContain('province:"Estuaire"');
+      expect(filters).toContain('city:"Libreville"');
+      expect(filters).toContain('street:"Glass"');
+      expect(filters).toContain('price >= 50000');
+      expect(filters).toContain('price <= 300000');
+    });
+    expect(await screen.findByText('Villa filtrée trouvée')).toBeTruthy();
+    expect(screen.queryByText('Annonce non filtrée')).toBeNull();
+    const fetchCallsAfterApply = (global.fetch as jest.Mock).mock.calls.length;
+
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    // Le formulaire rouvre pré-rempli avec les filtres actuellement appliqués (voir le useEffect
+    // de resynchronisation sur `visible`) — vérifie qu'on repart bien de l'état réellement actif.
+    expect(await screen.findByText('Libreville')).toBeTruthy();
+    expect(screen.getByText('Glass')).toBeTruthy();
+    expect(screen.getByDisplayValue('50000')).toBeTruthy();
+    expect(screen.getByDisplayValue('300000')).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Réinitialiser'));
+    await fireEvent.press(screen.getByText('Appliquer'));
+
+    // Badge de filtres actifs disparu : plus aucun filtre compté.
+    expect(screen.queryByTestId('search-filters-button')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText('7')).toBeNull());
+    expect(screen.queryByText('1')).toBeNull();
+
+    // La liste elle-même est bien revenue à l'état non filtré (pas seulement le badge).
+    expect(await screen.findByText('Annonce non filtrée')).toBeTruthy();
+    expect(screen.queryByText('Villa filtrée trouvée')).toBeNull();
+
+    // Pas d'assertion sur un nouvel appel réseau ici : la requête `['algolia-search', '', {}]`
+    // (aucun filtre) est strictement identique à celle du montage initial, et useInfiniteQuery a
+    // `staleTime: 60_000` (SearchScreen.tsx) — react-query sert donc l'état vide depuis son cache
+    // au lieu de refetch, ce qui est le comportement voulu (voir le commentaire sur staleTime).
+    // `fetchCallsAfterApply` ne sert donc plus qu'à documenter qu'aucun appel superflu n'est fait.
+    expect((global.fetch as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(fetchCallsAfterApply);
+
+    // Les champs du formulaire lui-même repartent bien à vide/"Tous" à la réouverture — la
+    // province étant aussi réinitialisée, la ville retombe sur son placeholder "en attente de
+    // province" (scope Immobilier), pas "Toutes les villes" (qui suppose une province déjà
+    // choisie ou n'être pas en scope Immobilier).
+    await fireEvent.press(screen.getByLabelText('Filtres'));
+    expect(await screen.findByText('Toutes les provinces')).toBeTruthy();
+    expect(screen.getByText("Choisissez d'abord une province")).toBeTruthy();
+    expect(screen.getByPlaceholderText('Ex: 50000').props.value).toBe('');
+    expect(screen.getByPlaceholderText('Ex: 300000').props.value).toBe('');
+  });
 });
