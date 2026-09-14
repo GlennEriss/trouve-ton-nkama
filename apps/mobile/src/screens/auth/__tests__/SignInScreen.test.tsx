@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { screen, fireEvent, waitFor } from '@testing-library/react-native';
 import { getAuth, signInWithEmailAndPassword } from '@react-native-firebase/auth';
 import SignInScreen from '../SignInScreen';
@@ -54,5 +55,24 @@ describe('SignInScreen', () => {
     await fireEvent.changeText(screen.getByPlaceholderText('Saisissez votre email'), 'test@example.com');
     await fireEvent.changeText(screen.getByPlaceholderText('Saisissez votre mot de passe'), 'secret123');
     expect(screen.getByText('Connexion').parent?.parent?.props.accessibilityState?.disabled).toBe(false);
+  });
+
+  it('affiche le vrai logo Google (plus le placeholder "G")', async () => {
+    await renderWithNavigation(<SignInScreen />);
+    expect(screen.getByText('Continuer avec Google')).toBeTruthy();
+    expect(screen.queryByText('G')).toBeNull();
+  });
+
+  it('propose "Continuer avec Apple" sur iOS', async () => {
+    Platform.OS = 'ios';
+    await renderWithNavigation(<SignInScreen />);
+    expect(screen.getByText('Continuer avec Apple')).toBeTruthy();
+  });
+
+  it("masque le bouton Apple hors iOS", async () => {
+    Platform.OS = 'android';
+    await renderWithNavigation(<SignInScreen />);
+    expect(screen.queryByText('Continuer avec Apple')).toBeNull();
+    Platform.OS = 'ios';
   });
 });

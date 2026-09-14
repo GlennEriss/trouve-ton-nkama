@@ -88,19 +88,54 @@ mesurable de façon fiable, ce qui explique pourquoi ce point nécessitait spéc
 réseau dégradé pour être objectivé (comme le document l'anticipe : « le temps médian ne doit
 pas régresser sur une bonne connexion »).
 
-### Points 4/6 — concurrence, upload Reel
+### Point 4 — concurrence contrôlée (mesure réelle, réseau throttlé, 2026-09-14)
 
-**Non isolés séparément** dans cette passe. Référence disponible en attendant : les runs e2e
-réels de ce chantier (`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore)
-publient une annonce immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**,
-et une annonce Mode par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de
-bout en bout après l'ensemble des optimisations de ce document.
+Méthode : même dispositif que le point 3 (e2e Playwright réel, `/property/add/studio`, vrai
+Storage + vrai Firestore, throttle CDP activé juste avant "Enregistrer"), mais avec **6
+images** (même photo de 185 Ko dupliquée 6 fois) et un throttle upload à **400 kbps** (750
+kbps download, 150 ms latence — un peu moins sévère que le point 3 pour laisser une chance de
+succès à la concurrence 3). AVANT = `DEFAULT_UPLOAD_CONCURRENCY` temporairement remonté à 6
+dans `file.db.ts` (donc les 6 images démarrent en même temps, comme l'ancien `Promise.all`
+illimité — code restauré à l'identique juste après, `git diff` vide vérifié) ; APRÈS = code
+actuel (concurrence 3). Deux runs chacun :
+
+| Mesure | Run 1 | Run 2 | Issue |
+|---|---:|---:|---|
+| AVANT (concurrence 6, illimitée) | 20 861 ms | 20 865 ms | **Échec systématique** — timeout 20 s sur les 6 uploads (principaux ET vignettes) |
+| APRÈS (concurrence 3, code actuel) | 34 207 ms | 34 685 ms | **Succès systématique** |
+
+**Lecture** : sous une connexion mobile lente partagée entre plusieurs uploads simultanés, la
+bande passante par upload s'effondre proportionnellement au nombre de connexions actives —
+avec 6 images en parallèle, chaque upload individuel n'obtient plus qu'1/6 de la bande
+passante totale et dépasse systématiquement le délai interne de 20 s (`withTimeout` dans
+`createFile`), faisant échouer **la totalité** de la publication (aucune image, ni annonce,
+n'est enregistrée). Avec la concurrence bornée à 3, chaque upload actif obtient assez de
+bande passante pour rester sous ce délai, et l'annonce est publiée avec succès — au prix d'un
+temps total plus long (~34 s vs un échec immédiat après ~21 s), ce qui est le compromis
+attendu et documenté (§ Critère de validation : « le temps médian ne doit pas régresser sur
+une bonne connexion et le percentile 95 doit s'améliorer sur mobile, **avec moins de
+timeouts** »). C'est exactement le scénario que le point 4 visait à éviter, reproduit et
+confirmé en conditions réelles : sans lui, un vendeur ajoutant plusieurs photos sur une
+connexion mobile lente perdait entièrement sa publication (aucun message d'erreur
+actionnable au-delà d'un toast générique), avec lui il publie avec succès.
+
+**Biais assumé** : le seuil exact de bande passante où l'échec apparaît dépend du nombre
+d'images et de leur poids ; ce test isole un point de rupture net (400 kbps / 6 images) pour
+objectiver le mécanisme, pas une courbe complète bande-passante × nombre d'images.
+
+### Point 6 — upload Reel reprenable
+
+**Non isolé séparément** dans cette passe (même méthode possible, hors budget). Référence
+disponible en attendant : les runs e2e réels de ce chantier
+(`property-and-mode-creation.spec.ts`, vrai Storage + vrai Firestore) publient une annonce
+immobilière complète (formulaire manuel, 1 image) en **17,5 à 23,5 s**, et une annonce Mode
+par IA (upload + appel Gemini + écriture) en **16,4 s** — chiffres de bout en bout après
+l'ensemble des optimisations de ce document.
 
 ### Suite recommandée
 
-Établir une baseline chiffrée pour les points 4 (plusieurs images, effet de la concurrence
-bornée) et 6 (upload vidéo Reel reprenable) sous le même profil réseau throttlé — même
-méthode que le point 3 ci-dessus, hors budget de cette passe.
+Établir une baseline chiffrée pour le point 6 (upload vidéo Reel reprenable) sous un profil
+réseau throttlé — même méthode que les points 3 et 4 ci-dessus, hors budget de cette passe.
 
 ## Objet du document
 

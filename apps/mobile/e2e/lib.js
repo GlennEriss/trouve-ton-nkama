@@ -247,12 +247,15 @@ async function relaunchApp() {
 
 async function startAppAndDismissLogBox() {
   await relaunchApp();
-  // 120s plutôt que 45s : sur l'émulateur (contrairement au téléphone physique, ~35s), le
+  // 180s plutôt que 45s : sur l'émulateur (contrairement au téléphone physique, ~35s), le
   // handshake natif du bridge RN (ReactHost.getJSBundleLoader -> isMetroRunning ->
   // loadJSBundleFromMetro -> Loading JS Bundle) prend lui-même 40-90s après un force-stop —
   // Metro sert pourtant le bundle en <200ms (vérifié dans les logs Metro), le coût est donc
-  // côté natif/émulateur, pas réseau ni bundling.
-  const startupMs = await waitForTestID('screen-accueil', 120000);
+  // côté natif/émulateur, pas réseau ni bundling. Le budget a été monté de 120s à 180s après
+  // avoir constaté (via HWUI "Davey!" + screencaps) que l'app progresse mais rend chaque frame
+  // en 800-1150ms au lieu de 16.6ms quand la machine hôte est chargée (Cursor/tsserver/browser
+  // concurrents) — le rendu finit par aboutir, 120s est juste trop court dans ces conditions.
+  const startupMs = await waitForTestID('screen-accueil', 180000);
   const dismissed = await dismissLogBoxNoticeIfPresent();
   return { startupMs, dismissed };
 }

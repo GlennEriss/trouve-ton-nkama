@@ -125,6 +125,27 @@ type AdsAlertsPayload = {
   }>;
 };
 
+type AdsExperimentPayload = {
+  experimentId: string;
+  period: {
+    range: RangeFilter;
+    startAt: string;
+    endAt: string;
+  };
+  available: boolean;
+  rows: Array<{
+    variant: string;
+    sessions: number;
+    adRequests: number;
+    adFilled: number;
+    viewableImpressions: number;
+    clicks: number;
+    fillRateProxy: number | null;
+    viewableRateProxy: number | null;
+    ctrProxy: number | null;
+  }>;
+};
+
 type AdsComparisonPayload = {
   generatedAt: string;
   rows: Array<{
@@ -288,6 +309,16 @@ function alertLevelBadge(level: "info" | "warning" | "critical") {
   return <Badge variant="secondary">Info</Badge>;
 }
 
+function variantBadge(variant: string) {
+  if (variant === "A_STACK") {
+    return <Badge variant="secondary">A_STACK (contrôle)</Badge>;
+  }
+  if (variant === "B_ALTERNATE") {
+    return <Badge variant="success">B_ALTERNATE (challenger)</Badge>;
+  }
+  return <Badge variant="secondary">{variant}</Badge>;
+}
+
 function sourceBadge(source: "ads_metrics_daily" | "ads_slot_events" | "adsense_reporting_raw" | "none") {
   if (source === "adsense_reporting_raw") {
     return <Badge variant="success">AdSense raw</Badge>;
@@ -307,6 +338,7 @@ export default function AnalyticsAdsPage() {
   const [customEnd, setCustomEnd] = useState("");
   const [placementsOffset, setPlacementsOffset] = useState(0);
   const [pagesOffset, setPagesOffset] = useState(0);
+  const [experimentId, setExperimentId] = useState("ads-stacking-v1");
 
   const limit = 20;
   const customStartIso = useMemo(() => toIsoIfPossible(customStart), [customStart]);
@@ -414,6 +446,20 @@ export default function AnalyticsAdsPage() {
       ),
   });
 
+  const experimentIdTrimmed = experimentId.trim();
+  const experimentQuery = useQuery({
+    queryKey: ["analytics", "ads", "experiments", experimentIdTrimmed, range, customStartIso, customEndIso],
+    queryFn: () => {
+      const params = new URLSearchParams(commonParams);
+      params.set("experimentId", experimentIdTrimmed);
+      return fetchJson<AdsExperimentPayload>(
+        `/api/admin/v1/analytics/ads/experiments?${params.toString()}`,
+        "Impossible de charger le résumé d'expérience.",
+      );
+    },
+    enabled: canQuery && experimentIdTrimmed.length > 0,
+  });
+
   const isLoading =
     overviewQuery.isLoading ||
     timeseriesQuery.isLoading ||
@@ -451,7 +497,16 @@ export default function AnalyticsAdsPage() {
     void pagesQuery.refetch();
     void comparisonQuery.refetch();
     void alertsQuery.refetch();
-  }, [alertsQuery, comparisonQuery, overviewQuery, pagesQuery, placementsQuery, timeseriesQuery]);
+    void experimentQuery.refetch();
+  }, [
+    alertsQuery,
+    comparisonQuery,
+    experimentQuery,
+    overviewQuery,
+    pagesQuery,
+    placementsQuery,
+    timeseriesQuery,
+  ]);
 
   const unavailableSources = useMemo(() => {
     const availability = overviewQuery.data?.dataAvailability;
@@ -888,6 +943,114 @@ export default function AnalyticsAdsPage() {
           </CardContent>
         </Card>
       </section>
+
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-semibold text-foreground">
+            Expérience A_STACK vs B_ALTERNATE (empilement/alternance)
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Population : sessions monétisables <code>search_infeed</code> et{" "}
+            <code>immobilier_infeed</code> uniquement. Ces chiffres viennent de{" "}
+            <code>ads_slot_events</code> (instrumentation interne) — ce sont des proxies
+            d&apos;engagement, pas le revenu officiel. Cf. audit §12 : le rapport Google reste la
+            source de vérité financière.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="experiment-id-input" className="text-xs text-muted-foreground">
+                Identifiant d&apos;expérience
+              </label>
+              <Input
+                id="experiment-id-input"
+                value={experimentId}
+                onChange={(event) => setExperimentId(event.target.value)}
+                placeholder="ads-stacking-v1"
+                className="w-64"
+              />
+            </div>
+          </div>
+
+          {!experimentQuery.data?.available && !experimentQuery.isLoading ? (
+            <p className="text-sm text-muted-foreground">
+              Aucune donnée <code>ads_slot_events</code> disponible pour cette expérience sur la
+              période sélectionnée (table indisponible, ou aucun événement tagué avec cet
+              identifiant — vérifier que <code>NEXT_PUBLIC_ADS_STACKING_EXPERIMENT_ID</code> est
+              bien configuré côté location-maison).
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-muted-foreground">
+                    <th className="py-2 pr-4 font-medium">Variante</th>
+                    <th className="py-2 pr-4 font-medium">Sessions</th>
+                    <th className="py-2 pr-4 font-medium">Requêtes pub</th>
+                    <th className="py-2 pr-4 font-medium">Remplies</th>
+                    <th className="py-2 pr-4 font-medium">Vues visibles</th>
+                    <th className="py-2 pr-4 font-medium">Clics</th>
+                    <th className="py-2 pr-4 font-medium">Fill rate (proxy)</th>
+                    <th className="py-2 pr-4 font-medium">Viewable rate (proxy)</th>
+                    <th className="py-2 pr-4 font-medium">CTR (proxy)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {experimentQuery.data?.rows.length ? (
+                    experimentQuery.data.rows.map((row) => (
+                      <tr key={row.variant} className="border-b border-border">
+                        <td className="py-2 pr-4">{variantBadge(row.variant)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatNumber(row.sessions)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatNumber(row.adRequests)}</td>
+                        <td className="py-2 pr-4 text-foreground">{formatNumber(row.adFilled)}</td>
+                        <td className="py-2 pr-4 text-foreground">
+                          {formatNumber(row.viewableImpressions)}
+                        </td>
+                        <td className="py-2 pr-4 text-foreground">{formatNumber(row.clicks)}</td>
+                        <td className="py-2 pr-4 text-foreground">
+                          {formatPercent(row.fillRateProxy, 1)}
+                        </td>
+                        <td className="py-2 pr-4 text-foreground">
+                          {formatPercent(row.viewableRateProxy, 1)}
+                        </td>
+                        <td className="py-2 pr-4 text-foreground">{formatPercent(row.ctrProxy, 2)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-6 text-center text-sm text-muted-foreground">
+                        Aucun événement pour cet identifiant d&apos;expérience sur cette période.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Revenu AdSense par variante</p>
+            <p className="mt-1">
+              A et B utilisent des ad units AdSense distinctes : filtrer &laquo;&nbsp;Performance
+              emplacements&nbsp;&raquo; ci-dessus par <code>slot_id</code> sépare déjà leur
+              revenu, sans colonne supplémentaire. Slot A = unité normale du placement
+              (<code>NEXT_PUBLIC_ADSENSE_SLOT_SEARCH_INLINE</code> /{" "}
+              <code>NEXT_PUBLIC_ADSENSE_SLOT_IMMOBILIER_INLINE</code> côté location-maison), slot
+              B = <code>NEXT_PUBLIC_ADSENSE_SLOT_STACKING_EXPERIMENT_B</code>. Si ces identifiants
+              changent côté AdSense, mettre à jour cette note.
+            </p>
+            <p className="mt-2 font-medium text-foreground">
+              Non couvert par cette page (gap documenté, pas dérivable de ads_slot_events)
+            </p>
+            <p className="mt-1">
+              Revenu total/1000 sessions (AdSense + maison amorti), conversion produit, pages
+              vues/session, taux de sortie, LCP/INP/CLS par variante. Ces garde-fous nécessitent
+              de tagger un pipeline analytics produit/session différent, non fait à ce stade.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <TrendingUp className="h-3.5 w-3.5" />
