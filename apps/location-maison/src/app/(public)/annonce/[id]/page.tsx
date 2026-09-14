@@ -5,7 +5,7 @@ import { createLogger } from '@/lib/logger'
 import { notFound } from 'next/navigation';
 import { absoluteUrl, canonical } from '@/lib/seo/site-url';
 import { getPropertyLastModified, getPublicPropertyById } from '@/lib/seo/public-listings';
-import { buildListingShareDescription, buildListingShareTitle } from '@/lib/seo/listing-share';
+import { buildListingShareTitle } from '@/lib/seo/listing-share';
 import { getListingZones } from '@/lib/listing-zones';
 
 const logger = createLogger('app.annonce.page')
@@ -40,9 +40,6 @@ export async function generateMetadata({ params }: { params: AnnonceParams }): P
     // l'image + ces deux champs (souvent tronqués), donc le prix et le quartier doivent y
     // être explicitement plutôt que de compter sur le titre libre saisi par l'annonceur.
     const shareTitle = buildListingShareTitle(property);
-    // Tronquée nous-mêmes à une coupure de mot propre : évite qu'un crawler (WhatsApp surtout)
-    // ne coupe en plein milieu d'un mot — voir buildListingShareDescription.
-    const shareDescription = buildListingShareDescription(property.description);
     // Image composée (photo + bandeau prix/quartier), voir src/app/api/og/property/[id]/route.tsx.
     const ogImage = absoluteUrl(`/api/og/property/${id}`);
 
@@ -54,7 +51,7 @@ export async function generateMetadata({ params }: { params: AnnonceParams }): P
       },
       openGraph: {
         title: shareTitle,
-        description: shareDescription,
+        description: property.description,
         url: canonicalUrl,
         type: 'article',
         images: [{ url: ogImage, width: 1200, height: 630, alt: shareTitle }],
@@ -62,7 +59,7 @@ export async function generateMetadata({ params }: { params: AnnonceParams }): P
       twitter: {
         card: 'summary_large_image',
         title: shareTitle,
-        description: shareDescription,
+        description: property.description,
         images: [ogImage],
       },
     };
