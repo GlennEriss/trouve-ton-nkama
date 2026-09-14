@@ -11,6 +11,7 @@ import { updateProperty } from '@/db/property.db'
 import { getPropertyImageUrls } from '@/lib/property-images'
 import { getListingZones, buildZonesPatch } from '@/lib/listing-zones'
 import { routes } from '@/constantes/routes'
+import ListingImagesEditor from './ListingImagesEditor'
 
 /**
  * Brouillon éditable d'une annonce multi-catégorie (`/category-listing/create/preview/[id]`)
@@ -134,6 +135,12 @@ export default function PreviewCategoryListingDraft({ property: initialProperty 
         </p>
         <CarouselProperty images={images} />
       </section>
+
+      <ListingImagesEditor
+        images={property.images ?? []}
+        ownerId={property.createdBy}
+        onSave={(nextImages) => saveField({ images: nextImages })}
+      />
 
       <section className="flex flex-col gap-2">
         <div className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">

@@ -236,7 +236,7 @@ CASES.push({
     // (adjustResize) de la fenêtre APRÈS qu'un dump a déjà renvoyé des bounds "compressées",
     // rendant obsolètes des coordonnées calculées à partir d'un seul dump. tapTestIDWhenStable
     // n'appuie qu'une fois deux dumps consécutifs d'accord sur la position.
-    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply');
+    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply', 30000);
     const settled = await waitForResultsSettled();
 
     return `cascade province→ville→quartier en ${cascadeMs} ms (quartier ${streetPicked ? 'choisi' : 'vide pour cette ville'}), budget min/max appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;
@@ -277,7 +277,7 @@ CASES.push({
     // Voir le commentaire équivalent dans le cas Immobilier ci-dessus : pas de KEYCODE_BACK
     // (fermerait la modale), tapTestIDWhenStable pour absorber le masquage du clavier déclenché
     // par `uiautomator dump` lui-même et le resize qui s'ensuit.
-    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply');
+    await tapUntilGone(() => tapTestIDWhenStable('filters-apply'), 'filters-apply', 30000);
     const settled = await waitForResultsSettled();
 
     return `ville ${cityPicked ? `choisie en ${cityMs} ms (Algolia, facette "cities")` : 'vide pour Mode'}, budget minimum appliqué, résultats stabilisés en ${settled.ms} ms (${settled.cards} cartes)`;

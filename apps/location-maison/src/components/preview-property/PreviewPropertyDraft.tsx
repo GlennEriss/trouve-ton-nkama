@@ -14,6 +14,7 @@ import { EditableField } from '@/components/shared/EditableField'
 import { updateProperty } from '@/db/property.db'
 import { getPrimaryPropertyImageUrl, getPropertyImageUrls } from '@/lib/property-images'
 import { routes } from '@/constantes/routes'
+import ListingImagesEditor from './ListingImagesEditor'
 
 const MAX_ADDITIONAL_CONTACTS = 4
 
@@ -145,6 +146,12 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
         </div>
         <CarouselProperty images={images} />
       </section>
+
+      <ListingImagesEditor
+        images={property.images ?? []}
+        ownerId={property.createdBy}
+        onSave={(nextImages) => saveField({ images: nextImages })}
+      />
 
       {/* Section description */}
       <section className="flex flex-col gap-2">
