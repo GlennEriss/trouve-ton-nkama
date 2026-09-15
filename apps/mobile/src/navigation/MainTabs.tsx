@@ -41,6 +41,28 @@ function PublishTabButton(props: BottomTabBarButtonProps) {
   );
 }
 
+// Même garde synchrone que PublishTabButton ci-dessus : sans elle, l'onglet montait toujours
+// ProfileStack (déconnecté ou pas) et ne comptait que sur l'effet async de useRequireAuth (dans
+// ProfileScreen) pour rediriger vers SignIn — d'où le bug constaté (en-tête "Profil" affiché,
+// contenu vide, redirection qui n'arrivait jamais si l'effet ratait sa fenêtre).
+function ProfileTabButton(props: BottomTabBarButtonProps) {
+  const { children, onPress, style, testID, accessibilityState, accessibilityLabel } = props;
+  return (
+    <TouchableOpacity
+      testID={testID}
+      style={style}
+      accessibilityState={accessibilityState}
+      accessibilityLabel={accessibilityLabel}
+      onPress={(e) => {
+        if (!requireAuthOrRedirect()) return;
+        onPress?.(e);
+      }}
+    >
+      {children}
+    </TouchableOpacity>
+  );
+}
+
 export function MainTabs() {
   // Enregistré ici (racine post-authentification) plutôt que dans App.tsx : n'a de sens que
   // pour un utilisateur connecté (voir useFcmToken.ts, qui lit getAuth().currentUser).
@@ -87,6 +109,7 @@ export function MainTabs() {
           tabBarButtonTestID: 'tab-connexion',
           tabBarLabel: user ? 'Profil' : 'Connexion',
           tabBarIcon: ({ color, size }) => <UserCircle color={color} size={size} />,
+          tabBarButton: (props) => <ProfileTabButton {...props} />,
         }}
       />
     </Tab.Navigator>

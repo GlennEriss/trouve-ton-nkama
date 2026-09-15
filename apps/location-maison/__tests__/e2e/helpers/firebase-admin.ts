@@ -169,6 +169,22 @@ export type SeedProperty = {
   // immobilier/Mode. Permet de reproduire cette donnée réaliste dans un seed de test.
   categoryId?: string
   images?: Array<{ filePATH: string; fileURL: string; thumbPATH?: string; thumbURL?: string }>
+  // Champs specifiques aux sous-types immobiliers (Logement/Building/Kiosk/Room...), voir
+  // src/models/annonce.d.ts — optionnels ici pour ne pas forcer chaque seed existant a les
+  // fournir ; requis en pratique par DetailsProperty.tsx selon `typeProperty`.
+  nbrRooms?: number
+  nbrKitchens?: number
+  nbrBathrooms?: number
+  nbrToilets?: number
+  nbrToilet?: number
+  nbrFloors?: number
+  hasParking?: boolean
+  nbrApartments?: number
+  nbrLivingRoom?: number
+  nbrGarages?: number
+  nbrPiscine?: number
+  kioskType?: string
+  roomType?: string
 }
 
 /**

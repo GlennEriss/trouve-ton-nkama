@@ -189,7 +189,7 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
                 : 'Date inconnue'}
             </span>
           </p>
-          <DetailsProperty property={property as any} />
+          <DetailsProperty property={property as any} onSaveField={saveField} />
         </section>
 
         <section className="flex flex-col gap-3 rounded-lg p-5 shadow dark:shadow-gray-800 dark:bg-gray-800 dark:text-white">
