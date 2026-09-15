@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, X, CheckCircle2 } from 'lucide-react'
+import { Plus, X, CheckCircle2, Pencil } from 'lucide-react'
 import Tag from './Tag'
 import { GoLocation } from 'react-icons/go'
 import CarouselProperty from './CarouselProperty'
@@ -11,6 +11,7 @@ import ContactSection from './ContactSection'
 import { MapSection } from './MapSection'
 import { Button } from '@trouve-ton-nkama/ui/button'
 import { EditableField } from '@/components/shared/EditableField'
+import { LocationEditModal } from './LocationEditModal'
 import { updateProperty } from '@/db/property.db'
 import { getPrimaryPropertyImageUrl, getPropertyImageUrls } from '@/lib/property-images'
 import { routes } from '@/constantes/routes'
@@ -35,6 +36,7 @@ const MAX_ADDITIONAL_CONTACTS = 4
 export default function PreviewPropertyDraft({ property: initialProperty }: Readonly<{ property: Property }>) {
   const router = useRouter()
   const [property, setProperty] = useState(initialProperty)
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false)
 
   const isRejected = property.moderationStatus === 'REJECTED'
   const isPending = property.moderationStatus === 'PENDING'
@@ -139,10 +141,19 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <GoLocation size={25} className="text-red-600" />
+          <GoLocation size={25} className="text-red-600 shrink-0" />
           <h2 className="text-[13px] md:text-lg text-justify text-gray-500 dark:text-gray-400">
             {property.street}, {property.city} {property.province}
           </h2>
+          <button
+            type="button"
+            onClick={() => setIsLocationModalOpen(true)}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-600 shadow-sm hover:border-primary hover:bg-slate-50 hover:text-primary active:scale-95 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-primary"
+            aria-label="Modifier la localisation"
+            title="Modifier la localisation"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
         </div>
         <CarouselProperty images={images} />
       </section>
@@ -252,6 +263,13 @@ export default function PreviewPropertyDraft({ property: initialProperty }: Read
           <CheckCircle2 className="h-4 w-4" /> Terminé — voir mes annonces
         </Button>
       </section>
+
+      <LocationEditModal
+        property={property}
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        onSave={saveField}
+      />
     </div>
   )
 }
