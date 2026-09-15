@@ -95,3 +95,11 @@ export function composeBirthDate(day: string, month: string, year: string): stri
 export function isValidSignupPassword(value: string): boolean {
   return value.length >= 8 && /[A-Z]/.test(value) && /\d/.test(value);
 }
+
+// Miroir de FormRegisterSchema.email (web, schema.ts, z.string().email()) — regex volontairement
+// simple (présence d'un @ avec du texte de part et d'autre, un domaine avec un point) : le
+// mobile n'avait aucune validation de format avant (seul `.trim()` non-vide), ce qui laissait
+// passer un email sans "@".
+export function isValidSignupEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
