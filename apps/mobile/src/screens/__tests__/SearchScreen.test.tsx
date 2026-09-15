@@ -408,11 +408,12 @@ describe('SearchScreen', () => {
       const params = init?.body ? JSON.parse(init.body)?.requests?.[0]?.params : undefined;
       const facetAttribute = params?.facets?.[0];
       if (facetAttribute) {
-        const facetValues: Record<string, Record<string, number>> = {
+        const facetsByAttribute: Record<string, Record<string, number>> = {
           province: { Estuaire: 12 },
           city: { Libreville: 8 },
           street: { Glass: 2 },
-        }[facetAttribute] ?? {};
+        };
+        const facetValues = facetsByAttribute[facetAttribute] ?? {};
         return Promise.resolve({ ok: true, status: 200, json: async () => ({ results: [{ facets: { [facetAttribute]: facetValues } }] }) });
       }
       const hasExtraFilters = (params?.filters ?? '').includes('typeProperty');

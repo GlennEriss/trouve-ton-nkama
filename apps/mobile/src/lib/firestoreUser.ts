@@ -1,30 +1,42 @@
 // Miroir mobile de apps/location-maison/src/features/auth/services/auth.service.ts
 // (transformToUser) — même collection `users`, mêmes champs, pour que le compte créé côté
 // mobile soit identique à un compte créé côté web (unicité téléphone/email, crédits
-// d'accueil, rôles...).
+// d'accueil, rôles, pseudo, numéro WhatsApp séparé...).
+export type AccountType = 'User' | 'Announcer';
+
 export type SignupInput = {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  pseudo?: string;
   birthDate: string; // YYYY-MM-DD
-  phoneNumber: string;
+  phoneNumber: string; // déjà au format E.164 (+241...)
+  whatsappNumber?: string; // déjà au format E.164 ; si absent, réutilise phoneNumber
+  accountType: AccountType;
 };
 
 export function buildNewUserDocument(uid: string, data: SignupInput) {
   const now = new Date();
+  const whatsappNumber = data.whatsappNumber?.trim() || data.phoneNumber;
+  // Comme transformToUser (web) : phoneNumbers reste la source pour l'auth et l'auto-
+  // attribution — le numéro WhatsApp y est ajouté quand il diffère, pas de doublon sinon.
+  const phoneNumbers = whatsappNumber === data.phoneNumber ? [data.phoneNumber] : [data.phoneNumber, whatsappNumber];
+  const roles = data.accountType === 'Announcer' ? ['User', 'Announcer'] : ['User'];
+
   return {
     uid,
     login: data.email,
     firstname: data.firstName,
     lastname: data.lastName,
+    ...(data.pseudo?.trim() ? { pseudo: data.pseudo.trim() } : {}),
     birthDate: data.birthDate,
     email: data.email,
     country: { code: 'GA', name: 'Gabon' },
-    phoneNumbers: [data.phoneNumber],
+    phoneNumbers,
     callNumber: data.phoneNumber,
-    whatsappNumber: data.phoneNumber,
-    roles: ['User'],
+    whatsappNumber,
+    roles,
     emailVerified: false,
     providers: ['CREDENTIALS'],
     metadata: {},
@@ -68,4 +80,18 @@ export function isValidBirthDate(value: string): boolean {
   const dayDiff = today.getDate() - day;
   const realAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
   return realAge >= MIN_AGE_YEARS;
+}
+
+// Compose AAAA-MM-JJ à partir des 3 champs séparés jour/mois/année (voir DateSelect, web) —
+// retourne '' si l'un des trois manque, pour laisser isValidBirthDate rejeter proprement.
+export function composeBirthDate(day: string, month: string, year: string): string {
+  if (!day.trim() || !month.trim() || !year.trim()) return '';
+  return `${year.trim()}-${month.trim().padStart(2, '0')}-${day.trim().padStart(2, '0')}`;
+}
+
+// Miroir de FormRegisterSchema.password (web, schema.ts) : 8 caractères minimum + au moins
+// une majuscule + au moins un chiffre. Le mobile n'appliquait avant que la longueur, ce qui
+// laissait passer des mots de passe que le web refuse (ex. "aaaaaaaa").
+export function isValidSignupPassword(value: string): boolean {
+  return value.length >= 8 && /[A-Z]/.test(value) && /\d/.test(value);
 }

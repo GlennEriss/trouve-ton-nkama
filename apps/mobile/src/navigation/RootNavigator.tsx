@@ -8,6 +8,7 @@ import { useAuthState } from '../hooks/useAuthState';
 import { colors } from '../theme/colors';
 import SignInScreen from '../screens/auth/SignInScreen';
 import SignUpScreen from '../screens/auth/SignUpScreen';
+import SignUpSuccessScreen from '../screens/auth/SignUpSuccessScreen';
 import PhoneSignInScreen from '../screens/auth/PhoneSignInScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import type { RootStackParamList } from './types';
@@ -37,6 +38,7 @@ export function RootNavigator() {
         <Stack.Group screenOptions={{ presentation: 'modal', headerShown: true }}>
           <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: '' }} />
           <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Inscription' }} />
+          <Stack.Screen name="SignUpSuccess" component={SignUpSuccessScreen} options={{ title: 'Compte créé' }} />
           <Stack.Screen name="PhoneSignIn" component={PhoneSignInScreen} options={{ title: 'Téléphone' }} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ title: 'Mot de passe oublié' }} />
         </Stack.Group>

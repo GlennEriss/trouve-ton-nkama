@@ -52,6 +52,7 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<DrawerParamList> | undefined;
   SignIn: undefined;
   SignUp: undefined;
+  SignUpSuccess: { uid: string };
   PhoneSignIn: undefined;
   ForgotPassword: undefined;
 };

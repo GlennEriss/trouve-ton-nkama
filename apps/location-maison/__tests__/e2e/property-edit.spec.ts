@@ -83,6 +83,18 @@ const REJECTED_VILLA_FOR_SAVE_TEST: SeedProperty = {
   title: 'Villa rejetée test sauvegarde crayon E2E',
 }
 
+// Localisation volontairement fausse (comme le cas réel signalé par le client — annonce mal
+// localisée) : le test corrige via le modal "Modifier la localisation" vers Estuaire /
+// Libreville / Glass.
+const VILLA_FOR_LOCATION_SAVE_TEST: SeedProperty = {
+  ...VILLA_WITH_CATEGORY_ID,
+  id: `e2e-edit-villa-location-save-${RUN_ID}`,
+  title: 'Villa test modal localisation E2E',
+  province: 'Ogooué-Maritime',
+  city: 'Port-Gentil',
+  street: 'Quartier erroné',
+}
+
 const CATEGORY_LISTING = {
   id: `e2e-edit-mode-${RUN_ID}`,
   title: 'Robe test bouton Modifier E2E',
@@ -120,6 +132,7 @@ test.describe('Bouton "Modifier" /property — immobilier (avec categoryId) et M
       REJECTED_VILLA,
       VILLA_FOR_SAVE_TEST,
       REJECTED_VILLA_FOR_SAVE_TEST,
+      VILLA_FOR_LOCATION_SAVE_TEST,
     ])
     await seedCategoryListing(OWNER_UID, CATEGORY_LISTING)
   })
@@ -130,6 +143,7 @@ test.describe('Bouton "Modifier" /property — immobilier (avec categoryId) et M
       REJECTED_VILLA.id,
       VILLA_FOR_SAVE_TEST.id,
       REJECTED_VILLA_FOR_SAVE_TEST.id,
+      VILLA_FOR_LOCATION_SAVE_TEST.id,
       CATEGORY_LISTING.id,
     ])
   })
@@ -213,5 +227,44 @@ test.describe('Bouton "Modifier" /property — immobilier (avec categoryId) et M
       .poll(async () => (await getProperty(REJECTED_VILLA_FOR_SAVE_TEST.id))?.moderationStatus, { timeout: 5000 })
       .toBe('PENDING')
     expect((await getProperty(REJECTED_VILLA_FOR_SAVE_TEST.id))?.rejectionReason ?? null).toBeNull()
+  })
+
+  // Le bouton "Modifier la localisation" (à côté du texte street/city/province, jusqu'ici en
+  // lecture seule) ouvre un modal réutilisant les mêmes champs Province/Ville/Quartier que la
+  // création d'annonce (LocationPicker). Vérifie le parcours complet jusqu'à la persistance
+  // Firestore, avec la même sélection ville/quartier connue pour fonctionner de façon fiable en
+  // e2e (voir property-and-mode-creation.spec.ts : Libreville + Glass, catalogue interne).
+  test('Le bouton "Modifier la localisation" ouvre un modal et persiste réellement la nouvelle localisation', async ({
+    page,
+  }) => {
+    await gotoPropertyAndClickModifier(page, VILLA_FOR_LOCATION_SAVE_TEST.title)
+    await expect(page).toHaveURL(new RegExp(`/property/create/preview/${VILLA_FOR_LOCATION_SAVE_TEST.id}$`))
+
+    await expect(page.getByText(`${VILLA_FOR_LOCATION_SAVE_TEST.street}, ${VILLA_FOR_LOCATION_SAVE_TEST.city}`)).toBeVisible()
+
+    await page.getByRole('button', { name: 'Modifier la localisation' }).click()
+    await expect(page.getByRole('heading', { name: 'Modifier la localisation' })).toBeVisible()
+
+    await page.locator('#property-province').click()
+    await page.getByRole('option', { name: 'Estuaire' }).click()
+
+    await page.locator('#property-city').fill('Libreville')
+    await page.locator('#property-city-suggestions').getByRole('option').first().click({ timeout: 15000 })
+
+    await page.locator('#property-district').fill('Glass')
+    await page.locator('#property-district-suggestions').getByRole('option').first().click({ timeout: 15000 })
+
+    await page.getByRole('button', { name: 'Enregistrer' }).click()
+
+    // Le modal se ferme seulement après un `updateProperty` résolu avec succès.
+    await expect(page.getByRole('heading', { name: 'Modifier la localisation' })).not.toBeVisible()
+    await expect(page.getByText('Glass, Libreville Estuaire')).toBeVisible()
+
+    await expect
+      .poll(async () => (await getProperty(VILLA_FOR_LOCATION_SAVE_TEST.id))?.city, { timeout: 5000 })
+      .toBe('Libreville')
+    const updated = await getProperty(VILLA_FOR_LOCATION_SAVE_TEST.id)
+    expect(updated?.province).toBe('Estuaire')
+    expect(updated?.street).toBe('Glass')
   })
 })
