@@ -55,8 +55,12 @@ const formApi = {
   formState: {},
 }
 
+const mockUseFormConfig = jest.fn()
 jest.mock('react-hook-form', () => ({
-  useForm: () => formApi,
+  useForm: (config: any) => {
+    mockUseFormConfig(config)
+    return formApi
+  },
 }))
 
 jest.mock('@hookform/resolvers/zod', () => ({ zodResolver: () => jest.fn() }))
@@ -279,5 +283,45 @@ describe('PropertyFormComponentProvider', () => {
       }),
     )
     expect(mockCreateProperty).not.toHaveBeenCalled()
+  })
+
+  // Bug prod corrigé : whatsappContact/callContact étaient pré-remplis avec le numéro du compte
+  // connecté, ce qui écrasait silencieusement le numéro propre à l'annonce pour tout annonceur
+  // qui ne touchait pas ces deux champs optionnels (leur libellé dit pourtant "Laissez vide pour
+  // utiliser le numéro principal ci-dessus" — property.form.builder.tsx) — voir
+  // annonce https://www.tonnkama.com/annonce/VysA1qX7r7wITgNfcgQi.
+  it("ne pré-remplit JAMAIS whatsappContact/callContact avec le numéro du compte connecté à la création — seul le numéro principal (contact) l'est", () => {
+    render(
+      <PropertyFormComponentProvider>
+        <SubmitHarness />
+      </PropertyFormComponentProvider>,
+    )
+
+    const { defaultValues } = mockUseFormConfig.mock.calls[0][0]
+    expect(defaultValues.whatsappContact).toBe('')
+    expect(defaultValues.callContact).toBe('')
+    // Seul `contact` (numéro principal) reste pré-rempli : c'est le seul champ dont l'absence
+    // rendrait l'annonce totalement injoignable.
+    expect(defaultValues.contact).toBe('+24166545430')
+  })
+
+  it('une modification reprend les whatsappContact/callContact déjà enregistrés sur l annonce, jamais ceux du profil connecté', () => {
+    render(
+      <PropertyFormComponentProvider
+        isUpdate
+        propertyToUpdated={{
+          ...formValues,
+          typeProperty: 'Home',
+          whatsappContact: '+24177001122',
+          callContact: '+24177001122',
+        } as any}
+      >
+        <SubmitHarness />
+      </PropertyFormComponentProvider>,
+    )
+
+    const { defaultValues } = mockUseFormConfig.mock.calls[0][0]
+    expect(defaultValues.whatsappContact).toBe('+24177001122')
+    expect(defaultValues.callContact).toBe('+24177001122')
   })
 })
