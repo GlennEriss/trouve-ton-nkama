@@ -201,9 +201,18 @@ export default function CreatePropertyWithAIPage() {
         ...aiData,
         images: uploadedImages,
         isOwner,
+        // whatsappContact/callContact ne doivent JAMAIS retomber sur le numéro du compte
+        // connecté : par construction du prompt (getAutoFillPromptWithTypeDetection, règle 24),
+        // l'IA les laisse vides quand la description ne contient qu'un seul numéro — ce vide est
+        // intentionnel et signifie "identique à `contact`" (ContactSection.tsx retombe déjà sur
+        // `property.contact` quand ces champs sont vides). Un ancien fallback ici les remplissait
+        // avec le numéro personnel de l'annonceur, écrasant silencieusement le numéro propre à
+        // l'annonce — bug constaté en prod (numéro de l'annonceur affiché au lieu du numéro
+        // saisi dans l'annonce). `contact`, lui, doit garder son repli : c'est le seul champ dont
+        // l'absence rendrait l'annonce totalement injoignable.
         contact: aiData.contact || user?.callNumber || user?.phoneNumbers?.[0] || '',
-        callContact: aiData.callContact || user?.callNumber || user?.phoneNumbers?.[0] || '',
-        whatsappContact: aiData.whatsappContact || user?.whatsappNumber || user?.phoneNumbers?.[0] || '',
+        callContact: aiData.callContact || '',
+        whatsappContact: aiData.whatsappContact || '',
         ...location,
       }
 

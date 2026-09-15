@@ -135,12 +135,19 @@ export const PropertyFormComponentProvider = ({ children, isUpdate, propertyToUp
             streetLat: 0,
             country: 'Gabon',
             countryCode: 'GA',
-            // Contacts pré-remplis depuis le profil : l'annonceur saisit ses numéros une fois et
-            // peut toujours les remplacer pour une annonce donnée. Repli sur phoneNumbers pour les
-            // comptes antérieurs aux champs callNumber/whatsappNumber.
+            // Seul `contact` (numéro principal) est pré-rempli depuis le profil — c'est le seul
+            // champ dont l'absence rendrait l'annonce injoignable. Repli sur phoneNumbers pour
+            // les comptes antérieurs aux champs callNumber/whatsappNumber.
+            // whatsappContact/callContact restent VIDES par défaut : leurs libellés disent
+            // explicitement "Laissez vide pour utiliser le numéro principal ci-dessus"
+            // (property.form.builder.tsx) — les pré-remplir avec le numéro du compte connecté
+            // contredisait ce libellé et écrasait silencieusement le numéro propre à l'annonce
+            // pour tout annonceur qui ne touchait pas ces deux champs optionnels (bug constaté en
+            // prod : le numéro personnel de l'annonceur s'affichait au lieu du numéro saisi dans
+            // l'annonce).
             contact: user?.callNumber || user?.phoneNumbers?.[0] || '',
-            whatsappContact: user?.whatsappNumber || user?.phoneNumbers?.[0] || '',
-            callContact: user?.callNumber || user?.phoneNumbers?.[0] || '',
+            whatsappContact: '',
+            callContact: '',
             additionalContacts: [],
         }
 
