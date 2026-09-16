@@ -48,6 +48,47 @@ export function buildNewUserDocument(uid: string, data: SignupInput) {
   };
 }
 
+// Miroir de handleNewGoogleUser (web, oauth-google.service.ts) : mêmes champs par défaut pour
+// un premier compte Google — profil vide (firstname/lastname/phoneNumbers/birthDate), rôle User,
+// providers ['GOOGLE'], metadata.needsProfileCompletion true (le compte est utilisable tel quel,
+// mais web redirige ensuite vers une page "compléter mon profil" ; le mobile n'a pas encore cet
+// écran — voir signInWithGoogle, googleAuth.ts).
+function defaultNotificationParameter() {
+  return {
+    isNew: true,
+    isAccountActivity: true,
+    isNewAnnouncement: true,
+    isFavoris: true,
+    isPersonalizedSuggestions: true,
+    isSystemUpdated: true,
+  };
+}
+
+export function buildNewGoogleUserDocument(uid: string, data: { email: string; photoURL?: string | null }) {
+  const now = new Date();
+  return {
+    uid,
+    login: data.email,
+    firstname: '',
+    lastname: '',
+    email: data.email,
+    image: data.photoURL ?? '',
+    phoneNumbers: [],
+    phoneNumberVerified: false,
+    birthDate: '',
+    roles: ['User'],
+    searchableName: '',
+    providers: ['GOOGLE'],
+    metadata: { needsProfileCompletion: true },
+    notificationParameter: defaultNotificationParameter(),
+    favoris: [],
+    credits: 3,
+    state: 'IN_PROGRESS',
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const MIN_AGE_YEARS = 18;
 
 export function isValidBirthDate(value: string): boolean {

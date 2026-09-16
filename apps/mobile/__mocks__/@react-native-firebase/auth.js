@@ -19,11 +19,13 @@ const auth = {
   signInWithEmailAndPassword: jest.fn(),
   createUserWithEmailAndPassword: jest.fn(),
   signInWithPhoneNumber: jest.fn(),
+  signInWithCredential: jest.fn(),
   linkWithCredential: jest.fn(),
   sendPasswordResetEmail: jest.fn(),
   signOut: jest.fn(),
   getIdToken: jest.fn(async () => 'mock-id-token'),
   PhoneAuthProvider: { credential: jest.fn((verificationId, code) => ({ verificationId, code })) },
+  GoogleAuthProvider: { credential: jest.fn((idToken, accessToken) => ({ idToken, accessToken })) },
 };
 
 module.exports = auth;

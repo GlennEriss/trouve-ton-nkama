@@ -60,6 +60,9 @@ describe('SignUpSuccessScreen', () => {
         body: { uid: 'uid-1' },
       }),
     );
-    expect(await screen.findByText('Renvoyer dans 60s')).toBeTruthy();
+    // Regex plutôt que "60s" exact : le compte à rebours démarre à 60 mais une vraie seconde
+    // peut s'écouler entre le déclenchement et cette assertion (setInterval réel, pas simulé),
+    // faisant apparaître "59s" ou "58s" — constaté en pratique (flake), pas hypothétique.
+    expect(await screen.findByText(/Renvoyer dans \d+s/)).toBeTruthy();
   });
 });

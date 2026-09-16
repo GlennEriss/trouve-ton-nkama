@@ -28,6 +28,7 @@ import {
 import { isValidGabonPhone, toGabonE164 } from '../../lib/phone';
 import { MONTH_OPTIONS, getYearOptions, getDayOptions } from '../../lib/dateOptions';
 import { apiFetch, API_BASE_URL } from '../../api/client';
+import { signInWithGoogle, mapGoogleSignInError } from '../../lib/googleAuth';
 import { GoogleLogo } from '../../components/GoogleLogo';
 import { LocationSelect } from '../../components/LocationSelect';
 import { colors } from '../../theme/colors';
@@ -64,6 +65,7 @@ export default function SignUpScreen() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptAnnouncerTerms, setAcceptAnnouncerTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const birthDate = composeBirthDate(birthDay, birthMonth, birthYear);
@@ -181,6 +183,24 @@ export default function SignUpScreen() {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      // Contrairement au formulaire email/mot de passe, une inscription Google est immédiate
+      // (pas de vérification d'email à part) — voir signInWithGoogle, googleAuth.ts : le compte
+      // Firestore est créé (ou son provider mis à jour) en un seul appel, donc on referme
+      // directement au lieu de passer par SignUpSuccess.
+      await signInWithGoogle();
+      navigation.goBack();
+    } catch (err) {
+      const message = mapGoogleSignInError(err);
+      if (message) setError(message);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -391,12 +411,15 @@ export default function SignUpScreen() {
         </View>
 
         <TouchableOpacity
+          testID="signup-google"
           style={styles.outlineButton}
-          disabled={isLoading}
-          onPress={() => Alert.alert('Bientôt disponible', 'La connexion avec Google arrive prochainement.')}
+          disabled={isLoading || isGoogleLoading}
+          onPress={handleGoogleSignUp}
         >
-          <GoogleLogo />
-          <Text style={styles.outlineButtonText}>Continuer avec Google</Text>
+          {isGoogleLoading ? <ActivityIndicator color={colors.foreground} /> : <GoogleLogo />}
+          <Text style={styles.outlineButtonText}>
+            {isGoogleLoading ? 'Connexion en cours...' : 'Continuer avec Google'}
+          </Text>
         </TouchableOpacity>
 
         {/* Inscription par numéro de téléphone : contrairement au web (PhoneAuthModal, qui crée

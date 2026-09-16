@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Apple, Phone } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -8,6 +8,7 @@ import type { RootStackParamList } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { GradientButton } from '../../components/GradientButton';
 import { GoogleLogo } from '../../components/GoogleLogo';
+import { signInWithGoogle, mapGoogleSignInError } from '../../lib/googleAuth';
 
 function mapSignInError(err: unknown): string {
   const code = (err as { code?: string })?.code ?? '';
@@ -31,6 +32,7 @@ export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSignIn = async () => {
@@ -46,6 +48,20 @@ export default function SignInScreen() {
       setError(mapSignInError(err));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      await signInWithGoogle();
+      navigation.goBack();
+    } catch (err) {
+      const message = mapGoogleSignInError(err);
+      if (message) setError(message);
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -93,12 +109,15 @@ export default function SignInScreen() {
       </View>
 
       <TouchableOpacity
+        testID="signin-google"
         style={styles.outlineButton}
-        disabled={isLoading}
-        onPress={() => Alert.alert('Bientôt disponible', 'La connexion avec Google arrive prochainement.')}
+        disabled={isLoading || isGoogleLoading}
+        onPress={handleGoogleSignIn}
       >
-        <GoogleLogo />
-        <Text style={styles.outlineButtonText}>Continuer avec Google</Text>
+        {isGoogleLoading ? <ActivityIndicator color={colors.foreground} /> : <GoogleLogo />}
+        <Text style={styles.outlineButtonText}>
+          {isGoogleLoading ? 'Connexion en cours...' : 'Continuer avec Google'}
+        </Text>
       </TouchableOpacity>
 
       {Platform.OS === 'ios' && (
