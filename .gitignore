@@ -12,3 +12,6 @@
 
 # vidéos générées (sortie de apps/marketing/scripts, pas la source — voir apps/marketing/videos/.gitignore)
 .vercel
+
+# Images locales utilisées pour l'import ponctuel des annonces Emilie Shop
+/imports/emilie-shop/
