@@ -5,6 +5,9 @@ import { Button } from '@trouve-ton-nkama/ui/button'
 import { Share2 } from 'lucide-react'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
+import ButtonShareToThreads from './ButtonShareToThreads'
+import ButtonShareToInstagram from './ButtonShareToInstagram'
+import ButtonShareToTiktok from './ButtonShareToTiktok'
 
 export default function ButtonShare({ property }: Readonly<{ property: Property }>) {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,6 +30,9 @@ export default function ButtonShare({ property }: Readonly<{ property: Property 
         <div className="absolute top-full left-0 mt-2 flex flex-col gap-2 bg-white shadow-xl rounded-lg p-2 z-50 border border-gray-100 animate-in fade-in slide-in-from-top-2 duration-200">
           <ButtonShareToFacebook property={property} />
           <ButtonShareToWhatsapp property={property} />
+          <ButtonShareToThreads property={property} />
+          <ButtonShareToInstagram property={property} />
+          <ButtonShareToTiktok property={property} />
         </div>
       )}
     </div>

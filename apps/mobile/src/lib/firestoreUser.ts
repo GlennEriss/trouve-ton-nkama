@@ -144,3 +144,40 @@ export function isValidSignupPassword(value: string): boolean {
 export function isValidSignupEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
+
+// Miroir de PHONE_NUMBER_CHANGE_LOCK_DAYS (web, phoneVerificationPolicy.ts) : un numéro vérifié
+// reste verrouillé 30 jours avant de pouvoir être remplacé — évite qu'un compte piraté change de
+// numéro pour verrouiller le vrai propriétaire hors de son compte.
+export const PHONE_NUMBER_CHANGE_LOCK_DAYS = 30;
+
+export type PhoneChangeLockInfo = { isLocked: boolean; daysRemaining: number; lockUntilDate: Date | null };
+
+// Miroir de getPhoneChangeLockInfo (web, ProfileInformationFormModern.tsx) : ne verrouille que
+// si le numéro est ACTUELLEMENT vérifié ET que lockUntil est encore dans le futur — un compte
+// jamais vérifié, ou dont le verrou a expiré, peut changer de numéro librement.
+export function getPhoneChangeLockInfo(userDoc: { phoneNumberVerified?: boolean; metadata?: { phoneVerification?: { lockUntil?: number | null } } } | null | undefined): PhoneChangeLockInfo {
+  const lockUntil = userDoc?.metadata?.phoneVerification?.lockUntil;
+  if (!userDoc?.phoneNumberVerified || !lockUntil) {
+    return { isLocked: false, daysRemaining: 0, lockUntilDate: null };
+  }
+  const lockUntilDate = new Date(lockUntil);
+  const now = Date.now();
+  if (lockUntilDate.getTime() <= now) {
+    return { isLocked: false, daysRemaining: 0, lockUntilDate: null };
+  }
+  const daysRemaining = Math.ceil((lockUntilDate.getTime() - now) / (24 * 60 * 60 * 1000));
+  return { isLocked: true, daysRemaining, lockUntilDate };
+}
+
+// Miroir du regex de schema.ts (web, socialProfiles.<network>.handle) — un "@" suivi de 2 à 50
+// caractères alphanumériques/points/tirets/underscores. Le "@" est ajouté automatiquement si
+// l'utilisateur ne l'a pas saisi (mêmes règles que le formulaire web).
+export function normalizeSocialHandle(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  return trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+}
+
+export function isValidSocialHandle(value: string): boolean {
+  return /^@[A-Za-z0-9._-]{2,50}$/.test(value);
+}

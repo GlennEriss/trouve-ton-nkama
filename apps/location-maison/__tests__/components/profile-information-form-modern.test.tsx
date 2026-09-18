@@ -240,4 +240,28 @@ describe('ProfileInformationFormModern', () => {
     await waitFor(() => expect(toastMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'Session invalide' })))
     expect(updateProfileMock).not.toHaveBeenCalled()
   })
+
+  // Bug prod corrigé : le champ email était TOUJOURS désactivé, même pour un compte inscrit par
+  // téléphone qui n'a pas encore d'email — le rendant "inajoutable".
+  it('verrouille le champ email pour un compte qui en a déjà un (méthode de connexion)', async () => {
+    render(<ProfileInformationFormModern />)
+    const email = await screen.findByLabelText('Adresse email')
+    expect(email).toBeDisabled()
+    expect(screen.getByText(/géré par votre méthode de connexion/)).toBeVisible()
+  })
+
+  it("permet d'ajouter un email pour un compte inscrit par téléphone (email vide au départ)", async () => {
+    mockUser = user({ email: '' })
+    render(<ProfileInformationFormModern />)
+    const email = await screen.findByLabelText('Adresse email')
+    expect(email).not.toBeDisabled()
+    expect(screen.getByText(/ajoutez une adresse email pour sécuriser votre compte/)).toBeVisible()
+
+    fireEvent.change(email, { target: { value: 'nouveau@example.com' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Enregistrer les modifications' }).closest('form')!)
+
+    await waitFor(() => expect(updateProfileMock).toHaveBeenCalledWith(
+      expect.objectContaining({ email: 'nouveau@example.com' }),
+    ))
+  })
 })

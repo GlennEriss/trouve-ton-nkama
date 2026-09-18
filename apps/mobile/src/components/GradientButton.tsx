@@ -9,14 +9,20 @@ type Props = {
   disabled?: boolean;
   isLoading?: boolean;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 // Reprend le dégradé exact du bouton CTA principal côté web (bg-gradient-to-b from-secondary
 // to-primary, voir SigninMobileComponent.tsx:162) — composant partagé plutôt que dupliqué
 // partout où ce bouton apparaît (connexion, inscription, autres CTA principaux).
-export function GradientButton({ title, onPress, disabled, isLoading, style }: Props) {
+export function GradientButton({ title, onPress, disabled, isLoading, style, testID }: Props) {
   return (
-    <TouchableOpacity onPress={onPress} disabled={disabled || isLoading} style={[styles.wrapper, disabled && styles.disabled, style]}>
+    <TouchableOpacity
+      testID={testID}
+      onPress={onPress}
+      disabled={disabled || isLoading}
+      style={[styles.wrapper, disabled && styles.disabled, style]}
+    >
       <LinearGradient colors={[colors.secondary, colors.primary]} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={styles.gradient}>
         {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.text}>{title}</Text>}
       </LinearGradient>

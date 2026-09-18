@@ -16,6 +16,9 @@ const RECOMMENDATION_EVENT_BY_INTERACTION: Partial<Record<InteractionType, Recom
   whatsapp_share: 'recommendation_share',
   facebook_share: 'recommendation_share',
   native_share: 'recommendation_share',
+  threads_share: 'recommendation_share',
+  instagram_share: 'recommendation_share',
+  tiktok_share: 'recommendation_share',
 };
 
 const logger = createLogger('hooks.use-track-property-interaction');
@@ -26,6 +29,9 @@ export type InteractionType =
   | 'whatsapp_share'
   | 'facebook_share'
   | 'native_share'
+  | 'threads_share'
+  | 'instagram_share'
+  | 'tiktok_share'
   | 'favorite_add'
   | 'favorite_remove'
   | 'map_click'

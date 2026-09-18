@@ -17,6 +17,9 @@ import { MapSection } from './MapSection'
 import { DetailsPropertyMobile } from './DetailsPropertyMobile'
 import ButtonShareToFacebook from './ButtonShareToFacebook'
 import ButtonShareToWhatsapp from './ButtonShareToWhatsapp'
+import ButtonShareToThreads from './ButtonShareToThreads'
+import ButtonShareToInstagram from './ButtonShareToInstagram'
+import ButtonShareToTiktok from './ButtonShareToTiktok'
 import { AlertTriangle, Gift } from 'lucide-react'
 import { useTrackPropertyInteraction } from '@/hooks/use-track-property-interaction'
 import { getPrimaryPropertyImageUrl } from '@/lib/property-images'
@@ -229,9 +232,12 @@ export const PreviewPropertyMobile: React.FC<PreviewPropertyMobileProps> = ({ pr
             </section>
             <section className='px-2 space-y-3'>
                 <h1 className='font-bold text-xl'>Partager l'annonce</h1>
-                <div className="justify-end flex gap-2 bg-white rounded">
+                <div className="justify-end flex flex-wrap gap-2 bg-white rounded">
                     <ButtonShareToFacebook property={property} />
                     <ButtonShareToWhatsapp property={property} />
+                    <ButtonShareToThreads property={property} />
+                    <ButtonShareToInstagram property={property} />
+                    <ButtonShareToTiktok property={property} />
                 </div>
             </section>
             {

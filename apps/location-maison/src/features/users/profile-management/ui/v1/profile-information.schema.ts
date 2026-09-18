@@ -54,6 +54,14 @@ function isValidOptionalUrl(value: string): boolean {
   }
 }
 
+function isValidOptionalEmail(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  return z.string().email().safeParse(trimmed).success;
+}
+
 function isValidOptionalHandle(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -82,7 +90,17 @@ export const ProfileInformationSchema = z.object({
   firstname: z.string().trim().min(1, { message: 'Le prénom est requis.' }),
   lastname: z.string().trim().min(1, { message: 'Le nom est requis.' }),
   pseudo: z.string().trim().max(50, { message: 'Le pseudo ne doit pas dépasser 50 caractères.' }).optional(),
-  email: z.string().email({ message: "L'email est invalide." }),
+  // Optionnel : un compte inscrit par téléphone (OTP) n'a pas d'email tant qu'il n'en ajoute pas
+  // un — avec un `.email()` strict (ancien code), une chaîne vide échouait TOUJOURS la
+  // validation, bloquant silencieusement l'enregistrement de CE formulaire entier (pas
+  // seulement l'email) pour tout utilisateur inscrit par téléphone, même pour changer son pays
+  // ou son pseudo. Bug prod corrigé.
+  email: z
+    .string()
+    .trim()
+    .max(254, { message: 'Email trop long (254 caractères max).' })
+    .refine(isValidOptionalEmail, { message: "L'email est invalide." })
+    .default(''),
   birthDate: z
     .string()
     .min(1, { message: 'La date de naissance est requise.' })
