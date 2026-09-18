@@ -84,6 +84,18 @@ const ERROR_MAP: Record<string, ProfileInformationUiError> = {
     message: 'Ce numéro est déjà utilisé par un autre compte.',
     duration: 7000,
   },
+  [ProfileInformationErrorCode.INVALID_EMAIL]: {
+    code: ProfileInformationErrorCode.INVALID_EMAIL,
+    title: 'Email invalide',
+    message: 'Veuillez saisir une adresse email valide.',
+    duration: 6000,
+  },
+  [ProfileInformationErrorCode.EMAIL_ALREADY_IN_USE]: {
+    code: ProfileInformationErrorCode.EMAIL_ALREADY_IN_USE,
+    title: 'Email déjà utilisé',
+    message: 'Cette adresse email est déjà utilisée par un autre compte.',
+    duration: 7000,
+  },
   [ProfileInformationErrorCode.PHONE_CHANGE_LOCKED]: {
     code: ProfileInformationErrorCode.PHONE_CHANGE_LOCKED,
     title: 'Changement temporairement verrouillé',

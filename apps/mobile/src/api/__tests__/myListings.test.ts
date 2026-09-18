@@ -1,17 +1,35 @@
 import { getAuth } from '@react-native-firebase/auth';
-import { getDocs, where } from '@react-native-firebase/firestore';
-import { listMyListings, moderationLabel } from '../myListings';
+import { getDocs, where, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
+import { listMyListings, moderationLabel, setListingState, deleteListing } from '../myListings';
 
 jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
 
 const mockedGetDocs = getDocs as jest.Mock;
+const mockedUpdateDoc = updateDoc as jest.Mock;
+const mockedDeleteDoc = deleteDoc as jest.Mock;
 
 describe('moderationLabel', () => {
-  it('traduit chaque statut de modération', () => {
+  it('traduit chaque statut de modération (miroir MODERATION_STATUS_LABELS, web)', () => {
     expect(moderationLabel('APPROVED')).toBe('Publiée');
     expect(moderationLabel('REJECTED')).toBe('Rejetée');
-    expect(moderationLabel('PENDING')).toBe('En attente de modération');
+    expect(moderationLabel('PENDING')).toBe('En attente de validation');
+  });
+});
+
+describe('setListingState', () => {
+  it("n'envoie jamais moderationStatus dans la patch (règle Firestore : doit rester inchangé)", async () => {
+    await setListingState('p1', 'ARCHIVED');
+    const [, payload] = mockedUpdateDoc.mock.calls[0];
+    expect(payload).not.toHaveProperty('moderationStatus');
+    expect(payload).toMatchObject({ state: 'ARCHIVED' });
+  });
+});
+
+describe('deleteListing', () => {
+  it('supprime le document properties/{id}', async () => {
+    await deleteListing('p1');
+    expect(mockedDeleteDoc).toHaveBeenCalledWith(expect.objectContaining({ path: 'properties/p1' }));
   });
 });
 

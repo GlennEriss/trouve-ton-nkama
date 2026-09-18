@@ -48,6 +48,47 @@ export function buildNewUserDocument(uid: string, data: SignupInput) {
   };
 }
 
+// Miroir de handleNewGoogleUser (web, oauth-google.service.ts) : mêmes champs par défaut pour
+// un premier compte Google — profil vide (firstname/lastname/phoneNumbers/birthDate), rôle User,
+// providers ['GOOGLE'], metadata.needsProfileCompletion true (le compte est utilisable tel quel,
+// mais web redirige ensuite vers une page "compléter mon profil" ; le mobile n'a pas encore cet
+// écran — voir signInWithGoogle, googleAuth.ts).
+function defaultNotificationParameter() {
+  return {
+    isNew: true,
+    isAccountActivity: true,
+    isNewAnnouncement: true,
+    isFavoris: true,
+    isPersonalizedSuggestions: true,
+    isSystemUpdated: true,
+  };
+}
+
+export function buildNewGoogleUserDocument(uid: string, data: { email: string; photoURL?: string | null }) {
+  const now = new Date();
+  return {
+    uid,
+    login: data.email,
+    firstname: '',
+    lastname: '',
+    email: data.email,
+    image: data.photoURL ?? '',
+    phoneNumbers: [],
+    phoneNumberVerified: false,
+    birthDate: '',
+    roles: ['User'],
+    searchableName: '',
+    providers: ['GOOGLE'],
+    metadata: { needsProfileCompletion: true },
+    notificationParameter: defaultNotificationParameter(),
+    favoris: [],
+    credits: 3,
+    state: 'IN_PROGRESS',
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
 const MIN_AGE_YEARS = 18;
 
 export function isValidBirthDate(value: string): boolean {
@@ -94,4 +135,49 @@ export function composeBirthDate(day: string, month: string, year: string): stri
 // laissait passer des mots de passe que le web refuse (ex. "aaaaaaaa").
 export function isValidSignupPassword(value: string): boolean {
   return value.length >= 8 && /[A-Z]/.test(value) && /\d/.test(value);
+}
+
+// Miroir de FormRegisterSchema.email (web, schema.ts, z.string().email()) — regex volontairement
+// simple (présence d'un @ avec du texte de part et d'autre, un domaine avec un point) : le
+// mobile n'avait aucune validation de format avant (seul `.trim()` non-vide), ce qui laissait
+// passer un email sans "@".
+export function isValidSignupEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+// Miroir de PHONE_NUMBER_CHANGE_LOCK_DAYS (web, phoneVerificationPolicy.ts) : un numéro vérifié
+// reste verrouillé 30 jours avant de pouvoir être remplacé — évite qu'un compte piraté change de
+// numéro pour verrouiller le vrai propriétaire hors de son compte.
+export const PHONE_NUMBER_CHANGE_LOCK_DAYS = 30;
+
+export type PhoneChangeLockInfo = { isLocked: boolean; daysRemaining: number; lockUntilDate: Date | null };
+
+// Miroir de getPhoneChangeLockInfo (web, ProfileInformationFormModern.tsx) : ne verrouille que
+// si le numéro est ACTUELLEMENT vérifié ET que lockUntil est encore dans le futur — un compte
+// jamais vérifié, ou dont le verrou a expiré, peut changer de numéro librement.
+export function getPhoneChangeLockInfo(userDoc: { phoneNumberVerified?: boolean; metadata?: { phoneVerification?: { lockUntil?: number | null } } } | null | undefined): PhoneChangeLockInfo {
+  const lockUntil = userDoc?.metadata?.phoneVerification?.lockUntil;
+  if (!userDoc?.phoneNumberVerified || !lockUntil) {
+    return { isLocked: false, daysRemaining: 0, lockUntilDate: null };
+  }
+  const lockUntilDate = new Date(lockUntil);
+  const now = Date.now();
+  if (lockUntilDate.getTime() <= now) {
+    return { isLocked: false, daysRemaining: 0, lockUntilDate: null };
+  }
+  const daysRemaining = Math.ceil((lockUntilDate.getTime() - now) / (24 * 60 * 60 * 1000));
+  return { isLocked: true, daysRemaining, lockUntilDate };
+}
+
+// Miroir du regex de schema.ts (web, socialProfiles.<network>.handle) — un "@" suivi de 2 à 50
+// caractères alphanumériques/points/tirets/underscores. Le "@" est ajouté automatiquement si
+// l'utilisateur ne l'a pas saisi (mêmes règles que le formulaire web).
+export function normalizeSocialHandle(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  return trimmed.startsWith('@') ? trimmed : `@${trimmed}`;
+}
+
+export function isValidSocialHandle(value: string): boolean {
+  return /^@[A-Za-z0-9._-]{2,50}$/.test(value);
 }

@@ -21,12 +21,16 @@ import {
   buildNewUserDocument,
   composeBirthDate,
   isValidBirthDate,
+  isValidSignupEmail,
   isValidSignupPassword,
   type AccountType,
 } from '../../lib/firestoreUser';
 import { isValidGabonPhone, toGabonE164 } from '../../lib/phone';
+import { MONTH_OPTIONS, getYearOptions, getDayOptions } from '../../lib/dateOptions';
 import { apiFetch, API_BASE_URL } from '../../api/client';
+import { signInWithGoogle, mapGoogleSignInError } from '../../lib/googleAuth';
 import { GoogleLogo } from '../../components/GoogleLogo';
+import { LocationSelect } from '../../components/LocationSelect';
 import { colors } from '../../theme/colors';
 import type { RootStackParamList } from '../../navigation/types';
 
@@ -36,10 +40,13 @@ import type { RootStackParamList } from '../../navigation/types';
 // auth.service.ts pour la séquence d'appels (vérifs unicité -> Auth -> Firestore -> email de
 // vérification, avec rollback si Firestore échoue) — voir [[feedback-mobile-reuse-pwa-design]].
 // Écarts assumés (pas des oublis) : pas d'assistant multi-étapes (formulaire condensé comme
-// déjà fait pour SignInScreen), jour/mois/année en 3 champs numériques au lieu de 3 <select>
-// (aucun équivalent natif direct), liens Politique de confidentialité / Conditions
-// (d'utilisation et annonceur) ouverts dans le navigateur système plutôt que dupliqués en
-// écrans natifs à part les deux déjà existants.
+// déjà fait pour SignInScreen) ; jour/mois/année sont 3 vrais selects (LocationSelect, réutilisé
+// tel quel — mêmes options que DateSelect.tsx web : jours dynamiques selon mois/année, voir
+// dateOptions.ts) plutôt que des champs texte libres, sur demande explicite ; l'indicatif +241
+// est un préfixe fixe non éditable (app Gabon-only) plutôt que le sélecteur de pays du web
+// (PhoneInput, multi-pays) — également une demande explicite, pas un oubli ; liens Politique de
+// confidentialité / Conditions (d'utilisation et annonceur) ouverts dans le navigateur système
+// plutôt que dupliqués en écrans natifs à part les deux déjà existants.
 export default function SignUpScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'SignUp'>>();
 
@@ -58,14 +65,17 @@ export default function SignUpScreen() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptAnnouncerTerms, setAcceptAnnouncerTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const birthDate = composeBirthDate(birthDay, birthMonth, birthYear);
+  const yearOptions = getYearOptions();
+  const dayOptions = getDayOptions(birthMonth, birthYear);
 
   const canSubmit =
     firstName.trim() &&
     lastName.trim() &&
-    email.trim() &&
+    isValidSignupEmail(email) &&
     isValidSignupPassword(password) &&
     password === passwordConfirm &&
     isValidGabonPhone(phoneNumber) &&
@@ -77,6 +87,10 @@ export default function SignUpScreen() {
   const handleSignUp = async () => {
     setError(null);
 
+    if (!isValidSignupEmail(email)) {
+      setError("L'adresse email n'est pas valide.");
+      return;
+    }
     if (!isValidBirthDate(birthDate)) {
       setError('Date de naissance invalide, ou vous avez moins de 18 ans.');
       return;
@@ -172,6 +186,24 @@ export default function SignUpScreen() {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    setError(null);
+    setIsGoogleLoading(true);
+    try {
+      // Contrairement au formulaire email/mot de passe, une inscription Google est immédiate
+      // (pas de vérification d'email à part) — voir signInWithGoogle, googleAuth.ts : le compte
+      // Firestore est créé (ou son provider mis à jour) en un seul appel, donc on referme
+      // directement au lieu de passer par SignUpSuccess.
+      await signInWithGoogle();
+      navigation.goBack();
+    } catch (err) {
+      const message = mapGoogleSignInError(err);
+      if (message) setError(message);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
   const openLegalLink = (path: string) => {
     Linking.openURL(`${API_BASE_URL}${path}`).catch(() => {
       Alert.alert('Impossible d’ouvrir le lien', 'Réessayez plus tard.');
@@ -212,29 +244,31 @@ export default function SignUpScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.row}>
-          <TextInput
-            testID="signup-firstname"
-            style={[styles.input, styles.half]}
-            placeholder="Saisissez votre prénom"
-            value={firstName}
-            onChangeText={setFirstName}
-          />
-          <TextInput
-            testID="signup-lastname"
-            style={[styles.input, styles.half]}
-            placeholder="Saisissez votre nom"
-            value={lastName}
-            onChangeText={setLastName}
-          />
-        </View>
+        <Text style={styles.label}>Prénom</Text>
+        <TextInput
+          testID="signup-firstname"
+          style={styles.input}
+          placeholder="Saisissez votre prénom"
+          value={firstName}
+          onChangeText={setFirstName}
+        />
+        <Text style={styles.label}>Nom</Text>
+        <TextInput
+          testID="signup-lastname"
+          style={styles.input}
+          placeholder="Saisissez votre nom"
+          value={lastName}
+          onChangeText={setLastName}
+        />
+        <Text style={styles.label}>Nom de l&apos;entreprise (optionnel)</Text>
         <TextInput
           testID="signup-pseudo"
           style={styles.input}
-          placeholder="Nom de l'entreprise (optionnel)"
+          placeholder="Nom affiché sur vos annonces"
           value={pseudo}
           onChangeText={setPseudo}
         />
+        <Text style={styles.label}>Email</Text>
         <TextInput
           testID="signup-email"
           style={styles.input}
@@ -247,54 +281,68 @@ export default function SignUpScreen() {
 
         <Text style={styles.label}>Date de naissance</Text>
         <View style={styles.row}>
-          <TextInput
-            testID="signup-birth-day"
-            style={[styles.input, styles.third]}
-            placeholder="Jour"
-            keyboardType="number-pad"
-            maxLength={2}
-            value={birthDay}
-            onChangeText={setBirthDay}
-          />
-          <TextInput
-            testID="signup-birth-month"
-            style={[styles.input, styles.third]}
-            placeholder="Mois"
-            keyboardType="number-pad"
-            maxLength={2}
-            value={birthMonth}
-            onChangeText={setBirthMonth}
-          />
-          <TextInput
-            testID="signup-birth-year"
-            style={[styles.input, styles.third]}
-            placeholder="Année"
-            keyboardType="number-pad"
-            maxLength={4}
-            value={birthYear}
-            onChangeText={setBirthYear}
-          />
+          <View style={styles.third}>
+            <LocationSelect
+              testID="signup-birth-day"
+              label=""
+              value={birthDay || undefined}
+              options={dayOptions}
+              placeholder="Jour"
+              onSelect={(v) => setBirthDay(v ?? '')}
+            />
+          </View>
+          <View style={styles.third}>
+            <LocationSelect
+              testID="signup-birth-month"
+              label=""
+              value={birthMonth || undefined}
+              options={MONTH_OPTIONS}
+              placeholder="Mois"
+              onSelect={(v) => setBirthMonth(v ?? '')}
+            />
+          </View>
+          <View style={styles.third}>
+            <LocationSelect
+              testID="signup-birth-year"
+              label=""
+              value={birthYear || undefined}
+              options={yearOptions}
+              placeholder="Année"
+              onSelect={(v) => setBirthYear(v ?? '')}
+            />
+          </View>
         </View>
 
         <Text style={styles.label}>Numéro d&apos;appel *</Text>
-        <TextInput
-          testID="signup-phone"
-          style={styles.input}
-          placeholder="Ex: 66 12 34 56 (sans 0)"
-          keyboardType="phone-pad"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-        />
+        <View style={styles.phoneRow}>
+          <View style={styles.phonePrefix}>
+            <Text style={styles.phonePrefixText}>+241</Text>
+          </View>
+          <TextInput
+            testID="signup-phone"
+            style={[styles.input, styles.phoneInput]}
+            placeholder="66 12 34 56 (sans 0)"
+            keyboardType="phone-pad"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
+        </View>
         <Text style={styles.label}>Numéro WhatsApp</Text>
-        <TextInput
-          testID="signup-whatsapp"
-          style={styles.input}
-          placeholder="Laissez vide si c'est le même numéro"
-          keyboardType="phone-pad"
-          value={whatsappNumber}
-          onChangeText={setWhatsappNumber}
-        />
+        <View style={styles.phoneRow}>
+          <View style={styles.phonePrefix}>
+            <Text style={styles.phonePrefixText}>+241</Text>
+          </View>
+          <TextInput
+            testID="signup-whatsapp"
+            style={[styles.input, styles.phoneInput]}
+            placeholder="Laissez vide si c'est le même numéro"
+            keyboardType="phone-pad"
+            value={whatsappNumber}
+            onChangeText={setWhatsappNumber}
+          />
+        </View>
 
+        <Text style={styles.label}>Mot de passe</Text>
         <TextInput
           testID="signup-password"
           style={styles.input}
@@ -303,6 +351,7 @@ export default function SignUpScreen() {
           value={password}
           onChangeText={setPassword}
         />
+        <Text style={styles.label}>Confirmation de mot de passe</Text>
         <TextInput
           testID="signup-password-confirm"
           style={styles.input}
@@ -362,12 +411,15 @@ export default function SignUpScreen() {
         </View>
 
         <TouchableOpacity
+          testID="signup-google"
           style={styles.outlineButton}
-          disabled={isLoading}
-          onPress={() => Alert.alert('Bientôt disponible', 'La connexion avec Google arrive prochainement.')}
+          disabled={isLoading || isGoogleLoading}
+          onPress={handleGoogleSignUp}
         >
-          <GoogleLogo />
-          <Text style={styles.outlineButtonText}>Continuer avec Google</Text>
+          {isGoogleLoading ? <ActivityIndicator color={colors.foreground} /> : <GoogleLogo />}
+          <Text style={styles.outlineButtonText}>
+            {isGoogleLoading ? 'Connexion en cours...' : 'Continuer avec Google'}
+          </Text>
         </TouchableOpacity>
 
         {/* Inscription par numéro de téléphone : contrairement au web (PhoneAuthModal, qui crée
@@ -394,9 +446,19 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: colors.mutedText, marginBottom: 4 },
   label: { fontSize: 13, fontWeight: '600', color: colors.foreground, marginTop: 4 },
   row: { flexDirection: 'row', gap: 12 },
-  half: { flex: 1 },
   third: { flex: 1 },
   input: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, fontSize: 16 },
+  phoneRow: { flexDirection: 'row', gap: 10 },
+  phonePrefix: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    justifyContent: 'center',
+    backgroundColor: '#F3F4F6',
+  },
+  phonePrefixText: { fontSize: 16, fontWeight: '600', color: colors.foreground },
+  phoneInput: { flex: 1 },
   accountTypeRow: { flexDirection: 'row', gap: 10 },
   accountTypeCard: {
     flex: 1,

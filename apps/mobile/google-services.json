@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "237524455298-v41marbdc6ap79tkg179gst8gunrbq7t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tonnkama.app",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
           "client_id": "237524455298-35dqvnbrrtsek2tr6uf7s822sv13stin.apps.googleusercontent.com",
           "client_type": 3
         }

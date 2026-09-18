@@ -111,8 +111,12 @@ function mapErrorMessage(code: ProfileInformationErrorCode): string {
       return 'Le numéro de téléphone est invalide.';
     case ProfileInformationErrorCode.INVALID_COUNTRY:
       return 'Le pays sélectionné est invalide.';
+    case ProfileInformationErrorCode.INVALID_EMAIL:
+      return "L'adresse email est invalide.";
     case ProfileInformationErrorCode.PHONE_ALREADY_IN_USE:
       return 'Ce numéro de téléphone est déjà utilisé.';
+    case ProfileInformationErrorCode.EMAIL_ALREADY_IN_USE:
+      return 'Cette adresse email est déjà utilisée par un autre compte.';
     case ProfileInformationErrorCode.PHONE_CHANGE_LOCKED:
       return `Ce numéro vérifié ne peut pas être modifié pour le moment (délai de ${PHONE_NUMBER_CHANGE_LOCK_DAYS} jours).`;
     case ProfileInformationErrorCode.USER_NOT_FOUND:
@@ -345,6 +349,20 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       };
     }
 
+    // Un email vide reste valide (compte téléphone qui n'en a pas encore) — seul un email
+    // NON vide doit respecter le format. L'écriture réelle (et sa garde "seulement si le
+    // compte n'en a pas déjà un") est décidée plus bas, une fois `currentUser` chargé.
+    const email = (data.email ?? '').trim();
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return {
+        success: false,
+        error: {
+          code: ProfileInformationErrorCode.INVALID_EMAIL,
+          message: mapErrorMessage(ProfileInformationErrorCode.INVALID_EMAIL),
+        },
+      };
+    }
+
     const countryCode = data.countryCode.trim();
     const country = countries.find((item) => item.code === countryCode);
     if (!country) {
@@ -380,6 +398,26 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
         };
       }
 
+      // Un compte déjà rattaché à un email (Google/Facebook/Credentials) le garde géré par sa
+      // méthode de connexion — ce chemin ne fait QUE combler un email absent (compte inscrit par
+      // téléphone), jamais remplacer un email existant. Le champ reste de toute façon verrouillé
+      // côté UI dans ce cas (ProfileInformationFormModern.tsx) ; cette garde est la même règle
+      // appliquée côté serveur, pas seulement côté affichage.
+      const currentEmail = (currentUser.email ?? '').trim();
+      const emailToSet = !currentEmail && email ? email : null;
+      if (emailToSet) {
+        const existingByEmail = await userRepository.findByEmail(emailToSet);
+        if (existingByEmail && existingByEmail.uid !== uid) {
+          return {
+            success: false,
+            error: {
+              code: ProfileInformationErrorCode.EMAIL_ALREADY_IN_USE,
+              message: mapErrorMessage(ProfileInformationErrorCode.EMAIL_ALREADY_IN_USE),
+            },
+          };
+        }
+      }
+
       const previousPhone = currentUser.phoneNumbers?.[0] ?? '';
       const phoneChanged = previousPhone !== phoneNumber;
       const changedFields: string[] = [];
@@ -401,6 +439,9 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
       }
       if (phoneChanged) {
         changedFields.push('numéro de téléphone');
+      }
+      if (emailToSet) {
+        changedFields.push('email');
       }
       const currentMetadata =
         currentUser.metadata && typeof currentUser.metadata === 'object'
@@ -464,6 +505,7 @@ export class ProfileInformationServiceImpl implements ProfileInformationService 
         searchableName: `${firstname} ${lastname}`.trim(),
         phoneNumberVerified: phoneChanged ? false : currentUser.phoneNumberVerified,
         metadata: finalMetadata,
+        ...(emailToSet ? { email: emailToSet } : {}),
       });
 
       logger.info('Profile information updated', {

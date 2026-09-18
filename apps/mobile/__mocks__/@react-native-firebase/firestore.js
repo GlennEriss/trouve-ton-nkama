@@ -10,6 +10,7 @@ module.exports = {
   getDoc: jest.fn(async () => ({ exists: () => false, data: () => undefined })),
   setDoc: jest.fn(async () => undefined),
   updateDoc: jest.fn(async () => undefined),
+  deleteDoc: jest.fn(async () => undefined),
   onSnapshot: jest.fn(() => jest.fn()),
   arrayUnion: jest.fn((value) => ({ __op: 'arrayUnion', value })),
   arrayRemove: jest.fn((value) => ({ __op: 'arrayRemove', value })),

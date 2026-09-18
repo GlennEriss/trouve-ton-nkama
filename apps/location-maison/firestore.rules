@@ -60,7 +60,14 @@ service cloud.firestore {
           'state',
           'image',
           'updatedAt',
-          'roles'
+          'roles',
+          // Ajouté pour EditProfileScreen.tsx (mobile) : contrairement au web, qui passe par
+          // une route API (SDK admin, hors règles), le mobile écrit ce document directement
+          // depuis le client — socialProfiles et email doivent donc être explicitement
+          // autorisés ici. `email` ne sert qu'à COMBLER un email absent (compte inscrit par
+          // téléphone) — l'écran mobile applique déjà cette garde côté client (hasEmail).
+          'socialProfiles',
+          'email'
         ]) &&
         request.resource.data.uid == resource.data.uid &&
         (

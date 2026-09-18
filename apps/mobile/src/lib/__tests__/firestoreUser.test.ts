@@ -1,4 +1,12 @@
-import { buildNewUserDocument, isValidBirthDate, composeBirthDate, isValidSignupPassword } from '../firestoreUser';
+import {
+  buildNewUserDocument,
+  isValidBirthDate,
+  composeBirthDate,
+  isValidSignupPassword,
+  getPhoneChangeLockInfo,
+  normalizeSocialHandle,
+  isValidSocialHandle,
+} from '../firestoreUser';
 
 describe('isValidBirthDate', () => {
   it('rejette un format invalide', () => {
@@ -120,5 +128,52 @@ describe('buildNewUserDocument', () => {
     const doc = buildNewUserDocument('uid-1', input);
     expect(doc.whatsappNumber).toBe('+24174123456');
     expect(doc.phoneNumbers).toEqual(['+24174123456']);
+  });
+});
+
+// Miroir de getPhoneChangeLockInfo (web, ProfileInformationFormModern.tsx).
+describe('getPhoneChangeLockInfo', () => {
+  it('ne verrouille jamais un numéro non vérifié, même avec un lockUntil futur', () => {
+    const info = getPhoneChangeLockInfo({ phoneNumberVerified: false, metadata: { phoneVerification: { lockUntil: Date.now() + 1000000 } } });
+    expect(info.isLocked).toBe(false);
+  });
+
+  it('ne verrouille pas si lockUntil est absent', () => {
+    expect(getPhoneChangeLockInfo({ phoneNumberVerified: true }).isLocked).toBe(false);
+  });
+
+  it('verrouille un numéro vérifié dont lockUntil est dans le futur, avec le bon nombre de jours restants', () => {
+    const lockUntil = Date.now() + 5 * 24 * 60 * 60 * 1000 + 1000; // un peu plus de 5 jours
+    const info = getPhoneChangeLockInfo({ phoneNumberVerified: true, metadata: { phoneVerification: { lockUntil } } });
+    expect(info.isLocked).toBe(true);
+    expect(info.daysRemaining).toBe(6); // Math.ceil
+  });
+
+  it('ne verrouille plus une fois lockUntil dépassé', () => {
+    const info = getPhoneChangeLockInfo({ phoneNumberVerified: true, metadata: { phoneVerification: { lockUntil: Date.now() - 1000 } } });
+    expect(info.isLocked).toBe(false);
+  });
+
+  it('gère un userDoc null/undefined sans planter', () => {
+    expect(getPhoneChangeLockInfo(null).isLocked).toBe(false);
+    expect(getPhoneChangeLockInfo(undefined).isLocked).toBe(false);
+  });
+});
+
+describe('normalizeSocialHandle / isValidSocialHandle', () => {
+  it('ajoute le "@" automatiquement si absent', () => {
+    expect(normalizeSocialHandle('jean.mba')).toBe('@jean.mba');
+    expect(normalizeSocialHandle('@jean.mba')).toBe('@jean.mba');
+  });
+
+  it('retourne une chaîne vide pour une saisie vide', () => {
+    expect(normalizeSocialHandle('   ')).toBe('');
+  });
+
+  it('valide un handle bien formé, rejette les caractères hors [A-Za-z0-9._-] ou une longueur invalide', () => {
+    expect(isValidSocialHandle('@jean.mba-01')).toBe(true);
+    expect(isValidSocialHandle('@a')).toBe(false); // trop court (min 2 après le @)
+    expect(isValidSocialHandle('@jean mba')).toBe(false); // espace interdit
+    expect(isValidSocialHandle('jean.mba')).toBe(false); // pas de "@"
   });
 });

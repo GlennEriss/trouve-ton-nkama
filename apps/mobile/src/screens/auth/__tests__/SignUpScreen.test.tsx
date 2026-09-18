@@ -3,6 +3,7 @@ import { getAuth, createUserWithEmailAndPassword, signOut } from '@react-native-
 import { getDocs, setDoc } from '@react-native-firebase/firestore';
 import SignUpScreen from '../SignUpScreen';
 import { renderWithNavigation } from '../../../test-utils/renderWithNavigation';
+import { MONTH_OPTIONS } from '../../../lib/dateOptions';
 
 jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
@@ -16,6 +17,18 @@ const mockedCreateUser = createUserWithEmailAndPassword as jest.Mock;
 const mockedSetDoc = setDoc as jest.Mock;
 const mockedSignOut = signOut as jest.Mock;
 
+// Jour/mois/année sont maintenant de vrais selects (LocationSelect, comme province/ville/
+// quartier des filtres de recherche) — sélectionner une option, c'est ouvrir le trigger puis
+// taper l'option voulue. Passe par le champ de recherche du select (filtre "query") plutôt que
+// de compter sur le rendu direct de l'option : la FlatList sous-jacente est virtualisée (~10
+// items rendus par défaut dans l'environnement de test), donc une année comme "1990" (près de
+// 100 options possibles) n'apparaît jamais dans le DOM de test sans filtrage préalable.
+async function selectOption(testID: string, value: string, searchQuery?: string) {
+  await fireEvent.press(screen.getByTestId(testID));
+  await fireEvent.changeText(await screen.findByTestId(`${testID}-search-input`), searchQuery ?? value);
+  await fireEvent.press(await screen.findByTestId(`${testID}-option-${value}`));
+}
+
 // Champ par champ, reproduit SignupMobileComponent.tsx (web) — voir
 // [[feedback-mobile-reuse-pwa-design]] : ne pas réduire ce formulaire à un sous-ensemble
 // "pratique à tester", chaque champ ici correspond à un champ réel du web.
@@ -28,16 +41,20 @@ async function fillValidForm(overrides: Partial<Record<string, string>> = {}) {
     passwordConfirm: 'TestPassword123',
     phoneNumber: '074123456',
     birthDay: '15',
-    birthMonth: '6',
+    birthMonth: '06',
     birthYear: '1990',
     ...overrides,
   };
   await fireEvent.changeText(screen.getByTestId('signup-firstname'), values.firstName);
   await fireEvent.changeText(screen.getByTestId('signup-lastname'), values.lastName);
   await fireEvent.changeText(screen.getByTestId('signup-email'), values.email);
-  await fireEvent.changeText(screen.getByTestId('signup-birth-day'), values.birthDay);
-  await fireEvent.changeText(screen.getByTestId('signup-birth-month'), values.birthMonth);
-  await fireEvent.changeText(screen.getByTestId('signup-birth-year'), values.birthYear);
+  // Le mois doit être choisi avant le jour : les options de jour dépendent du mois/année
+  // (dayOptions = getDayOptions(birthMonth, birthYear), voir dateOptions.ts). Le select filtre
+  // par label ("Juin"), pas par valeur ("06") — d'où la recherche du libellé correspondant.
+  const monthLabel = MONTH_OPTIONS.find((m) => m.value === values.birthMonth)?.label ?? values.birthMonth;
+  await selectOption('signup-birth-month', values.birthMonth, monthLabel);
+  await selectOption('signup-birth-year', values.birthYear);
+  await selectOption('signup-birth-day', values.birthDay);
   await fireEvent.changeText(screen.getByTestId('signup-phone'), values.phoneNumber);
   await fireEvent.changeText(screen.getByTestId('signup-password'), values.password);
   await fireEvent.changeText(screen.getByTestId('signup-password-confirm'), values.passwordConfirm);
@@ -117,7 +134,18 @@ describe('SignUpScreen', () => {
   it('bloque la soumission pour un utilisateur de moins de 18 ans', async () => {
     const now = new Date();
     await renderWithNavigation(<SignUpScreen />);
-    await fillValidForm({ birthYear: String(now.getFullYear() - 17), birthMonth: String(now.getMonth() + 1), birthDay: String(now.getDate()) });
+    await fillValidForm({
+      birthYear: String(now.getFullYear() - 17),
+      birthMonth: String(now.getMonth() + 1).padStart(2, '0'),
+      birthDay: String(now.getDate()).padStart(2, '0'),
+    });
+
+    expect(screen.getByTestId('signup-submit').props.accessibilityState?.disabled).toBe(true);
+  });
+
+  it("bloque la soumission pour un email sans '@' (aucun validateur avant, constaté par l'utilisateur)", async () => {
+    await renderWithNavigation(<SignUpScreen />);
+    await fillValidForm({ email: 'jean.example.com' });
 
     expect(screen.getByTestId('signup-submit').props.accessibilityState?.disabled).toBe(true);
   });

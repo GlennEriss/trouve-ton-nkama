@@ -114,12 +114,15 @@ export interface ViewMetadata {
 /**
  * Type d'interaction
  */
-export type InteractionType = 
+export type InteractionType =
   | 'whatsapp_contact'
   | 'phone_contact'
   | 'whatsapp_share'
   | 'facebook_share'
   | 'native_share'
+  | 'threads_share'
+  | 'instagram_share'
+  | 'tiktok_share'
   | 'favorite_add'
   | 'favorite_remove'
   | 'map_click'

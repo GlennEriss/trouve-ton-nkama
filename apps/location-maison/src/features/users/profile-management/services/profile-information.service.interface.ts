@@ -8,7 +8,9 @@ export enum ProfileInformationErrorCode {
   UNDERAGE = 'UNDERAGE',
   INVALID_PHONE = 'INVALID_PHONE',
   INVALID_COUNTRY = 'INVALID_COUNTRY',
+  INVALID_EMAIL = 'INVALID_EMAIL',
   PHONE_ALREADY_IN_USE = 'PHONE_ALREADY_IN_USE',
+  EMAIL_ALREADY_IN_USE = 'EMAIL_ALREADY_IN_USE',
   PHONE_CHANGE_LOCKED = 'PHONE_CHANGE_LOCKED',
   USER_NOT_FOUND = 'USER_NOT_FOUND',
   UPDATE_FAILED = 'UPDATE_FAILED',
@@ -29,6 +31,10 @@ export type UpdateProfileInformationData = {
   firstname: string;
   lastname: string;
   pseudo?: string;
+  // Optionnel : seuls les comptes sans email existant (inscription téléphone) peuvent en
+  // définir un via ce chemin — voir profile-information.service.ts. Un compte déjà rattaché à
+  // un email (Google/Facebook/Credentials) le garde géré par sa méthode de connexion.
+  email?: string;
   birthDate: string;
   phoneNumber: string;
   countryCode: string;

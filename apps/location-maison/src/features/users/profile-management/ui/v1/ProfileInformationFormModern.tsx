@@ -283,6 +283,7 @@ export function ProfileInformationFormModern() {
       firstname: values.firstname,
       lastname: values.lastname,
       pseudo: values.pseudo,
+      email: values.email,
       birthDate: values.birthDate,
       phoneNumber: values.phoneNumber,
       countryCode: values.countryCode,
@@ -321,6 +322,11 @@ export function ProfileInformationFormModern() {
   const displayName = getUserDisplayName(user);
   const displayInitial = getUserDisplayInitial(user);
   const isPhoneChangeLocked = phoneChangeLockInfo.isLocked;
+  // Un compte inscrit par téléphone (OTP) n'a pas d'email tant qu'il n'en ajoute pas un — le
+  // champ ne doit être verrouillé QUE pour un compte qui en a déjà un (Google/Facebook/
+  // Credentials), pas pour tout le monde comme avant (bug prod : email "inajoutable" pour les
+  // comptes téléphone, ce champ étant systématiquement disabled quel que soit le compte).
+  const hasEmail = Boolean(user.email?.trim());
   const phoneLockUntilLabel = phoneChangeLockInfo.lockUntil?.toLocaleDateString('fr-FR') ?? '';
   const currentPhoneNumber = (user.phoneNumbers?.[0] ?? '').trim();
   const watchedPhoneNumber = (form.watch('phoneNumber') ?? '').trim();
@@ -348,7 +354,9 @@ export function ProfileInformationFormModern() {
       <div className="hidden md:block mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Modifier mes informations</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">
-          Modifiez votre numéro de téléphone et votre pays. Les autres informations sont en lecture seule.
+          {hasEmail
+            ? 'Modifiez votre numéro de téléphone et votre pays. Les autres informations sont en lecture seule.'
+            : 'Modifiez votre numéro de téléphone, votre pays et ajoutez une adresse email. Les autres informations sont en lecture seule.'}
         </p>
       </div>
 
@@ -454,11 +462,13 @@ export function ProfileInformationFormModern() {
                 type="email"
                 IconLucide={Mail}
                 IconColor={INPUT_ICON_COLOR}
-                disabled
+                disabled={hasEmail}
                 placeholder="email@exemple.com"
               />
               <p className="text-xs text-emerald-700 dark:text-emerald-300 -mt-3">
-                L&apos;email est géré par votre méthode de connexion et ne se modifie pas ici.
+                {hasEmail
+                  ? "L'email est géré par votre méthode de connexion et ne se modifie pas ici."
+                  : "Vous vous êtes inscrit par téléphone : ajoutez une adresse email pour sécuriser votre compte et recevoir vos notifications importantes."}
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
