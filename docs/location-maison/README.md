@@ -29,6 +29,8 @@ Bienvenue dans la documentation complète de la plateforme de location et vente 
   - Recherche IA (index): [feature/recherche-ia/README.md](./feature/recherche-ia/README.md)
   - Publicité (régie first-party + AdSense): [feature/publicite/README.md](./feature/publicite/README.md)
     - Audit revenus AdSense: [feature/publicite/AUDIT-ADSENSE-REVENUS-2026-09.md](./feature/publicite/AUDIT-ADSENSE-REVENUS-2026-09.md)
+  - Publication sociale : [feature/publication-sociale/README.md](./feature/publication-sociale/README.md)
+    - Architecture Threads : [feature/publication-sociale/THREADS-PUBLICATION-AUTOMATIQUE.md](./feature/publication-sociale/THREADS-PUBLICATION-AUTOMATIQUE.md)
 
 ### 🧾 Formulaire d'ajout de logement
 - **[form-ajout-logement/](./form-ajout-logement/)** : Documentation UX/UI et technique du parcours d'ajout

@@ -137,6 +137,15 @@
 
 ---
 
+## 📣 Publication sociale
+
+| Feature | Statut | Branche | Date | Notes |
+|---------|--------|---------|------|-------|
+| Publication des annonces approuvées sur Facebook Page | ✅ | develop | 2026-08-18 | Cloud Function existante dans `functions/src/social/` |
+| Publication des annonces approuvées sur Threads | ⬜ | - | 2026-09-18 | [Architecture et gestion des erreurs](./publication-sociale/THREADS-PUBLICATION-AUTOMATIQUE.md) prêtes pour implémentation |
+
+---
+
 ## 🔄 Migration & Refactoring
 
 | Tâche | Statut | Branche | Date | Notes |
@@ -158,4 +167,4 @@
 
 ---
 
-*Dernière mise à jour : 2026-03-08*
+*Dernière mise à jour : 2026-09-18*
