@@ -15,3 +15,6 @@
 
 # Images locales utilisées pour l'import ponctuel des annonces Emilie Shop
 /imports/emilie-shop/
+
+# Images locales utilisées pour l'import ponctuel des logements des annonceurs plateforme
+/imports/platform-announcers-housing/

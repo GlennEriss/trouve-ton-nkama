@@ -41,7 +41,9 @@ export async function generateMetadata({ params }: { params: AnnonceParams }): P
     // être explicitement plutôt que de compter sur le titre libre saisi par l'annonceur.
     const shareTitle = buildListingShareTitle(property);
     // Image composée (photo + bandeau prix/quartier), voir src/app/api/og/property/[id]/route.tsx.
-    const ogImage = absoluteUrl(`/api/og/property/${id}`);
+    // Versionner l'URL invalide aussi le cache propre aux robots sociaux après
+    // un correctif du générateur (v2 ajoute la prise en charge des photos WebP).
+    const ogImage = absoluteUrl(`/api/og/property/${id}?v=2`);
 
     return {
       title: property.title,

@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og'
 import { getPublicPropertyById } from '@/lib/seo/public-listings'
 import { getPrimaryPropertyImageUrl } from '@/lib/property-images'
 import { formatListingPrice, getListingLocationLabel, getListingStatusLabel } from '@/lib/seo/listing-share'
+import { prepareOgImageSource } from '@/lib/seo/og-image-source'
 
 // Runtime Node.js par défaut (pas 'edge') : getPublicPropertyById utilise firebase-admin, qui
 // dépend d'API Node (crypto, net) indisponibles sur l'edge runtime.
@@ -19,7 +20,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   // Admin SDK, filtre déjà state=IN_PROGRESS + moderationStatus=APPROVED : pas de fuite
   // d'annonce non approuvée sur cette route publique (pas d'auth ici, /api est hors middleware).
   const property = await getPublicPropertyById(id)
-  const imageURL = getPrimaryPropertyImageUrl(property?.images) ?? FALLBACK_IMAGE_URL
+  const imageURL = await prepareOgImageSource(
+    getPrimaryPropertyImageUrl(property?.images),
+    FALLBACK_IMAGE_URL,
+  )
 
   return new ImageResponse(
     (
