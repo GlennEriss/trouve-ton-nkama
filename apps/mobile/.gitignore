@@ -33,6 +33,9 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Modèle documenté, sans secret, à versionner pour que chaque développeur configure l'API.
+!.env.example
+
 # typescript
 *.tsbuildinfo
 

@@ -7,11 +7,15 @@ import { parseApiError } from './error';
 // contourné par un deuxième client qui tape directement dessus). Voir
 // docs/location-maison/troubleshooting/ALGOLIA-COST-AUDIT-2026-09.md.
 //
-// En dev, le simulateur iOS tourne sur la même machine que `npm run dev` : localhost
-// fonctionne tel quel (contrairement à un appareil Android physique, qui aurait besoin de
-// l'IP réseau de la machine). À reconfigurer par profil de build (eas.json) une fois la
-// mise en prod des environnements dev/preprod/prod abordée.
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000';
+// L'application est exécutée sur le téléphone de l'utilisateur : `localhost` désignerait
+// alors le téléphone, et non le serveur Next.js lancé sur le poste du développeur. Le repli
+// doit donc toujours être l'API publique. Un développeur qui veut appeler son serveur local
+// définit explicitement EXPO_PUBLIC_API_BASE_URL dans son fichier .env.local.
+//
+// Cette valeur est publique par nature (elle est intégrée au bundle Expo) : n'y placer aucun
+// secret. Voir .env.example et les profils EAS dans eas.json.
+export const DEFAULT_API_BASE_URL = 'https://www.tonnkama.com';
+export const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, '');
 
 type RequestOptions = Omit<RequestInit, 'body'> & { body?: unknown };
 
