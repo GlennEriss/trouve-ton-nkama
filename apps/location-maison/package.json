@@ -42,6 +42,7 @@
     "test:smoke:lot6d": "node scripts/test-lot6d-real-dev-observability.js",
     "test:smoke:lot8b": "node scripts/test-lot8b-real-dev-property.js",
     "test:smoke:lot8c": "node scripts/test-lot8c-real-dev-reel.js",
+    "test:e2e:mobile-publishing:dev": "node scripts/test-mobile-publishing-real-dev.js",
     "test:e2e:run:preprod": "E2E_ENV=preprod playwright test",
     "test:e2e:run:prod": "E2E_ENV=prod playwright test --project=chromium-desktop-prod",
     "test:coverage": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=html --coverageReporters=json-summary",

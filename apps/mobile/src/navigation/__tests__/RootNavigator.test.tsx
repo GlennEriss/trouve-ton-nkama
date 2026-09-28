@@ -7,6 +7,11 @@ import { RootNavigator } from '../RootNavigator';
 jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
 jest.mock('@react-native-firebase/messaging');
+// PublishStack est désormais monté avec MainTabs et importe l'upload Firebase Storage.
+// Ce TurboModule natif n'existe pas dans Jest, même si aucun formulaire n'est ouvert.
+jest.mock('@react-native-firebase/storage', () => ({
+  getStorage: jest.fn(), ref: jest.fn(), putFile: jest.fn(), getDownloadURL: jest.fn(),
+}));
 // Module natif (TurboModule), planterait au chargement en environnement Jest — RootNavigator
 // monte toute la navigation, y compris ProfileStack -> LegalWebViewScreen qui l'importe.
 jest.mock('react-native-webview', () => {

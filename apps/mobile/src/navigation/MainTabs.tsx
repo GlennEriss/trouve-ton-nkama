@@ -3,10 +3,10 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator, type BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { Home, Search, Plus, Video, UserCircle } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
-import PublishScreen from '../screens/PublishScreen';
 import ReelsScreen from '../screens/ReelsScreen';
 import { SearchStack } from './SearchStack';
 import { ProfileStack } from './ProfileStack';
+import { PublishStack } from './PublishStack';
 import { useFcmToken } from '../hooks/useFcmToken';
 import { useAuthState } from '../hooks/useAuthState';
 import { requireAuthOrRedirect } from '../lib/authGuard';
@@ -89,7 +89,7 @@ export function MainTabs() {
       />
       <Tab.Screen
         name="Publier"
-        component={PublishScreen}
+        component={PublishStack}
         options={{
           tabBarButtonTestID: 'tab-publier',
           tabBarIcon: () => <Plus color="#fff" size={26} />,

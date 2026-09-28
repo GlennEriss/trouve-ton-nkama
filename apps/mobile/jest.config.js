@@ -14,6 +14,7 @@ module.exports = {
   // du package, redirigé pour TOUS les tests plutôt que jest.mock() répété par fichier.
   moduleNameMapper: {
     '^react-native-reanimated$': '<rootDir>/node_modules/react-native-reanimated/mock.js',
+    '^expo-video$': '<rootDir>/src/test-utils/expoVideoMock.tsx',
     // lucide-react-native publie un build ESM (.mjs) que Jest résout en priorité via sa
     // condition d'export "react-native" — redirigé de force vers le build CJS pour éviter
     // d'avoir à transformer de l'ESM en environnement Jest.

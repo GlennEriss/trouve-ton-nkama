@@ -12,6 +12,7 @@ import {
   parseCategoryListingDraftResponse,
 } from '@/services/ai-category-listing.service';
 import type { PublishableAttributeField, PublishableCategoryLeaf } from '@/app/api/categories/publishable-leaves/route';
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 
 // Même raison que api/ai/property-draft/route.ts : l'appel Gemini peut dépasser les 10s
 // par défaut des fonctions Vercel.
@@ -152,7 +153,8 @@ export async function POST(request: NextRequest) {
 
     const db = getFirestore(adminApp as any);
     const session = await auth().catch(() => null);
-    if (!session?.user?.uid) {
+    const authenticatedUid = session?.user?.uid ?? (await resolveAuthenticatedUid(request));
+    if (!authenticatedUid) {
       return jsonApiError(401, 'UNAUTHORIZED', "Session d'authentification requise.");
     }
 
@@ -161,12 +163,12 @@ export async function POST(request: NextRequest) {
       return jsonApiError(400, 'NO_CATEGORY_AVAILABLE', "Aucune catégorie n'accepte de nouvelles annonces pour le moment.");
     }
 
-    const userDoc = await findUserDocumentByUID(db, session.user.uid);
+    const userDoc = await findUserDocumentByUID(db, authenticatedUid);
     if (!userDoc) {
       return jsonApiError(404, 'USER_NOT_FOUND', 'Profil utilisateur introuvable.');
     }
 
-    const userUid = userDoc.data()?.uid ?? session.user.uid;
+    const userUid = userDoc.data()?.uid ?? authenticatedUid;
     const currentCredits = Number(userDoc.data()?.credits ?? 0);
     if (currentCredits < DRAFT_CREDIT_COST) {
       return jsonApiError(402, 'INSUFFICIENT_CREDITS', 'Crédits insuffisants pour générer une annonce avec l’IA.');
