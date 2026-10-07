@@ -9,8 +9,9 @@
  * devra créer exactement 1 objet, le réutiliser, puis le supprimer dans un `finally`.
  */
 const {
-  DEVICE, PACKAGE, adb, sleep, waitForTestID, waitForTestIDGone, tapTestID,
+  DEVICE, PACKAGE, adb, sleep, waitForTestID, waitForTestIDGone, tapTestID, tapTestIDWhenStable,
   bringAppToForeground, dismissLogBoxNoticeIfPresent, dumpTree, typeText,
+  startAppAndDismissLogBox,
 } = require('./lib');
 const { execFileSync } = require('node:child_process');
 const path = require('node:path');
@@ -40,11 +41,20 @@ async function ensureAuthenticated(credentials) {
 }
 
 async function openPublishHome() {
-  await bringAppToForeground();
-  await dismissLogBoxNoticeIfPresent();
-  if (!(await require('./lib').dumpTree()).includes('resource-id="screen-publier"')) {
-    await tapTestID('tab-publier');
-  }
+  // L'onglet Publier garde son état de navigation interne d'une exécution à l'autre
+  // (un simple `bringAppToForeground` ne fait qu'un `am start`, pas de force-stop) : si une
+  // exécution précédente — ou une exploration manuelle — s'est arrêtée plus loin dans la pile
+  // (catégorie, formulaire...), taper l'onglet ne fait que lui redonner le focus sans la
+  // réinitialiser. Un relaunch complet (force-stop + start, déjà établi ailleurs dans ce
+  // fichier lib.js) garantit de repartir d'un état connu — contrairement à une série de BACK
+  // bornée, qui a pu, en pratique, remonter plus haut que prévu et faire sortir l'app
+  // complètement (jusqu'au launcher Android, constaté lors de l'audit de ce script).
+  await startAppAndDismissLogBox();
+  // tapTestIDWhenStable (pas tapTestID) : juste après startAppAndDismissLogBox, qui vient
+  // lui-même d'enchaîner plusieurs `uiautomator dump`, un tap immédiat peut être silencieusement
+  // perdu sous charge (constaté ici et déjà documenté pour ce même symptôme ailleurs dans ce
+  // fichier) — tapTestIDWhenStable attend deux lectures de coordonnées identiques avant de taper.
+  await tapTestIDWhenStable('tab-publier');
   await waitForTestID('screen-publier', 20000);
 }
 
