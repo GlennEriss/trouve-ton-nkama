@@ -47,11 +47,21 @@ export type CreateReelInput = {
   contact?: string;
   description?: string;
   categoryRoot?: 'Immobilier' | 'Mode';
+  trimStartSeconds?: number;
+  trimEndSeconds?: number;
+  muted?: boolean;
 };
 
 export function createMobileReelId(): string {
   const uid = getAuth().currentUser?.uid ?? 'mobile';
   return `${uid.slice(0, 8)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+export function buildMobileRawReelVideoPath(reelId: string, fileName?: string | null): string {
+  const uid = getAuth().currentUser?.uid;
+  if (!uid) throw new Error('Session Firebase introuvable. Reconnectez-vous puis réessayez.');
+  const extension = fileName?.includes('.') ? fileName.split('.').pop()?.toLowerCase() : 'mp4';
+  return `reels-raw/${uid}/${reelId}.${extension || 'mp4'}`;
 }
 
 export async function createReel(input: CreateReelInput): Promise<{ success: true; reelId: string }> {
@@ -69,9 +79,10 @@ export async function uploadReelVideo(
   uri: string,
   rawVideoPath: string,
   onProgress?: (percent: number) => void,
+  contentType = 'video/mp4',
 ): Promise<void> {
   const task = putFile(ref(getStorage(), rawVideoPath), uri, {
-    contentType: 'video/mp4',
+    contentType,
     customMetadata: { owner: getAuth().currentUser?.uid ?? 'unknown', status: 'InProgress' },
   });
 

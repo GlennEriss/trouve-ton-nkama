@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator, type BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { Home, Search, Plus, Video, UserCircle } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
 import ReelsScreen from '../screens/ReelsScreen';
@@ -90,12 +91,13 @@ export function MainTabs() {
       <Tab.Screen
         name="Publier"
         component={PublishStack}
-        options={{
+        options={({ route }) => ({
           tabBarButtonTestID: 'tab-publier',
           tabBarIcon: () => <Plus color="#fff" size={26} />,
           tabBarButton: (props) => <PublishTabButton {...props} />,
           tabBarLabel: () => null,
-        }}
+          tabBarStyle: getFocusedRouteNameFromRoute(route) === 'CreateReel' ? { display: 'none' } : undefined,
+        })}
       />
       <Tab.Screen
         name="Reels"

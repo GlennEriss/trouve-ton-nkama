@@ -29,7 +29,9 @@ export function AppDrawer() {
           // Comme dans la PWA, le feed vidéo utilise toute la hauteur disponible et porte ses
           // propres filtres en surimpression. Le header catalogue reste présent sur les quatre
           // autres onglets, mais disparaît uniquement lorsque Réels est focalisé.
-          headerShown: getFocusedRouteNameFromRoute(route) !== 'Reels',
+          // Le stack Publier possède déjà ses propres en-têtes. Le masquer ici évite surtout
+          // d'enfermer l'éditeur de réel sous le header global du catalogue.
+          headerShown: !['Reels', 'Publier'].includes(getFocusedRouteNameFromRoute(route) ?? ''),
         })}
       />
       <Drawer.Screen name="SearchRequests" component={SearchRequestsScreen} />

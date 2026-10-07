@@ -5,8 +5,10 @@ export const mockVideoPlayer = {
   loop: false,
   muted: true,
   currentTime: 0,
+  playing: false,
   play: jest.fn(),
   pause: jest.fn(),
+  generateThumbnailsAsync: jest.fn().mockResolvedValue([]),
 };
 
 export function useVideoPlayer(_source: unknown, setup?: (player: typeof mockVideoPlayer) => void) {

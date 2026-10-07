@@ -27,6 +27,7 @@ export type MyListingItem = {
   city: string;
   province?: string;
   street?: string;
+  contact?: string;
   // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
   // 08-zones-multiples-mode.md. Absent sur l'immobilier et sur une annonce Mode créée avant
   // ce champ (repli sur `city` géré par formatListingZones, lib/listingZones.ts).
