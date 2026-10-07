@@ -106,7 +106,14 @@ async function testReel() {
   await tapTestID('publish-choice-reel');
   await waitForTestID('screen-create-reel', 15000);
   await waitForTestID('reel-video-picker', 10000);
-  await scrollDown();
+  // Un `adb swipe` isolé, juste après le poll serré de waitForTestID, peut être silencieusement
+  // perdu sous charge (même symptôme que les taps documentés ailleurs dans ce fichier) — on
+  // retente le scroll (sans dépasser le bas du formulaire) tant que le bouton n'est pas trouvé,
+  // borné pour ne jamais boucler indéfiniment s'il n'apparaît vraiment jamais.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await scrollDown();
+    if ((await dumpTree()).includes('resource-id="reel-submit"')) break;
+  }
   await waitForTestID('reel-submit', 10000);
   await backTo('screen-publier');
 }
