@@ -10,8 +10,34 @@
  */
 const {
   DEVICE, PACKAGE, adb, sleep, waitForTestID, waitForTestIDGone, tapTestID,
-  bringAppToForeground, dismissLogBoxNoticeIfPresent,
+  bringAppToForeground, dismissLogBoxNoticeIfPresent, dumpTree, typeText,
 } = require('./lib');
+const { execFileSync } = require('node:child_process');
+const path = require('node:path');
+
+const AUTH_HELPER = path.resolve(__dirname, '../../location-maison/scripts/mobile-e2e-auth-user.js');
+
+function runAuthHelper(action, uid) {
+  const output = execFileSync(process.execPath, [AUTH_HELPER, action, ...(uid ? [uid] : [])], {
+    env: { ...process.env, MOBILE_E2E_CONFIRM_REAL_DEV: '1' },
+    encoding: 'utf8',
+  }).trim();
+  return JSON.parse(output.split('\n').at(-1));
+}
+
+async function ensureAuthenticated(credentials) {
+  await bringAppToForeground();
+  await dismissLogBoxNoticeIfPresent();
+  const xml = await dumpTree();
+  if (!xml.includes('resource-id="screen-connexion"')) return;
+  await tapTestID('signin-email');
+  typeText(credentials.email);
+  await tapTestID('signin-password');
+  typeText(credentials.password);
+  adb(['shell', 'input', 'keyevent', 'KEYCODE_BACK']);
+  await tapTestID('signin-submit');
+  await waitForTestIDGone('screen-connexion', 30000);
+}
 
 async function openPublishHome() {
   await bringAppToForeground();
@@ -78,22 +104,28 @@ async function testReel() {
 async function main() {
   console.log(`Appareil : ${DEVICE} — Package : ${PACKAGE}`);
   const results = [];
-  await openPublishHome();
-  for (const [name, test] of [
-    ['Annonce immobilière', testRealEstate],
-    ['Annonce Mode', testMode],
-    ['Réel', testReel],
-  ]) {
-    process.stdout.write(`▶ ${name} ... `);
-    try {
-      await test();
-      results.push({ name, ok: true });
-      console.log('OK');
-    } catch (error) {
-      results.push({ name, ok: false, error: error.message });
-      console.log(`ÉCHEC — ${error.message}`);
-      try { await openPublishHome(); } catch {}
+  const credentials = runAuthHelper('setup');
+  try {
+    await ensureAuthenticated(credentials);
+    await openPublishHome();
+    for (const [name, test] of [
+      ['Annonce immobilière', testRealEstate],
+      ['Annonce Mode', testMode],
+      ['Réel', testReel],
+    ]) {
+      process.stdout.write(`▶ ${name} ... `);
+      try {
+        await test();
+        results.push({ name, ok: true });
+        console.log('OK');
+      } catch (error) {
+        results.push({ name, ok: false, error: error.message });
+        console.log(`ÉCHEC — ${error.message}`);
+        try { await openPublishHome(); } catch {}
+      }
     }
+  } finally {
+    runAuthHelper('cleanup', credentials.uid);
   }
   console.log('\n=== Résumé publication mobile ===');
   for (const result of results) console.log(`${result.ok ? '✓' : '✗'} ${result.name}${result.ok ? '' : ` — ${result.error}`}`);

@@ -9,6 +9,7 @@ const mockTrackView = jest.fn<Promise<void>, [string]>(() => Promise.resolve());
 const mockTrackLike = jest.fn<Promise<void>, [string, boolean]>(() => Promise.resolve());
 
 jest.mock('@react-navigation/native', () => ({ useNavigation: () => ({ navigate: mockNavigate }) }));
+jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 32, right: 0, bottom: 0, left: 0 }) }));
 jest.mock('../../api/reels', () => ({
   listPublicReels: jest.fn(),
   trackReelView: (reelId: string) => mockTrackView(reelId),

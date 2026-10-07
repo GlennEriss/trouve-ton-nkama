@@ -4,6 +4,7 @@ import PublishScreen from '../screens/PublishScreen';
 import PublishCategoryScreen from '../screens/PublishCategoryScreen';
 import CreateListingScreen from '../screens/CreateListingScreen';
 import CreateReelScreen from '../screens/CreateReelScreen';
+import EditListingScreen from '../screens/EditListingScreen';
 import { colors } from '../theme/colors';
 import type { PublishStackParamList } from './types';
 
@@ -24,6 +25,7 @@ export function PublishStack() {
       <Stack.Screen name="PublishHome" component={PublishScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PublishCategory" component={PublishCategoryScreen} options={{ title: '' }} />
       <Stack.Screen name="CreateListing" component={CreateListingScreen} options={{ title: '' }} />
+      <Stack.Screen name="EditListing" component={EditListingScreen} options={{ title: 'Modifier l’annonce' }} />
       <Stack.Screen name="CreateReel" component={CreateReelScreen} options={{ title: '' }} />
     </Stack.Navigator>
   );

@@ -98,13 +98,17 @@ describe('MyListingsScreen', () => {
     alertSpy.mockRestore();
   });
 
-  it("affiche un message vide sans annonce, avec un CTA vers la publication web", async () => {
+  it("affiche un message vide avec un CTA vers le formulaire natif de publication", async () => {
     mockListings([]);
     await renderWithProviders(<MyListingsScreen />);
 
     expect(await screen.findByText('Aucune annonce trouvée')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('my-listings-empty-publish'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/publish'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'PublishCategory' } },
+    });
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it('affiche le titre, le prix, le statut de modération et le badge état de chaque annonce', async () => {
@@ -185,21 +189,29 @@ describe('MyListingsScreen', () => {
     expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/property/p2'));
   });
 
-  it('ouvre la bonne URL de modification pour une annonce immobilière', async () => {
+  it('ouvre le formulaire natif de modification pour une annonce immobilière', async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-edit-p1'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/property/create/preview/p1'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p1' } } },
+    });
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
-  it('ouvre la bonne URL de modification pour une annonce Mode', async () => {
+  it('ouvre le formulaire natif de modification pour une annonce Mode', async () => {
     mockListings([marketplaceListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(screen.getByTestId('my-listings-scope-marketplace'));
     await fireEvent.press(await screen.findByTestId('my-listings-edit-p4'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/category-listing/create/preview/p4'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p4' } } },
+    });
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it('archive une annonce après confirmation, sans jamais toucher moderationStatus', async () => {
@@ -272,11 +284,15 @@ describe('MyListingsScreen', () => {
     expect(await screen.findByText('Session indisponible. Reconnectez-vous pour gérer vos annonces.')).toBeTruthy();
   });
 
-  it('ouvre le site web au tap sur le bouton "Publier une annonce" persistant', async () => {
+  it('ouvre le formulaire natif au tap sur le bouton "Publier une annonce" persistant', async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-publish'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/publish'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'PublishCategory' } },
+    });
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 });

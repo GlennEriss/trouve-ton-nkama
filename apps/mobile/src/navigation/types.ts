@@ -22,6 +22,7 @@ export type PublishStackParamList = {
   PublishHome: undefined;
   PublishCategory: undefined;
   CreateListing: { categorySlug: string; categoryName: string };
+  EditListing: { listingId: string };
   CreateReel: undefined;
 };
 
@@ -40,7 +41,7 @@ export type MainTabParamList = {
     | undefined;
   Publier: NavigatorScreenParams<PublishStackParamList> | undefined;
   Reels: undefined;
-  ProfilOuConnexion: undefined;
+  ProfilOuConnexion: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
 
 // Le menu hamburger (drawer) : Demandes de recherche (mis en avant côté web) + Favoris +

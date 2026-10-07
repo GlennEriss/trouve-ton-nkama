@@ -1,4 +1,4 @@
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, getDoc, doc, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import type { PropertyImage } from '../lib/propertyImage';
 
@@ -14,6 +14,7 @@ import type { PropertyImage } from '../lib/propertyImage';
 export type MyListingItem = {
   id: string;
   title: string;
+  description?: string;
   price: number;
   area?: number;
   // Absent sur une annonce Mode (categoryId présent à la place) — voir la note juste plus bas
@@ -41,6 +42,7 @@ export type MyListingItem = {
   createdBy?: string;
   claimedBy?: string;
   isPromoted?: boolean;
+  isOwner?: boolean;
 };
 
 function moderationLabel(status: MyListingItem['moderationStatus']): string {
@@ -68,6 +70,20 @@ export async function listMyListings(): Promise<MyListingItem[]> {
     byId.set(item.id, { id: item.id, ...(item.data() as Omit<MyListingItem, 'id'>) });
   }
   return Array.from(byId.values());
+}
+
+export async function getMyListing(id: string): Promise<MyListingItem> {
+  const snapshot = await getDoc(doc(getFirestore(), 'properties', id));
+  if (!snapshot.exists()) throw new Error('Annonce introuvable.');
+  return { id: snapshot.id, ...(snapshot.data() as Omit<MyListingItem, 'id'>) };
+}
+
+export async function updateMyListing(id: string, patch: Partial<MyListingItem>, wasRejected: boolean): Promise<void> {
+  await updateDoc(doc(getFirestore(), 'properties', id), {
+    ...patch,
+    ...(wasRejected ? { moderationStatus: 'PENDING', rejectionReason: null } : {}),
+    updatedAt: new Date(),
+  });
 }
 
 // Archiver/Réactiver (AdManagementPage.tsx, toggleAdState) : la patch ne doit JAMAIS inclure

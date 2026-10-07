@@ -7,6 +7,7 @@ import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
 import { Gift, Heart, MessageCircle, PhoneCall, PlusCircle, RefreshCw, Share2, Video, Volume2, VolumeX } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getActiveCategories } from '../api/categories';
 import { API_BASE_URL } from '../api/client';
 import { getPropertyById } from '../api/property';
@@ -77,12 +78,12 @@ function ReelSlide({ reel, height, active, muted, toggleMute }: { reel: PublicRe
     </View>
     <View style={styles.rail}>
       {owner?.image ? <Image source={{ uri: owner.image }} style={styles.avatar} /> : null}
-      <View style={styles.withCount}><Action label={liked ? "Retirer le j'aime" : "J'aime ce réel"} onPress={onLike} color={liked ? '#E11D48' : undefined}><Heart color="#fff" size={21} fill={liked ? '#fff' : 'transparent'} /></Action>{likes ? <Text style={styles.count}>{likes}</Text> : null}</View>
-      <Action label="Contacter via WhatsApp" onPress={onWhatsApp} disabled={!phone} color="#059669"><MessageCircle color="#fff" size={21} /></Action>
-      <Action label="Appeler" onPress={() => phone && void Linking.openURL(`tel:${phone}`)} disabled={!phone} color="#2563EB"><PhoneCall color="#fff" size={20} /></Action>
-      <Action label="Offrir un cadeau" onPress={() => Alert.alert('Cadeaux', 'Les cadeaux arrivent bientôt dans l’application mobile.')} color="#DB2777"><Gift color="#fff" size={20} /></Action>
-      <Action label="Partager ce réel" onPress={() => void onShare()}><Share2 color="#fff" size={20} /></Action>
-      <Action label={muted ? 'Activer le son' : 'Couper le son'} onPress={toggleMute}>{muted ? <VolumeX color="#fff" size={20} /> : <Volume2 color="#fff" size={20} />}</Action>
+      <View style={styles.withCount}><Action label={liked ? "Retirer le j'aime" : "J'aime ce réel"} onPress={onLike} color={liked ? '#E11D48' : undefined}><Heart color="#fff" size={26} fill={liked ? '#fff' : 'transparent'} /></Action>{likes ? <Text style={styles.count}>{likes}</Text> : null}</View>
+      <Action label="Contacter via WhatsApp" onPress={onWhatsApp} disabled={!phone} color="#059669"><MessageCircle color="#fff" size={26} /></Action>
+      <Action label="Appeler" onPress={() => phone && void Linking.openURL(`tel:${phone}`)} disabled={!phone} color="#2563EB"><PhoneCall color="#fff" size={25} /></Action>
+      <Action label="Offrir un cadeau" onPress={() => Alert.alert('Cadeaux', 'Les cadeaux arrivent bientôt dans l’application mobile.')} color="#DB2777"><Gift color="#fff" size={25} /></Action>
+      <Action label="Partager ce réel" onPress={() => void onShare()}><Share2 color="#fff" size={25} /></Action>
+      <Action label={muted ? 'Activer le son' : 'Couper le son'} onPress={toggleMute}>{muted ? <VolumeX color="#fff" size={25} /> : <Volume2 color="#fff" size={25} />}</Action>
     </View>
   </View>;
 }
@@ -93,6 +94,7 @@ function EndSlide({ height, onCreate }: { height: number; onCreate: () => void }
 
 export default function ReelsScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
+  const insets = useSafeAreaInsets();
   const [height, setHeight] = React.useState(0);
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [muted, setMuted] = React.useState(true);
@@ -120,13 +122,13 @@ export default function ReelsScreen() {
     {query.isError && !reels.length ? <View style={styles.state}><Text style={styles.stateTitle}>Impossible de charger les réels</Text><Text style={styles.stateText}>Vérifiez votre connexion puis réessayez.</Text><Pressable onPress={() => void query.refetch()} style={styles.retry}><RefreshCw color="#111827" size={18} /><Text style={styles.retryText}>Réessayer</Text></Pressable></View> : null}
     {!query.isLoading && !query.isError && !reels.length ? <View style={styles.state}><Text style={styles.stateTitle}>Aucun réel pour le moment</Text><Text style={styles.stateText}>Revenez bientôt !</Text></View> : null}
     {height > 0 && reels.length ? <FlatList data={items} renderItem={renderItem} keyExtractor={(item) => item.id} pagingEnabled showsVerticalScrollIndicator={false} decelerationRate="fast" snapToInterval={height} getItemLayout={(_, index) => ({ length: height, offset: height * index, index })} initialNumToRender={2} maxToRenderPerBatch={3} windowSize={3} removeClippedSubviews viewabilityConfig={{ itemVisiblePercentThreshold: 70 }} onViewableItemsChanged={onViewableItemsChanged} ListFooterComponent={query.isFetchingNextPage ? <View style={[styles.footer, { height }]}><ActivityIndicator color="#fff" size="large" /></View> : null} /> : null}
-    {categories.length >= 2 ? <View style={styles.categories}>{[null, ...categories.map((item) => item.name)].map((name) => <Pressable key={name ?? 'all'} onPress={() => setCategory(name)} style={[styles.pill, category === name && styles.pillActive]}><Text style={[styles.pillText, category === name && styles.pillTextActive]}>{name ?? 'Tout'}</Text></Pressable>)}</View> : null}
+    {categories.length >= 2 ? <View style={[styles.categories, { top: insets.top + 10 }]}>{[null, ...categories.map((item) => item.name)].map((name) => <Pressable accessibilityRole="button" accessibilityLabel={`Filtrer par ${name ?? 'toutes les catégories'}`} key={name ?? 'all'} onPress={() => setCategory(name)} style={[styles.pill, category === name && styles.pillActive]}><Text style={[styles.pillText, category === name && styles.pillTextActive]}>{name ?? 'Tout'}</Text></Pressable>)}</View> : null}
   </View>;
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#000' }, slide: { width: '100%', overflow: 'hidden', backgroundColor: '#000' }, overlay: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 280 }, caption: { position: 'absolute', left: 16, right: 84, bottom: 22, zIndex: 2 }, owner: { color: '#fff', fontSize: 15, fontWeight: '700', marginBottom: 5 }, description: { color: 'rgba(255,255,255,0.95)', fontSize: 14, lineHeight: 19 }, more: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700', paddingVertical: 4 }, property: { color: 'rgba(255,255,255,0.92)', fontSize: 14, lineHeight: 19, marginTop: 3 }, meta: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '600', marginTop: 3 },
-  rail: { position: 'absolute', right: 10, bottom: 20, zIndex: 3, alignItems: 'center', gap: 12 }, avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: '#fff' }, action: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' }, withCount: { alignItems: 'center', gap: 2 }, count: { color: '#fff', fontSize: 12, fontWeight: '600' }, disabled: { opacity: 0.4 }, pressed: { opacity: 0.75, transform: [{ scale: 0.97 }] },
-  categories: { position: 'absolute', top: 12, alignSelf: 'center', zIndex: 5, flexDirection: 'row', gap: 2, padding: 4, borderRadius: 24, backgroundColor: 'rgba(0,0,0,0.55)' }, pill: { minHeight: 36, justifyContent: 'center', borderRadius: 18, paddingHorizontal: 13 }, pillActive: { backgroundColor: '#fff' }, pillText: { color: 'rgba(255,255,255,0.82)', fontSize: 12, fontWeight: '600' }, pillTextActive: { color: '#000' }, center: { position: 'absolute', inset: 0 }, state: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 }, stateTitle: { color: '#fff', fontSize: 17, fontWeight: '700', textAlign: 'center' }, stateText: { color: 'rgba(255,255,255,0.62)', fontSize: 14, marginTop: 7, textAlign: 'center' }, retry: { minHeight: 48, marginTop: 20, paddingHorizontal: 22, borderRadius: 24, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 8 }, retryText: { color: '#111827', fontWeight: '700' }, footer: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
+  rail: { position: 'absolute', right: 12, bottom: 24, zIndex: 3, alignItems: 'center', gap: 11 }, avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: '#fff' }, action: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }, withCount: { alignItems: 'center', gap: 3 }, count: { color: '#fff', fontSize: 13, fontWeight: '700' }, disabled: { opacity: 0.4 }, pressed: { opacity: 0.75, transform: [{ scale: 0.97 }] },
+  categories: { position: 'absolute', alignSelf: 'center', zIndex: 5, flexDirection: 'row', gap: 3, padding: 5, borderRadius: 27, backgroundColor: 'rgba(0,0,0,0.68)' }, pill: { minHeight: 44, justifyContent: 'center', borderRadius: 22, paddingHorizontal: 16 }, pillActive: { backgroundColor: '#fff' }, pillText: { color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: '700' }, pillTextActive: { color: '#000' }, center: { position: 'absolute', inset: 0 }, state: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 }, stateTitle: { color: '#fff', fontSize: 17, fontWeight: '700', textAlign: 'center' }, stateText: { color: 'rgba(255,255,255,0.62)', fontSize: 14, marginTop: 7, textAlign: 'center' }, retry: { minHeight: 48, marginTop: 20, paddingHorizontal: 22, borderRadius: 24, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 8 }, retryText: { color: '#111827', fontWeight: '700' }, footer: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
   end: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, backgroundColor: '#0A0A0A' }, endIcon: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: 20 }, kicker: { color: '#A7F3D0', fontSize: 14, fontWeight: '600' }, endTitle: { color: '#fff', fontSize: 25, fontWeight: '800', textAlign: 'center', marginTop: 10 }, endText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginTop: 12, maxWidth: 360 }, create: { minHeight: 48, marginTop: 26, paddingHorizontal: 24, borderRadius: 24, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 9 }, createText: { color: '#111827', fontSize: 14, fontWeight: '700' },
 });

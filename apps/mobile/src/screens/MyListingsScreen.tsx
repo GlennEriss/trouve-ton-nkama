@@ -129,16 +129,6 @@ function isMarketplaceItem(item: MyListingItem): boolean {
   return !item.typeProperty;
 }
 
-function editUrl(item: MyListingItem): string {
-  // Même discriminant que "Modifier" côté web (AdManagementPage.tsx) : `!typeProperty` seul
-  // distingue fiablement Mode d'immobilier — categoryId seul a été posé par erreur sur ~949/950
-  // annonces (backfill 2026-08-17), voir le commentaire équivalent côté web.
-  if (!item.typeProperty && item.categoryId) {
-    return `${WEB_BASE_URL}/category-listing/create/preview/${item.id}`;
-  }
-  return `${WEB_BASE_URL}/property/create/preview/${item.id}`;
-}
-
 function sortItems(items: MyListingItem[], sort: SortKey): MyListingItem[] {
   const sorted = [...items];
   switch (sort) {
@@ -296,9 +286,9 @@ function ListingCard({
 //   Firestore, pas d'appel serveur par filtre) — pas de bouton "Voir les résultats" séparé.
 // - Pas de pagination infinie : le nombre d'annonces d'un même compte reste modeste, tout est
 //   chargé d'un coup (même choix que listMyListings, déjà en place).
-// - "Modifier", "Publier une annonce" et "Ajouter un réel" pointent vers le site web ou une
-//   alerte "Bientôt disponible" — aucun écran de création/édition n'existe encore côté mobile
-//   (même décision produit déjà actée pour la V1 de cet écran).
+// - "Modifier" et "Publier une annonce" utilisent le parcours natif PublishStack.
+// - "Ajouter un réel" reste désactivé tant que CreateReel ne sait pas encore pré-sélectionner
+//   l'annonce source.
 // - Catégorie/Type ne sont pas des filtres séparés (la recherche texte couvre déjà ce besoin
 //   pour un nombre d'annonces par compte qui reste petit) ; Promue/Non promue et l'État restent.
 export default function MyListingsScreen() {
@@ -394,7 +384,19 @@ export default function MyListingsScreen() {
   };
 
   const handleEdit = (item: MyListingItem) => {
-    Linking.openURL(editUrl(item));
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: item.id } } },
+    });
+  };
+
+  const handlePublish = () => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'PublishCategory' } },
+    });
   };
 
   const handleAddReel = () => {
@@ -542,7 +544,7 @@ export default function MyListingsScreen() {
               <TouchableOpacity
                 testID="my-listings-empty-publish"
                 style={styles.emptyButton}
-                onPress={() => Linking.openURL(`${WEB_BASE_URL}/publish`)}
+                onPress={handlePublish}
               >
                 <Text style={styles.emptyButtonText}>Publier une annonce</Text>
               </TouchableOpacity>
@@ -561,7 +563,7 @@ export default function MyListingsScreen() {
       <GradientButton
         testID="my-listings-publish"
         title="Publier une annonce"
-        onPress={() => Linking.openURL(`${WEB_BASE_URL}/publish`)}
+        onPress={handlePublish}
         style={styles.publishButton}
       />
 
