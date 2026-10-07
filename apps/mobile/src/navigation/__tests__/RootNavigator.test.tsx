@@ -86,6 +86,25 @@ describe('RootNavigator', () => {
     expect(await screen.findByText('Annonces récentes')).toBeTruthy();
   });
 
+  it('conserve le bouton + central comme accès au parcours de publication', async () => {
+    let cb: ((user: unknown) => void) | undefined;
+    mockedOnAuthStateChanged.mockImplementation((_auth, callback) => {
+      cb = callback;
+      return jest.fn();
+    });
+    (getAuth as jest.Mock).mockReturnValue({ currentUser: { uid: 'uid-1' } });
+
+    await renderRootNavigator();
+    await act(async () => {
+      cb?.({ uid: 'uid-1' });
+    });
+    await screen.findByText('Annonces récentes');
+
+    await fireEvent.press(screen.getByTestId('tab-publier'));
+
+    expect(await screen.findByTestId('publish-choice-listing')).toBeTruthy();
+  });
+
   // La redirection automatique vers SignIn pour un onglet protégé (Profil, Favoris,
   // Notifications) est testée unitairement dans useRequireAuth.test.ts — pas ici, où le VRAI
   // navigationRef (singleton module-level) est réutilisé entre plusieurs montages/démontages

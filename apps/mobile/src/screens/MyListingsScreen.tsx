@@ -21,6 +21,7 @@ import {
   BadgeDollarSign,
   Building2,
   CalendarDays,
+  CircleCheck,
   Eye,
   Layers3,
   MapPin,
@@ -36,7 +37,6 @@ import { deleteListing, listMyListings, moderationLabel, setListingState, type M
 import { formatListingZones } from '../lib/listingZones';
 import { getImageUrl } from '../lib/propertyImage';
 import { navigationRef } from '../navigation/navigationRef';
-import { GradientButton } from '../components/GradientButton';
 import { colors } from '../theme/colors';
 
 const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://www.tonnkama.com';
@@ -148,11 +148,31 @@ function sortItems(items: MyListingItem[], sort: SortKey): MyListingItem[] {
   }
 }
 
-function StatCard({ title, value }: { title: string; value: number }) {
+function StatCard({
+  title,
+  value,
+  icon,
+  testID,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  testID: string;
+}) {
+  const formattedValue = value.toLocaleString('fr-FR');
+
   return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
+    <View
+      testID={testID}
+      style={styles.statCard}
+      accessible
+      accessibilityLabel={`${formattedValue} ${title.toLocaleLowerCase('fr-FR')}`}
+    >
+      <View testID={`${testID}-header`} style={styles.statHeader}>
+        <View style={styles.statIcon}>{icon}</View>
+        <Text style={styles.statTitle}>{title}</Text>
+      </View>
+      <Text style={styles.statValue}>{formattedValue}</Text>
     </View>
   );
 }
@@ -391,14 +411,6 @@ export default function MyListingsScreen() {
     });
   };
 
-  const handlePublish = () => {
-    if (!navigationRef.isReady()) return;
-    navigationRef.navigate('Main', {
-      screen: 'MainTabs',
-      params: { screen: 'Publier', params: { screen: 'PublishCategory' } },
-    });
-  };
-
   const handleAddReel = () => {
     Alert.alert('Bientôt disponible', 'Ajouter un réel depuis une annonce arrive prochainement.');
   };
@@ -484,11 +496,37 @@ export default function MyListingsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow} contentContainerStyle={styles.statsRowContent}>
-        <StatCard title="Total annonces" value={stats.total} />
-        <StatCard title="Actives" value={stats.active} />
-        <StatCard title="Archivées" value={stats.archived} />
-        <StatCard title="Promues" value={stats.promoted} />
+      <ScrollView
+        testID="my-listings-stats-strip"
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.statsScroller}
+        contentContainerStyle={styles.statsRowContent}
+      >
+        <StatCard
+          testID="my-listings-stat-total"
+          title="Total annonces"
+          value={stats.total}
+          icon={<Layers3 size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-active"
+          title="Actives"
+          value={stats.active}
+          icon={<CircleCheck size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-archived"
+          title="Archivées"
+          value={stats.archived}
+          icon={<Archive size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-promoted"
+          title="Promues"
+          value={stats.promoted}
+          icon={<TrendingUp size={19} color={colors.primary} strokeWidth={2} />}
+        />
       </ScrollView>
 
       <View style={styles.searchRow}>
@@ -521,6 +559,7 @@ export default function MyListingsScreen() {
         </View>
       ) : (
         <FlatList
+          testID="my-listings-list"
           data={filteredItems}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -540,17 +579,10 @@ export default function MyListingsScreen() {
                 <Building2 size={28} color={colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>Aucune annonce trouvée</Text>
-              <Text style={styles.emptyText}>Ajustez vos filtres ou publiez une nouvelle annonce.</Text>
-              <TouchableOpacity
-                testID="my-listings-empty-publish"
-                style={styles.emptyButton}
-                onPress={handlePublish}
-              >
-                <Text style={styles.emptyButtonText}>Publier une annonce</Text>
-              </TouchableOpacity>
+              <Text style={styles.emptyText}>Ajustez vos filtres ou utilisez le bouton + pour publier.</Text>
             </View>
           }
-          contentContainerStyle={filteredItems.length === 0 ? { flexGrow: 1 } : styles.listContent}
+          contentContainerStyle={filteredItems.length === 0 ? styles.emptyListContent : styles.listContent}
         />
       )}
 
@@ -559,13 +591,6 @@ export default function MyListingsScreen() {
           <Text style={styles.sessionBannerText}>Session indisponible. Reconnectez-vous pour gérer vos annonces.</Text>
         </View>
       )}
-
-      <GradientButton
-        testID="my-listings-publish"
-        title="Publier une annonce"
-        onPress={handlePublish}
-        style={styles.publishButton}
-      />
 
       <Modal visible={filtersVisible} animationType="slide" onRequestClose={() => setFiltersVisible(false)}>
         <SafeAreaView style={{ flex: 1 }} testID="my-listings-filters-modal">
@@ -682,19 +707,40 @@ const styles = StyleSheet.create({
   scopePillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   scopePillText: { fontSize: 13, fontWeight: '600', color: colors.foreground },
   scopePillTextActive: { color: '#fff' },
-  statsRow: { marginTop: 12 },
-  statsRowContent: { paddingHorizontal: 16, gap: 10 },
+  statsScroller: { height: 104, marginTop: 12, flexGrow: 0, flexShrink: 0 },
+  statsRowContent: { alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 6 },
   statCard: {
-    minWidth: 110,
+    width: 156,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    padding: 12,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
     backgroundColor: '#fff',
+    shadowColor: colors.foreground,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  statValue: { fontSize: 20, fontWeight: '800', color: colors.foreground },
-  statTitle: { fontSize: 12, color: colors.mutedText, marginTop: 2 },
-  searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 14 },
+  statHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  statIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5F3',
+  },
+  statValue: {
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: '800',
+    color: colors.foreground,
+    fontVariant: ['tabular-nums'],
+  },
+  statTitle: { flex: 1, fontSize: 12, lineHeight: 16, fontWeight: '500', color: colors.mutedText },
+  searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 12 },
   searchInput: {
     flex: 1,
     borderWidth: 1,
@@ -719,7 +765,8 @@ const styles = StyleSheet.create({
   filteredCountText: { fontSize: 12, color: colors.mutedText, paddingHorizontal: 16, marginTop: 10 },
   filteredCountStrong: { fontWeight: '700', color: colors.foreground },
   errorText: { color: colors.destructive, fontSize: 13, paddingHorizontal: 16, marginTop: 8 },
-  listContent: { padding: 16, gap: 14 },
+  listContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 14 },
+  emptyListContent: { flexGrow: 1, paddingBottom: 16 },
   card: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -797,8 +844,6 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.foreground },
   emptyText: { fontSize: 13, color: colors.mutedText, textAlign: 'center' },
-  emptyButton: { marginTop: 12, backgroundColor: colors.primary, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 12 },
-  emptyButtonText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   sessionBanner: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -809,7 +854,6 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   sessionBannerText: { fontSize: 12, color: '#92400E' },
-  publishButton: { marginHorizontal: 16, marginTop: 12, marginBottom: 4 },
   modalContent: { padding: 20, gap: 4 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   modalTitle: { fontSize: 20, fontWeight: '800' },
