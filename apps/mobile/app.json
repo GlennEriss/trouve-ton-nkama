@@ -42,7 +42,8 @@
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       "expo-video",
-      "expo-image"
+      "expo-image",
+      "expo-font"
     ]
   }
 }

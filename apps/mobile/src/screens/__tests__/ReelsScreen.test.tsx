@@ -57,6 +57,29 @@ it('met à jour le like de façon optimiste', async () => {
   expect(screen.getByLabelText("Retirer le j'aime")).toBeTruthy();
 });
 
+it('met le réel en pause par un tap sur la vidéo puis permet de reprendre', async () => {
+  await render(<ReelsScreen />);
+  await fireEvent(screen.getByTestId('screen-reels'), 'layout', { nativeEvent: { layout: { height: 640 } } });
+
+  await fireEvent.press(screen.getByTestId('reel-video-touch'));
+  expect(screen.getByLabelText('Lire le réel')).toBeTruthy();
+
+  await fireEvent.press(screen.getByTestId('reel-video-touch'));
+  expect(screen.getByLabelText('Mettre le réel en pause')).toBeTruthy();
+});
+
+it('garde toutes les actions dans un rail commun et accessible', async () => {
+  await render(<ReelsScreen />);
+  await fireEvent(screen.getByTestId('screen-reels'), 'layout', { nativeEvent: { layout: { height: 640 } } });
+
+  expect(screen.getByTestId('reel-action-rail')).toBeTruthy();
+  expect(screen.getByLabelText('Contacter via WhatsApp')).toBeTruthy();
+  expect(screen.getByLabelText('Appeler')).toBeTruthy();
+  expect(screen.getByLabelText('Offrir un cadeau')).toBeTruthy();
+  expect(screen.getByLabelText('Partager ce réel')).toBeTruthy();
+  expect(screen.getByLabelText('Activer le son')).toBeTruthy();
+});
+
 it('affiche un état de reprise en cas d’erreur réseau', async () => {
   mockFeedState = { isLoading: false, isError: true, hasNextPage: false, isFetchingNextPage: false, fetchNextPage: mockFetchNextPage, refetch: mockRefetch };
   await render(<ReelsScreen />);

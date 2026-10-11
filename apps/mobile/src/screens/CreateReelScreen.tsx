@@ -88,7 +88,11 @@ function ReelVideoEditor({ asset, start, end, muted, busy, onTrim, onMute }: {
       if (state === 'active') player.play();
       else player.pause();
     });
-    return () => { subscription.remove(); player.pause(); };
+    // `useVideoPlayer` owns the native player's lifecycle and releases it while
+    // the component is unmounting. Calling `pause()` from our cleanup can then
+    // race with that release on Android and target an already released shared
+    // object. Removing the AppState listener is the only manual cleanup needed.
+    return () => { subscription.remove(); };
   }, [player]);
   return <View style={styles.editorBody}>
     <View style={styles.timelineArea}>

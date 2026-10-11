@@ -18,3 +18,7 @@
 
 # Images locales utilisées pour l'import ponctuel des logements des annonceurs plateforme
 /imports/platform-announcers-housing/
+
+# Photos locales des annonces reçues directement pour publication en production
+/imports/direct-housing-2026-10-08/
+/imports/direct-housing-2026-10-08-batch-02/

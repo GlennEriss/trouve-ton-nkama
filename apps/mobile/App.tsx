@@ -9,8 +9,24 @@ import { initSentry } from './src/lib/sentry';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { usePushNotificationRouting } from './src/hooks/usePushNotificationRouting';
+import { useFonts } from 'expo-font';
+import {
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+
   useEffect(() => {
     initSentry();
   }, []);
@@ -18,6 +34,8 @@ export default function App() {
   // Vit au niveau racine (pas dans MainTabs comme useFcmToken) : getInitialNotification doit
   // être vérifié dès le lancement, avant même que l'état d'authentification soit résolu.
   usePushNotificationRouting();
+
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     // Requis par @react-navigation/drawer (menu hamburger) — sans ça, les gestes de balayage

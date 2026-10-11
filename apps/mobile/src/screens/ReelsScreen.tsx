@@ -1,10 +1,10 @@
 import React from 'react';
-import { ActivityIndicator, Alert, FlatList, Image, Linking, Pressable, Share, StyleSheet, Text, View, type ListRenderItemInfo, type ViewToken } from 'react-native';
+import { ActivityIndicator, Alert, Animated, FlatList, Image, Linking, Pressable, Share, StyleSheet, Text, View, type ListRenderItemInfo, type ViewToken } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { doc, getDoc, getFirestore } from '@react-native-firebase/firestore';
-import { Gift, Heart, MessageCircle, PhoneCall, PlusCircle, RefreshCw, Share2, Video, Volume2, VolumeX } from 'lucide-react-native';
+import { Gift, Heart, MessageCircle, Pause, PhoneCall, Play, PlusCircle, RefreshCw, Share2, Video, Volume2, VolumeX } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,13 +25,73 @@ async function getOwner(uid: string): Promise<Owner | null> {
 }
 const formatPrice = (price: number) => `${new Intl.NumberFormat('fr-FR').format(price)} FCFA`;
 
-function Action({ label, onPress, disabled, color = 'rgba(255,255,255,0.16)', children }: { label: string; onPress: () => void; disabled?: boolean; color?: string; children: React.ReactNode }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({ pressed }) => [styles.action, { backgroundColor: color }, disabled && styles.disabled, pressed && styles.pressed]}>{children}</Pressable>;
+type ReelActionButtonProps = {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  count?: number;
+  active?: boolean;
+  children: React.ReactNode;
+};
+
+function ReelActionButton({ label, onPress, disabled, count, active, children }: ReelActionButtonProps) {
+  return <View style={styles.actionSlot}>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: Boolean(disabled), selected: active }}
+      disabled={disabled}
+      hitSlop={4}
+      onPress={onPress}
+      style={({ pressed }) => [styles.actionButton, disabled && styles.disabled, pressed && styles.pressed]}
+    >
+      <View style={[styles.actionSurface, active && styles.actionSurfaceActive]}>{children}</View>
+    </Pressable>
+    {typeof count === 'number' ? <Text style={styles.count}>{new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(count)}</Text> : null}
+  </View>;
+}
+
+function ReelActionRail({ ownerImage, liked, likes, phone, muted, compact, onLike, onWhatsApp, onCall, onGift, onShare, onToggleMute }: {
+  ownerImage?: string; liked: boolean; likes: number; phone?: string; muted: boolean; compact: boolean;
+  onLike: () => void; onWhatsApp: () => void; onCall: () => void; onGift: () => void; onShare: () => void; onToggleMute: () => void;
+}) {
+  const heartScale = React.useRef(new Animated.Value(1)).current;
+  const pressLike = () => {
+    Animated.sequence([
+      Animated.spring(heartScale, { toValue: 1.18, speed: 32, bounciness: 8, useNativeDriver: true }),
+      Animated.spring(heartScale, { toValue: 1, speed: 28, bounciness: 5, useNativeDriver: true }),
+    ]).start();
+    onLike();
+  };
+  return <View testID="reel-action-rail" style={[styles.rail, compact && styles.railCompact]}>
+    {ownerImage ? <Image source={{ uri: ownerImage }} style={styles.avatar} /> : null}
+    <ReelActionButton label={liked ? "Retirer le j'aime" : "J'aime ce réel"} onPress={pressLike} active={liked} count={likes}>
+      <Animated.View style={{ transform: [{ scale: heartScale }] }}><Heart color={liked ? '#FF496E' : '#fff'} size={31} strokeWidth={2.15} fill={liked ? '#FF496E' : 'transparent'} /></Animated.View>
+    </ReelActionButton>
+    <ReelActionButton label="Contacter via WhatsApp" onPress={onWhatsApp} disabled={!phone}><MessageCircle color="#fff" size={30} strokeWidth={2.05} /></ReelActionButton>
+    <ReelActionButton label="Appeler" onPress={onCall} disabled={!phone}><PhoneCall color="#fff" size={29} strokeWidth={2.05} /></ReelActionButton>
+    <ReelActionButton label="Offrir un cadeau" onPress={onGift}><Gift color="#fff" size={29} strokeWidth={2.05} /></ReelActionButton>
+    <ReelActionButton label="Partager ce réel" onPress={onShare}><Share2 color="#fff" size={29} strokeWidth={2.05} /></ReelActionButton>
+    <ReelActionButton label={muted ? 'Activer le son' : 'Couper le son'} onPress={onToggleMute}>{muted ? <VolumeX color="#fff" size={29} strokeWidth={2.05} /> : <Volume2 color="#fff" size={29} strokeWidth={2.05} />}</ReelActionButton>
+  </View>;
+}
+
+function ReelDescription({ ownerName, description, property, expanded, onToggle }: {
+  ownerName: string; description?: string; property?: Awaited<ReturnType<typeof getPropertyById>>; expanded: boolean; onToggle: () => void;
+}) {
+  return <View style={styles.caption}>
+    {ownerName ? <Text style={styles.owner}>{ownerName}</Text> : null}
+    {description ? <View><Text numberOfLines={expanded ? undefined : 2} style={styles.description}>{description}</Text>{description.length > 80 ? <Pressable accessibilityRole="button" accessibilityState={{ expanded }} accessibilityLabel={expanded ? 'Réduire la description' : 'Développer la description'} onPress={onToggle} hitSlop={8}><Text style={styles.more}>{expanded ? 'Voir moins' : 'Voir plus'}</Text></Pressable> : null}</View> : null}
+    {property ? <><Text numberOfLines={1} style={styles.property}>{property.title}</Text><Text numberOfLines={1} style={styles.meta}>{formatPrice(property.price)} · {property.city}</Text></> : <Text style={styles.meta}>Réel</Text>}
+  </View>;
 }
 
 function ReelSlide({ reel, height, active, muted, toggleMute }: { reel: PublicReel; height: number; active: boolean; muted: boolean; toggleMute: () => void }) {
   const [hasFrame, setHasFrame] = React.useState(false);
   const [expanded, setExpanded] = React.useState(false);
+  const [playing, setPlaying] = React.useState(active);
+  const [showPlaybackFeedback, setShowPlaybackFeedback] = React.useState(false);
+  const feedbackOpacity = React.useRef(new Animated.Value(0)).current;
   const [liked, setLiked] = React.useState(() => likedReelIds.has(reel.id));
   const [likes, setLikes] = React.useState(Math.max(0, reel.likeCount ?? 0));
   const player = useVideoPlayer(reel.videoUrl ?? null, (video) => { video.loop = true; video.muted = true; });
@@ -40,9 +100,24 @@ function ReelSlide({ reel, height, active, muted, toggleMute }: { reel: PublicRe
 
   React.useEffect(() => { player.muted = muted; }, [muted, player]);
   React.useEffect(() => {
-    if (active && reel.videoUrl) { player.currentTime = 0; player.play(); }
-    else { player.pause(); setExpanded(false); }
+    if (active && reel.videoUrl) { player.currentTime = 0; player.play(); setPlaying(true); }
+    else { player.pause(); setPlaying(false); setExpanded(false); }
   }, [active, player, reel.videoUrl]);
+
+  const showPlaybackIndicator = React.useCallback(() => {
+    setShowPlaybackFeedback(true);
+    feedbackOpacity.stopAnimation();
+    feedbackOpacity.setValue(1);
+    Animated.sequence([
+      Animated.delay(320),
+      Animated.timing(feedbackOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
+    ]).start(({ finished }) => { if (finished) setShowPlaybackFeedback(false); });
+  }, [feedbackOpacity]);
+  const togglePlayback = () => {
+    if (playing) player.pause(); else player.play();
+    setPlaying((value) => !value);
+    showPlaybackIndicator();
+  };
 
   const phone = reel.contact ?? property?.whatsappContact ?? property?.contact ?? owner?.phoneNumbers?.[0];
   const ownerName = owner?.pseudo || [owner?.firstname, owner?.lastname].filter(Boolean).join(' ');
@@ -66,25 +141,14 @@ function ReelSlide({ reel, height, active, muted, toggleMute }: { reel: PublicRe
   };
 
   return <View testID={`reel-${reel.id}`} style={[styles.slide, { height }]}>
-    <Pressable style={StyleSheet.absoluteFill} onPress={toggleMute} accessibilityLabel={muted ? 'Activer le son' : 'Couper le son'}>
+    <Pressable testID="reel-video-touch" style={StyleSheet.absoluteFill} onPress={togglePlayback} accessibilityRole="button" accessibilityLabel={playing ? 'Mettre le réel en pause' : 'Lire le réel'}>
       <VideoView player={player} style={StyleSheet.absoluteFill} contentFit="contain" nativeControls={false} onFirstFrameRender={() => setHasFrame(true)} />
     </Pressable>
     {reel.thumbnailUrl && (!hasFrame || !active) ? <Image source={{ uri: reel.thumbnailUrl }} resizeMode="contain" style={StyleSheet.absoluteFill} /> : null}
     <LinearGradient pointerEvents="none" colors={['transparent', 'rgba(0,0,0,0.25)', 'rgba(0,0,0,0.9)']} style={styles.overlay} />
-    <View style={styles.caption}>
-      {ownerName ? <Text style={styles.owner}>{ownerName}</Text> : null}
-      {reel.description ? <><Text numberOfLines={expanded ? undefined : 3} style={styles.description}>{reel.description}</Text>{reel.description.length > 110 ? <Pressable onPress={() => setExpanded((value) => !value)} hitSlop={8}><Text style={styles.more}>{expanded ? 'voir moins' : 'voir plus'}</Text></Pressable> : null}</> : null}
-      {property ? <><Text numberOfLines={2} style={styles.property}>{property.title}</Text><Text style={styles.meta}>{formatPrice(property.price)} · {property.city}</Text></> : <Text style={styles.meta}>Réel</Text>}
-    </View>
-    <View style={styles.rail}>
-      {owner?.image ? <Image source={{ uri: owner.image }} style={styles.avatar} /> : null}
-      <View style={styles.withCount}><Action label={liked ? "Retirer le j'aime" : "J'aime ce réel"} onPress={onLike} color={liked ? '#E11D48' : undefined}><Heart color="#fff" size={26} fill={liked ? '#fff' : 'transparent'} /></Action>{likes ? <Text style={styles.count}>{likes}</Text> : null}</View>
-      <Action label="Contacter via WhatsApp" onPress={onWhatsApp} disabled={!phone} color="#059669"><MessageCircle color="#fff" size={26} /></Action>
-      <Action label="Appeler" onPress={() => phone && void Linking.openURL(`tel:${phone}`)} disabled={!phone} color="#2563EB"><PhoneCall color="#fff" size={25} /></Action>
-      <Action label="Offrir un cadeau" onPress={() => Alert.alert('Cadeaux', 'Les cadeaux arrivent bientôt dans l’application mobile.')} color="#DB2777"><Gift color="#fff" size={25} /></Action>
-      <Action label="Partager ce réel" onPress={() => void onShare()}><Share2 color="#fff" size={25} /></Action>
-      <Action label={muted ? 'Activer le son' : 'Couper le son'} onPress={toggleMute}>{muted ? <VolumeX color="#fff" size={25} /> : <Volume2 color="#fff" size={25} />}</Action>
-    </View>
+    {(showPlaybackFeedback || !playing) ? <Animated.View pointerEvents="none" style={[styles.playbackOverlay, { opacity: showPlaybackFeedback ? feedbackOpacity : 1 }]}>{playing ? <Pause color="#fff" size={34} fill="rgba(255,255,255,0.16)" /> : <Play color="#fff" size={36} fill="rgba(255,255,255,0.18)" />}</Animated.View> : null}
+    <ReelDescription ownerName={ownerName} description={reel.description} property={property} expanded={expanded} onToggle={() => setExpanded((value) => !value)} />
+    <ReelActionRail ownerImage={owner?.image} liked={liked} likes={likes} phone={phone} muted={muted} compact={height < 700} onLike={onLike} onWhatsApp={onWhatsApp} onCall={() => phone && void Linking.openURL(`tel:${phone}`)} onGift={() => Alert.alert('Cadeaux', 'Les cadeaux arrivent bientôt dans l’application mobile.')} onShare={() => void onShare()} onToggleMute={toggleMute} />
   </View>;
 }
 
@@ -127,8 +191,9 @@ export default function ReelsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000' }, slide: { width: '100%', overflow: 'hidden', backgroundColor: '#000' }, overlay: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 280 }, caption: { position: 'absolute', left: 16, right: 84, bottom: 22, zIndex: 2 }, owner: { color: '#fff', fontSize: 15, fontWeight: '700', marginBottom: 5 }, description: { color: 'rgba(255,255,255,0.95)', fontSize: 14, lineHeight: 19 }, more: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '700', paddingVertical: 4 }, property: { color: 'rgba(255,255,255,0.92)', fontSize: 14, lineHeight: 19, marginTop: 3 }, meta: { color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: '600', marginTop: 3 },
-  rail: { position: 'absolute', right: 12, bottom: 24, zIndex: 3, alignItems: 'center', gap: 11 }, avatar: { width: 52, height: 52, borderRadius: 26, borderWidth: 2, borderColor: '#fff' }, action: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }, withCount: { alignItems: 'center', gap: 3 }, count: { color: '#fff', fontSize: 13, fontWeight: '700' }, disabled: { opacity: 0.4 }, pressed: { opacity: 0.75, transform: [{ scale: 0.97 }] },
+  screen: { flex: 1, backgroundColor: '#000' }, slide: { width: '100%', overflow: 'hidden', backgroundColor: '#000' }, overlay: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 300 }, caption: { position: 'absolute', left: 16, right: 82, bottom: 18, zIndex: 2 }, owner: { color: '#fff', fontSize: 15, fontWeight: '800', marginBottom: 5, textShadowColor: 'rgba(0,0,0,.72)', textShadowRadius: 5 }, description: { color: '#fff', fontSize: 14, lineHeight: 20, textShadowColor: 'rgba(0,0,0,.8)', textShadowRadius: 5 }, more: { alignSelf: 'flex-start', color: 'rgba(255,255,255,0.88)', fontSize: 12, fontWeight: '800', paddingVertical: 5, textShadowColor: 'rgba(0,0,0,.8)', textShadowRadius: 4 }, property: { color: 'rgba(255,255,255,0.96)', fontSize: 14, lineHeight: 19, fontWeight: '700', marginTop: 3, textShadowColor: 'rgba(0,0,0,.75)', textShadowRadius: 4 }, meta: { color: 'rgba(255,255,255,0.84)', fontSize: 13, fontWeight: '700', marginTop: 3, textShadowColor: 'rgba(0,0,0,.75)', textShadowRadius: 4 },
+  playbackOverlay: { position: 'absolute', top: '50%', left: '50%', width: 72, height: 72, marginLeft: -36, marginTop: -36, borderRadius: 36, zIndex: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,.38)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,.22)' },
+  rail: { position: 'absolute', right: 8, bottom: 16, zIndex: 3, width: 60, alignItems: 'center', gap: 8 }, railCompact: { gap: 4, bottom: 10 }, avatar: { width: 46, height: 46, marginBottom: 2, borderRadius: 23, borderWidth: 2, borderColor: '#fff', backgroundColor: 'rgba(0,0,0,.28)' }, actionSlot: { width: 60, alignItems: 'center' }, actionButton: { width: 52, minHeight: 52, alignItems: 'center', justifyContent: 'center' }, actionSurface: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,15,18,.34)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,.18)', shadowColor: '#000', shadowOpacity: .42, shadowRadius: 5, shadowOffset: { width: 0, height: 2 }, elevation: 3 }, actionSurfaceActive: { backgroundColor: 'rgba(255,73,110,.14)', borderColor: 'rgba(255,125,151,.38)' }, count: { minWidth: 38, marginTop: -2, color: '#fff', fontSize: 12, lineHeight: 16, fontWeight: '800', textAlign: 'center', fontVariant: ['tabular-nums'], textShadowColor: 'rgba(0,0,0,.9)', textShadowRadius: 4 }, disabled: { opacity: 0.38 }, pressed: { opacity: 0.72, transform: [{ scale: 0.94 }] },
   categories: { position: 'absolute', alignSelf: 'center', zIndex: 5, flexDirection: 'row', gap: 3, padding: 5, borderRadius: 27, backgroundColor: 'rgba(0,0,0,0.68)' }, pill: { minHeight: 44, justifyContent: 'center', borderRadius: 22, paddingHorizontal: 16 }, pillActive: { backgroundColor: '#fff' }, pillText: { color: 'rgba(255,255,255,0.9)', fontSize: 13, fontWeight: '700' }, pillTextActive: { color: '#000' }, center: { position: 'absolute', inset: 0 }, state: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 28 }, stateTitle: { color: '#fff', fontSize: 17, fontWeight: '700', textAlign: 'center' }, stateText: { color: 'rgba(255,255,255,0.62)', fontSize: 14, marginTop: 7, textAlign: 'center' }, retry: { minHeight: 48, marginTop: 20, paddingHorizontal: 22, borderRadius: 24, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 8 }, retryText: { color: '#111827', fontWeight: '700' }, footer: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
   end: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 28, backgroundColor: '#0A0A0A' }, endIcon: { width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: 20 }, kicker: { color: '#A7F3D0', fontSize: 14, fontWeight: '600' }, endTitle: { color: '#fff', fontSize: 25, fontWeight: '800', textAlign: 'center', marginTop: 10 }, endText: { color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 22, textAlign: 'center', marginTop: 12, maxWidth: 360 }, create: { minHeight: 48, marginTop: 26, paddingHorizontal: 24, borderRadius: 24, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center', gap: 9 }, createText: { color: '#111827', fontSize: 14, fontWeight: '700' },
 });

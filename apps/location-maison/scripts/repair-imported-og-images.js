@@ -38,6 +38,11 @@ const HOUSING_IMAGE_NAMES = {
   '04': ['image.png'],
 }
 
+const DIRECT_HOUSING_IMAGE_NAMES = {
+  '01': ['01.png', '02.png', '03.png', '04.png'],
+  '02': ['image.png'],
+}
+
 function buildPlan() {
   const emilie = Array.from({ length: 17 }, (_, index) => {
     const sequence = String(index + 1).padStart(2, '0')
@@ -54,7 +59,14 @@ function buildPlan() {
     ),
   }))
 
-  return [...emilie, ...housing]
+  const directHousing = Object.entries(DIRECT_HOUSING_IMAGE_NAMES).map(([sequence, names]) => ({
+    propertyId: `direct-housing-2026-10-08-${sequence}`,
+    sourcePaths: names.map((name) =>
+      path.join(IMPORTS_ROOT, 'direct-housing-2026-10-08/images', sequence, name),
+    ),
+  }))
+
+  return [...emilie, ...housing, ...directHousing]
 }
 
 function firebaseDownloadUrl(bucketName, storagePath, token) {
@@ -127,8 +139,8 @@ async function main() {
   const allPaths = plan.flatMap((item) => item.sourcePaths)
   const missing = allPaths.filter((sourcePath) => !fs.existsSync(sourcePath))
   if (missing.length) throw new Error(`Images locales manquantes : ${missing.join(', ')}`)
-  if (plan.length !== 21 || allPaths.length !== 31) {
-    throw new Error(`Lot inattendu : ${plan.length}/21 annonces et ${allPaths.length}/31 images.`)
+  if (plan.length !== 23 || allPaths.length !== 36) {
+    throw new Error(`Lot inattendu : ${plan.length}/23 annonces et ${allPaths.length}/36 images.`)
   }
 
   const documents = await db.getAll(...plan.map((item) => db.collection('properties').doc(item.propertyId)))

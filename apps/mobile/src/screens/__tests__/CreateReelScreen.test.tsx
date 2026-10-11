@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import CreateReelScreen from '../CreateReelScreen';
 import { buildMobileRawReelVideoPath, createMobileReelId, createReel, markReelUploadFailed, uploadReelVideo } from '../../api/reels';
 import { listMyListings } from '../../api/myListings';
+import { mockVideoPlayer } from '../../test-utils/expoVideoMock';
 
 jest.mock('expo-image-picker');
 jest.mock('../../api/reels', () => ({
@@ -143,6 +144,16 @@ describe('CreateReelScreen', () => {
     await fireEvent.press(screen.getByTestId('reel-close'));
     expect(alertSpy).toHaveBeenCalledWith('Abandonner ce réel ?', expect.any(String), expect.any(Array));
     expect(navigation.goBack).not.toHaveBeenCalled();
+  });
+
+  it('ne manipule pas le lecteur déjà libéré au démontage de l’éditeur', async () => {
+    const view = await renderScreen();
+    await selectVideo();
+    mockVideoPlayer.pause.mockClear();
+
+    view.unmount();
+
+    expect(mockVideoPlayer.pause).not.toHaveBeenCalled();
   });
 
   it("marque le réel en échec si le téléversement vidéo échoue", async () => {
