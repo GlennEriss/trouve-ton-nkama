@@ -7,10 +7,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Building2, Check, Link2, Pencil, Send, Shirt, Video, Volume2, VolumeX, X } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { buildMobileRawReelVideoPath, createMobileReelId, createReel, markReelUploadFailed, uploadReelVideo } from '../api/reels';
-import { listMyListings, type MyListingItem } from '../api/myListings';
+import { getOwnedListing, listMyListings, type MyListingItem } from '../api/myListings';
 import { useUserDoc } from '../hooks/useUserDoc';
 import { colors } from '../theme/colors';
 import type { PublishStackParamList } from '../navigation/types';
+import { navigationRef } from '../navigation/navigationRef';
 
 type Props = NativeStackScreenProps<PublishStackParamList, 'CreateReel'>;
 type ReelCategory = 'Immobilier' | 'Mode';
@@ -108,7 +109,7 @@ function ReelVideoEditor({ asset, start, end, muted, busy, onTrim, onMute }: {
   </View>;
 }
 
-export default function CreateReelScreen({ navigation }: Props) {
+export default function CreateReelScreen({ navigation, route }: Props) {
   const { userDoc } = useUserDoc();
   const [asset, setAsset] = React.useState<ImagePicker.ImagePickerAsset | null>(null);
   const [start, setStart] = React.useState(0);
@@ -127,6 +128,28 @@ export default function CreateReelScreen({ navigation }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const contactTouched = React.useRef(false);
   const submittingRef = React.useRef(false);
+  const requestedPropertyId = route.params?.propertyId;
+
+  React.useEffect(() => {
+    if (!requestedPropertyId) return;
+    let active = true;
+    setLoadingListings(true);
+    setError(null);
+    getOwnedListing(requestedPropertyId)
+      .then((selected) => {
+        if (!active) return;
+        setListing(selected);
+        setListings((current) => current.some((item) => item.id === selected.id) ? current : [selected, ...current]);
+        setCategory(null);
+        contactTouched.current = false;
+        if (selected.contact) setContact(selected.contact);
+      })
+      .catch((cause) => {
+        if (active) setError(cause instanceof Error ? cause.message : "Impossible de charger l’annonce sélectionnée.");
+      })
+      .finally(() => { if (active) setLoadingListings(false); });
+    return () => { active = false; };
+  }, [requestedPropertyId]);
 
   React.useEffect(() => {
     if (contactTouched.current) return;
@@ -175,7 +198,13 @@ export default function CreateReelScreen({ navigation }: Props) {
       await createReel({ reelId, propertyId: listing?.id ?? null, rawVideoPath: path, contact: contact.trim() || undefined, description: description.trim() || undefined, ...(!listing && category ? { categoryRoot: category } : {}), ...(trimmed ? { trimStartSeconds: start, trimEndSeconds: end } : {}), ...(muted ? { muted: true } : {}) });
       try { setProgress(0); await uploadReelVideo(asset.uri, path, setProgress, asset.mimeType ?? 'video/mp4'); }
       catch (cause) { await markReelUploadFailed(reelId, cause instanceof Error ? cause.message : "Échec de l'envoi de la vidéo."); throw cause; }
-      Alert.alert('Vidéo envoyée', "Le traitement démarre. Ton réel sera visible après validation par notre équipe.", [{ text: 'OK', onPress: () => navigation.popToTop() }]);
+      Alert.alert('Vidéo envoyée', "Le traitement démarre. Ton réel sera visible après validation par notre équipe.", [{ text: 'OK', onPress: () => {
+        if (requestedPropertyId && navigationRef.isReady()) {
+          navigationRef.navigate('Main', { screen: 'MainTabs', params: { screen: 'ProfilOuConnexion', params: { screen: 'MyListings' } } });
+        } else {
+          navigation.popToTop();
+        }
+      } }]);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Échec de l'envoi du réel. Réessaie."); }
     finally { setProgress(null); setSubmitting(false); submittingRef.current = false; }
   };

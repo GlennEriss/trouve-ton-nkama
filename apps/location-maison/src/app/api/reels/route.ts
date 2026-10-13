@@ -351,7 +351,9 @@ async function assertOwnedProperty(
   }
 
   const property = propertySnapshot.data() ?? {};
-  if (property.createdBy !== uid) {
+  // Même définition de propriété que la gestion d'annonces et les Security Rules :
+  // le créateur initial OU l'annonceur qui a légitimement revendiqué l'annonce.
+  if (property.createdBy !== uid && property.claimedBy !== uid) {
     throw new ReelApiError(403, 'FORBIDDEN_PROPERTY', "Cette annonce ne vous appartient pas.");
   }
 

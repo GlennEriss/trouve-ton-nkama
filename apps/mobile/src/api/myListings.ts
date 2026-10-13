@@ -20,7 +20,7 @@ export type MyListingItem = {
   // Absent sur une annonce Mode (categoryId présent à la place) — voir la note juste plus bas
   // sur le discriminant `!typeProperty`.
   typeProperty?: string;
-  status: 'FOR_RENT' | 'FOR_SALE';
+  status?: 'FOR_RENT' | 'FOR_SALE';
   moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string;
   state: 'IN_PROGRESS' | 'ARCHIVED';
@@ -42,6 +42,30 @@ export type MyListingItem = {
   updatedAt?: unknown;
   createdBy?: string;
   claimedBy?: string;
+  tags?: string[];
+  attributes?: Record<string, string | number | boolean>;
+  additionnalInformation?: string;
+  whatsappContact?: string;
+  callContact?: string;
+  additionalContacts?: string[];
+  nbrRooms?: number;
+  nbrKitchens?: number;
+  nbrBathrooms?: number;
+  nbrToilets?: number;
+  nbrFloors?: number;
+  nbrGarages?: number;
+  nbrLivingRoom?: number;
+  nbrPiscine?: number;
+  nbrApartments?: number;
+  hasParking?: boolean;
+  nbrFloorApartment?: number;
+  nbrFloorStudio?: number;
+  numeroApartment?: string;
+  numeroStudio?: string;
+  nbrSections?: number;
+  nbrToilet?: number;
+  kioskType?: string;
+  roomType?: string;
   isPromoted?: boolean;
   isOwner?: boolean;
 };
@@ -77,6 +101,16 @@ export async function getMyListing(id: string): Promise<MyListingItem> {
   const snapshot = await getDoc(doc(getFirestore(), 'properties', id));
   if (!snapshot.exists()) throw new Error('Annonce introuvable.');
   return { id: snapshot.id, ...(snapshot.data() as Omit<MyListingItem, 'id'>) };
+}
+
+export async function getOwnedListing(id: string): Promise<MyListingItem> {
+  const uid = getAuth().currentUser?.uid;
+  if (!uid) throw new Error('Session indisponible. Reconnectez-vous.');
+  const listing = await getMyListing(id);
+  if (listing.createdBy !== uid && listing.claimedBy !== uid) {
+    throw new Error("Vous n’êtes pas autorisé à consulter cette annonce.");
+  }
+  return listing;
 }
 
 export async function updateMyListing(id: string, patch: Partial<MyListingItem>, wasRejected: boolean): Promise<void> {

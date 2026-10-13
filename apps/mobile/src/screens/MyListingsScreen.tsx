@@ -4,7 +4,6 @@ import {
   Alert,
   FlatList,
   Image,
-  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -38,8 +37,6 @@ import { formatListingZones } from '../lib/listingZones';
 import { getImageUrl } from '../lib/propertyImage';
 import { navigationRef } from '../navigation/navigationRef';
 import { colors } from '../theme/colors';
-
-const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://www.tonnkama.com';
 
 type StateFilter = 'ALL' | 'IN_PROGRESS' | 'ARCHIVED';
 type PromotedFilter = 'ALL' | 'PROMOTED' | 'NOT_PROMOTED';
@@ -386,21 +383,15 @@ export default function MyListingsScreen() {
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['my-listings'] });
 
-  // Immobilier ET zone unique/absente : la fiche est visible publiquement (donc affichable
-  // nativement via ListingDetailScreen, qui appelle /api/property/id — cette route accepte les
-  // annonces PENDING/REJECTED/ARCHIVED uniquement avec une session NextAuth, que le mobile n'a
-  // jamais). Pour ses propres annonces non publiques, on ouvre plutôt la fiche web (authentifiée
-  // par cookie côté navigateur) plutôt que de dupliquer la logique d'auth côté mobile.
   const handleView = (item: MyListingItem) => {
-    const isPubliclyVisible = item.state === 'IN_PROGRESS' && item.moderationStatus === 'APPROVED';
-    if (isPubliclyVisible && navigationRef.isReady()) {
-      navigationRef.navigate('Main', {
-        screen: 'MainTabs',
-        params: { screen: 'Recherche', params: { screen: 'ListingDetail', params: { objectID: item.id } } },
-      });
-      return;
-    }
-    Linking.openURL(`${WEB_BASE_URL}/property/${item.id}`);
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: {
+        screen: 'ProfilOuConnexion',
+        params: { screen: 'MyListingDetail', params: { objectID: item.id, ownerView: true } },
+      },
+    });
   };
 
   const handleEdit = (item: MyListingItem) => {
@@ -411,8 +402,12 @@ export default function MyListingsScreen() {
     });
   };
 
-  const handleAddReel = () => {
-    Alert.alert('Bientôt disponible', 'Ajouter un réel depuis une annonce arrive prochainement.');
+  const handleAddReel = (item: MyListingItem) => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'CreateReel', params: { propertyId: item.id } } },
+    });
   };
 
   const handleToggleState = (item: MyListingItem) => {

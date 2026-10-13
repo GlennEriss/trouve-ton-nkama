@@ -3,6 +3,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   MyListings: undefined;
+  MyListingDetail: { objectID: string; ownerView: true };
   PhoneVerify: undefined;
   Legal: { page: 'terms' | 'privacy' | 'dataDeletion' };
   EditProfile: undefined;
@@ -23,7 +24,7 @@ export type PublishStackParamList = {
   PublishCategory: undefined;
   CreateListing: { categorySlug: string; categoryName: string };
   EditListing: { listingId: string };
-  CreateReel: undefined;
+  CreateReel: { propertyId?: string } | undefined;
 };
 
 // Reprend la structure exacte de BottomNavigation.tsx (web, état non-annonceur) : 5 items +

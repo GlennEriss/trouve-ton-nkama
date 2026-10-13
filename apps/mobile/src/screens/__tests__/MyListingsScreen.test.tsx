@@ -1,5 +1,5 @@
 import { screen, fireEvent, waitFor, act, within } from '@testing-library/react-native';
-import { Alert, Linking, StyleSheet } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getDocs, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
 import MyListingsScreen from '../MyListingsScreen';
@@ -90,7 +90,6 @@ describe('MyListingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedGetAuth.mockReturnValue({ currentUser: { uid: 'uid-1' } });
-    jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never);
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
   });
 
@@ -213,7 +212,7 @@ describe('MyListingsScreen', () => {
     expect(screen.queryByText('Maison A')).toBeNull();
   });
 
-  it("navigue nativement pour une annonce publiquement visible (Voir)", async () => {
+  it("navigue vers la fiche propriétaire native pour une annonce publique", async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
@@ -221,18 +220,20 @@ describe('MyListingsScreen', () => {
 
     expect(mockedNavigate).toHaveBeenCalledWith('Main', {
       screen: 'MainTabs',
-      params: { screen: 'Recherche', params: { screen: 'ListingDetail', params: { objectID: 'p1' } } },
+      params: { screen: 'ProfilOuConnexion', params: { screen: 'MyListingDetail', params: { objectID: 'p1', ownerView: true } } },
     });
   });
 
-  it("ouvre la fiche web pour une annonce non publique (Voir, PENDING)", async () => {
+  it("ouvre aussi nativement une annonce propriétaire en attente", async () => {
     mockListings([pendingListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-view-p2'));
 
-    expect(mockedNavigate).not.toHaveBeenCalled();
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/property/p2'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'ProfilOuConnexion', params: { screen: 'MyListingDetail', params: { objectID: 'p2', ownerView: true } } },
+    });
   });
 
   it('ouvre le formulaire natif de modification pour une annonce immobilière', async () => {
@@ -244,7 +245,6 @@ describe('MyListingsScreen', () => {
       screen: 'MainTabs',
       params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p1' } } },
     });
-    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it('ouvre le formulaire natif de modification pour une annonce Mode', async () => {
@@ -257,7 +257,6 @@ describe('MyListingsScreen', () => {
       screen: 'MainTabs',
       params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p4' } } },
     });
-    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   it('archive une annonce après confirmation, sans jamais toucher moderationStatus', async () => {
@@ -314,12 +313,15 @@ describe('MyListingsScreen', () => {
     );
   });
 
-  it("affiche 'Bientôt disponible' pour Ajouter un réel", async () => {
+  it("ouvre l’éditeur natif avec l’annonce présélectionnée", async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-add-reel-p1'));
-    expect(alertSpy).toHaveBeenCalledWith('Bientôt disponible', expect.stringContaining('Ajouter un réel'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'CreateReel', params: { propertyId: 'p1' } } },
+    });
   });
 
   it('affiche une bannière si la session est indisponible', async () => {

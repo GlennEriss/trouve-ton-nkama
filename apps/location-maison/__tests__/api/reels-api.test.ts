@@ -312,6 +312,39 @@ describe('/api/reels', () => {
     )
   })
 
+  it('autorise le revendicataire legitime a associer un reel a son annonce', async () => {
+    const { db, transaction, refFor } = makeReelsDb({
+      propertyData: { createdBy: 'admin-import', claimedBy: 'uid-1', typeProperty: 'Home' },
+    })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(makeRequest({
+      reelId: 'reel-claimed',
+      propertyId: 'property-1',
+      rawVideoPath: 'reels-raw/uid-1/reel-claimed.mp4',
+    }))
+
+    expect(response.status).toBe(200)
+    expect(transaction.create).toHaveBeenCalledWith(
+      refFor('reels', 'reel-claimed'),
+      expect.objectContaining({ propertyId: 'property-1', createdBy: 'uid-1', categoryPath: { lvl0: 'Immobilier' } }),
+    )
+  })
+
+  it('refuse une annonce qui ne correspond ni au createur ni au revendicataire', async () => {
+    const { db, transaction } = makeReelsDb({ propertyData: { createdBy: 'uid-2', claimedBy: 'uid-3' } })
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+
+    const response = await postReel(makeRequest({
+      reelId: 'reel-forbidden', propertyId: 'property-1', rawVideoPath: 'reels-raw/uid-1/reel-forbidden.mp4',
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(403)
+    expect(payload).toMatchObject({ success: false, code: 'FORBIDDEN_PROPERTY' })
+    expect(transaction.create).not.toHaveBeenCalled()
+  })
+
   it('refuse de recreer un reel existant avec le meme reelId', async () => {
     const { db, transaction } = makeReelsDb({
       reelData: {

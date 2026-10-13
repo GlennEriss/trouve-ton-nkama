@@ -5,6 +5,7 @@ import MyListingsScreen from '../screens/MyListingsScreen';
 import PhoneVerifyScreen from '../screens/PhoneVerifyScreen';
 import LegalWebViewScreen from '../screens/LegalWebViewScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import ListingDetailScreen from '../screens/ListingDetailScreen';
 import type { ProfileStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -14,6 +15,7 @@ export function ProfileStack() {
     <Stack.Navigator>
       <Stack.Screen name="ProfileHome" component={ProfileScreen} options={{ title: 'Profil' }} />
       <Stack.Screen name="MyListings" component={MyListingsScreen} options={{ title: 'Mes annonces' }} />
+      <Stack.Screen name="MyListingDetail" component={ListingDetailScreen} options={{ title: 'Détails de l’annonce' }} />
       <Stack.Screen name="PhoneVerify" component={PhoneVerifyScreen} options={{ title: 'Vérifier mon numéro' }} />
       <Stack.Screen name="Legal" component={LegalWebViewScreen} options={{ title: '' }} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Modifier mon profil' }} />

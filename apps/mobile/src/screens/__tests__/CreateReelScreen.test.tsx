@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import CreateReelScreen from '../CreateReelScreen';
 import { buildMobileRawReelVideoPath, createMobileReelId, createReel, markReelUploadFailed, uploadReelVideo } from '../../api/reels';
-import { listMyListings } from '../../api/myListings';
+import { getOwnedListing, listMyListings } from '../../api/myListings';
 import { mockVideoPlayer } from '../../test-utils/expoVideoMock';
 
 jest.mock('expo-image-picker');
@@ -14,7 +14,7 @@ jest.mock('../../api/reels', () => ({
   markReelUploadFailed: jest.fn(),
   uploadReelVideo: jest.fn(),
 }));
-jest.mock('../../api/myListings', () => ({ listMyListings: jest.fn().mockResolvedValue([]) }));
+jest.mock('../../api/myListings', () => ({ getOwnedListing: jest.fn(), listMyListings: jest.fn().mockResolvedValue([]) }));
 jest.mock('../../hooks/useUserDoc', () => ({ useUserDoc: () => ({ userDoc: { phoneNumbers: ['+241077000000'] }, isLoading: false }) }));
 
 const mockedPermission = ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock;
@@ -25,10 +25,11 @@ const mockedCreateReel = createReel as jest.Mock;
 const mockedUploadVideo = uploadReelVideo as jest.Mock;
 const mockedMarkFailed = markReelUploadFailed as jest.Mock;
 const mockedListMyListings = listMyListings as jest.Mock;
+const mockedGetOwnedListing = getOwnedListing as jest.Mock;
 const navigation = { popToTop: jest.fn(), goBack: jest.fn() };
 
-async function renderScreen() {
-  return await render(<CreateReelScreen navigation={navigation as never} route={{} as never} />);
+async function renderScreen(propertyId?: string) {
+  return await render(<CreateReelScreen navigation={navigation as never} route={{ params: propertyId ? { propertyId } : undefined } as never} />);
 }
 
 async function selectVideo(duration = 30_000, overrides: Record<string, unknown> = {}) {
@@ -52,6 +53,7 @@ describe('CreateReelScreen', () => {
     mockedUploadVideo.mockResolvedValue(undefined);
     mockedMarkFailed.mockResolvedValue(undefined);
     mockedListMyListings.mockResolvedValue([]);
+    mockedGetOwnedListing.mockResolvedValue(undefined);
   });
 
   afterEach(() => alertSpy.mockRestore());
@@ -124,6 +126,23 @@ describe('CreateReelScreen', () => {
     }));
     expect(mockedCreateReel.mock.calls[0][0]).not.toHaveProperty('categoryRoot');
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('Vidéo envoyée', expect.any(String), expect.any(Array)));
+  });
+
+  it('préselectionne automatiquement l’annonce transmise depuis Mes annonces', async () => {
+    mockedGetOwnedListing.mockResolvedValue({ id: 'property-mode', title: 'Robe noire', categoryPath: { lvl0: 'Mode' }, city: 'Libreville', contact: '+241066222222' });
+    await renderScreen('property-mode');
+    expect(await screen.findByText('Pour « Robe noire »')).toBeTruthy();
+    await selectVideo();
+    await fireEvent.press(screen.getByTestId('reel-submit'));
+    await waitFor(() => expect(mockedCreateReel).toHaveBeenCalledWith(expect.objectContaining({ propertyId: 'property-mode', contact: '+241066222222' })));
+    expect(mockedCreateReel.mock.calls[0][0]).not.toHaveProperty('categoryRoot');
+  });
+
+  it('affiche une erreur si l’annonce présélectionnée a disparu', async () => {
+    mockedGetOwnedListing.mockRejectedValue(new Error('Annonce introuvable.'));
+    await renderScreen('missing');
+    expect(await screen.findByText('Annonce introuvable.')).toBeTruthy();
+    expect(screen.queryByText(/Pour «/)).toBeNull();
   });
 
   it('bloque une double pression sur envoyer', async () => {
