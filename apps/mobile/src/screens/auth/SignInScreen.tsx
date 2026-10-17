@@ -72,6 +72,7 @@ export default function SignInScreen() {
 
       <Text style={styles.label}>Email</Text>
       <TextInput
+        testID="signin-email"
         style={styles.input}
         placeholder="Saisissez votre email"
         autoCapitalize="none"
@@ -81,6 +82,7 @@ export default function SignInScreen() {
       />
       <Text style={styles.label}>Mot de passe</Text>
       <TextInput
+        testID="signin-password"
         style={styles.input}
         placeholder="Saisissez votre mot de passe"
         secureTextEntry
@@ -91,6 +93,7 @@ export default function SignInScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <GradientButton
+        testID="signin-submit"
         title="Connexion"
         onPress={handleSignIn}
         isLoading={isLoading}

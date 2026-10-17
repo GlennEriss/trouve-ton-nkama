@@ -4,6 +4,7 @@ module.exports = {
     'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|lucide-react-native)',
   ],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/test-utils/storageSetup.ts'],
   // @react-native-google-signin/google-signin essaie de charger son TurboModule natif
   // (RNGoogleSignin) même en environnement Jest — mock officiel du package (mocke
   // NativeGoogleSignin directement, pas juste la façade JS), comme react-native-reanimated
@@ -14,6 +15,7 @@ module.exports = {
   // du package, redirigé pour TOUS les tests plutôt que jest.mock() répété par fichier.
   moduleNameMapper: {
     '^react-native-reanimated$': '<rootDir>/node_modules/react-native-reanimated/mock.js',
+    '^expo-video$': '<rootDir>/src/test-utils/expoVideoMock.tsx',
     // lucide-react-native publie un build ESM (.mjs) que Jest résout en priorité via sa
     // condition d'export "react-native" — redirigé de force vers le build CJS pour éviter
     // d'avoir à transformer de l'ESM en environnement Jest.

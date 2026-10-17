@@ -1,5 +1,5 @@
-import { screen, fireEvent, waitFor, act } from '@testing-library/react-native';
-import { Alert, Linking } from 'react-native';
+import { screen, fireEvent, waitFor, act, within } from '@testing-library/react-native';
+import { Alert, StyleSheet } from 'react-native';
 import { getAuth } from '@react-native-firebase/auth';
 import { getDocs, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
 import MyListingsScreen from '../MyListingsScreen';
@@ -90,7 +90,6 @@ describe('MyListingsScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedGetAuth.mockReturnValue({ currentUser: { uid: 'uid-1' } });
-    jest.spyOn(Linking, 'openURL').mockResolvedValue(true as never);
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
   });
 
@@ -98,13 +97,13 @@ describe('MyListingsScreen', () => {
     alertSpy.mockRestore();
   });
 
-  it("affiche un message vide sans annonce, avec un CTA vers la publication web", async () => {
+  it("affiche un message vide sans dupliquer le CTA de publication de la navigation", async () => {
     mockListings([]);
     await renderWithProviders(<MyListingsScreen />);
 
     expect(await screen.findByText('Aucune annonce trouvée')).toBeTruthy();
-    await fireEvent.press(screen.getByTestId('my-listings-empty-publish'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/publish'));
+    expect(screen.getByText('Ajustez vos filtres ou utilisez le bouton + pour publier.')).toBeTruthy();
+    expect(screen.queryByText('Publier une annonce')).toBeNull();
   });
 
   it('affiche le titre, le prix, le statut de modération et le badge état de chaque annonce', async () => {
@@ -140,6 +139,56 @@ describe('MyListingsScreen', () => {
     expect(screen.queryByText('Maison A')).toBeNull();
   });
 
+  it('affiche les quatre KPI dans un rail horizontal avec les valeurs Immobilier puis Mode', async () => {
+    mockListings([publicListing, pendingListing, rejectedListing, marketplaceListing]);
+    await renderWithProviders(<MyListingsScreen />);
+
+    expect(await screen.findByLabelText('3 total annonces')).toBeTruthy();
+    const statsStrip = screen.getByTestId('my-listings-stats-strip');
+    expect(statsStrip.props.horizontal).toBe(true);
+    expect(StyleSheet.flatten(statsStrip.props.style)).toMatchObject({ height: 104, flexShrink: 0 });
+    expect(within(screen.getByTestId('my-listings-stat-total-header')).getByText('Total annonces')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-total')).getByText('3')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-active')).getByText('2')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-archived')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-promoted')).getByText('0')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('my-listings-scope-marketplace'));
+
+    expect(within(screen.getByTestId('my-listings-stat-total')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-active')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-archived')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-promoted')).getByText('1')).toBeTruthy();
+  });
+
+  it('conserve les libellés complets et les valeurs à zéro', async () => {
+    mockListings([]);
+    await renderWithProviders(<MyListingsScreen />);
+
+    expect(await screen.findByText('Total annonces')).toBeTruthy();
+    expect(screen.getByText('Actives')).toBeTruthy();
+    expect(screen.getByText('Archivées')).toBeTruthy();
+    expect(screen.getByText('Promues')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stats-strip')).getAllByText('0')).toHaveLength(4);
+    expect(screen.getByLabelText('0 total annonces')).toBeTruthy();
+  });
+
+  it('affiche sans troncature une valeur à plusieurs chiffres', async () => {
+    const manyListings = Array.from({ length: 12 }, (_, index) =>
+      listingDoc(`many-${index}`, {
+        ...publicListing.data(),
+        title: `Annonce ${index + 1}`,
+      }),
+    );
+    mockListings(manyListings);
+    await renderWithProviders(<MyListingsScreen />);
+
+    expect(await screen.findByLabelText('12 total annonces')).toBeTruthy();
+    expect(within(screen.getByTestId('my-listings-stat-total')).getByText('12')).toBeTruthy();
+    expect(await screen.findByText('Annonce 1')).toBeTruthy();
+    expect(screen.getByTestId('my-listings-list')).toBeTruthy();
+  });
+
   it('filtre par recherche texte (titre)', async () => {
     mockListings([publicListing, pendingListing]);
     await renderWithProviders(<MyListingsScreen />);
@@ -163,7 +212,7 @@ describe('MyListingsScreen', () => {
     expect(screen.queryByText('Maison A')).toBeNull();
   });
 
-  it("navigue nativement pour une annonce publiquement visible (Voir)", async () => {
+  it("navigue vers la fiche propriétaire native pour une annonce publique", async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
@@ -171,35 +220,43 @@ describe('MyListingsScreen', () => {
 
     expect(mockedNavigate).toHaveBeenCalledWith('Main', {
       screen: 'MainTabs',
-      params: { screen: 'Recherche', params: { screen: 'ListingDetail', params: { objectID: 'p1' } } },
+      params: { screen: 'ProfilOuConnexion', params: { screen: 'MyListingDetail', params: { objectID: 'p1', ownerView: true } } },
     });
   });
 
-  it("ouvre la fiche web pour une annonce non publique (Voir, PENDING)", async () => {
+  it("ouvre aussi nativement une annonce propriétaire en attente", async () => {
     mockListings([pendingListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-view-p2'));
 
-    expect(mockedNavigate).not.toHaveBeenCalled();
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/property/p2'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'ProfilOuConnexion', params: { screen: 'MyListingDetail', params: { objectID: 'p2', ownerView: true } } },
+    });
   });
 
-  it('ouvre la bonne URL de modification pour une annonce immobilière', async () => {
+  it('ouvre le formulaire natif de modification pour une annonce immobilière', async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-edit-p1'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/property/create/preview/p1'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p1' } } },
+    });
   });
 
-  it('ouvre la bonne URL de modification pour une annonce Mode', async () => {
+  it('ouvre le formulaire natif de modification pour une annonce Mode', async () => {
     mockListings([marketplaceListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(screen.getByTestId('my-listings-scope-marketplace'));
     await fireEvent.press(await screen.findByTestId('my-listings-edit-p4'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/category-listing/create/preview/p4'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: 'p4' } } },
+    });
   });
 
   it('archive une annonce après confirmation, sans jamais toucher moderationStatus', async () => {
@@ -256,12 +313,15 @@ describe('MyListingsScreen', () => {
     );
   });
 
-  it("affiche 'Bientôt disponible' pour Ajouter un réel", async () => {
+  it("ouvre l’éditeur natif avec l’annonce présélectionnée", async () => {
     mockListings([publicListing]);
     await renderWithProviders(<MyListingsScreen />);
 
     await fireEvent.press(await screen.findByTestId('my-listings-add-reel-p1'));
-    expect(alertSpy).toHaveBeenCalledWith('Bientôt disponible', expect.stringContaining('Ajouter un réel'));
+    expect(mockedNavigate).toHaveBeenCalledWith('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'CreateReel', params: { propertyId: 'p1' } } },
+    });
   });
 
   it('affiche une bannière si la session est indisponible', async () => {
@@ -272,11 +332,12 @@ describe('MyListingsScreen', () => {
     expect(await screen.findByText('Session indisponible. Reconnectez-vous pour gérer vos annonces.')).toBeTruthy();
   });
 
-  it('ouvre le site web au tap sur le bouton "Publier une annonce" persistant', async () => {
-    mockListings([publicListing]);
+  it('ne rend plus le bouton persistant "Publier une annonce" au-dessus de la navigation', async () => {
+    mockListings([]);
     await renderWithProviders(<MyListingsScreen />);
 
-    await fireEvent.press(await screen.findByTestId('my-listings-publish'));
-    expect(Linking.openURL).toHaveBeenCalledWith(expect.stringContaining('/publish'));
+    expect(await screen.findByText('Aucune annonce trouvée')).toBeTruthy();
+    expect(screen.queryByTestId('my-listings-publish')).toBeNull();
+    expect(screen.queryByText('Publier une annonce')).toBeNull();
   });
 });

@@ -42,4 +42,13 @@ describe('ForgotPasswordScreen', () => {
 
     expect(await screen.findByText("L'adresse email n'est pas valide.")).toBeTruthy();
   });
+
+  it('ne confirme pas un envoi qui échoue pour cause réseau', async () => {
+    mockedSend.mockRejectedValue({ code: 'auth/network-request-failed' });
+    await render(<ForgotPasswordScreen />);
+    await fireEvent.changeText(screen.getByPlaceholderText('Email'), 'test@example.com');
+    await fireEvent.press(screen.getByText('Envoyer le lien'));
+    expect(await screen.findByText('Impossible d’envoyer le lien. Vérifiez votre connexion puis réessayez.')).toBeTruthy();
+    expect(screen.queryByText('Email envoyé')).toBeNull();
+  });
 });

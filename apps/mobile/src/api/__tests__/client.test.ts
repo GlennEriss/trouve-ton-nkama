@@ -1,5 +1,5 @@
 import { getAuth, getIdToken } from '@react-native-firebase/auth';
-import { apiFetch } from '../client';
+import { apiFetch, API_BASE_URL, DEFAULT_API_BASE_URL } from '../client';
 import { ApiError } from '../error';
 
 jest.mock('@react-native-firebase/auth');
@@ -19,6 +19,11 @@ describe('apiFetch', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.fetch = jest.fn();
+  });
+
+  it("utilise l'API publique par défaut, jamais localhost sur un téléphone", () => {
+    expect(API_BASE_URL).toBe(DEFAULT_API_BASE_URL);
+    expect(API_BASE_URL).not.toContain('localhost');
   });
 
   it("n'attache aucun header Authorization sans utilisateur connecté", async () => {

@@ -1,6 +1,6 @@
 import { getAuth } from '@react-native-firebase/auth';
-import { getDocs, where, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
-import { listMyListings, moderationLabel, setListingState, deleteListing } from '../myListings';
+import { getDocs, getDoc, where, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
+import { getOwnedListing, listMyListings, moderationLabel, setListingState, deleteListing } from '../myListings';
 
 jest.mock('@react-native-firebase/auth');
 jest.mock('@react-native-firebase/firestore');
@@ -8,6 +8,29 @@ jest.mock('@react-native-firebase/firestore');
 const mockedGetDocs = getDocs as jest.Mock;
 const mockedUpdateDoc = updateDoc as jest.Mock;
 const mockedDeleteDoc = deleteDoc as jest.Mock;
+const mockedGetDoc = getDoc as jest.Mock;
+
+describe('getOwnedListing', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (getAuth as jest.Mock).mockReturnValue({ currentUser: { uid: 'uid-1' } });
+  });
+
+  it('autorise le créateur de l’annonce', async () => {
+    mockedGetDoc.mockResolvedValue({ exists: () => true, id: 'p1', data: () => ({ createdBy: 'uid-1', title: 'Maison' }) });
+    await expect(getOwnedListing('p1')).resolves.toMatchObject({ id: 'p1', title: 'Maison' });
+  });
+
+  it('autorise le compte ayant revendiqué l’annonce', async () => {
+    mockedGetDoc.mockResolvedValue({ exists: () => true, id: 'p2', data: () => ({ createdBy: 'admin', claimedBy: 'uid-1', title: 'Studio' }) });
+    await expect(getOwnedListing('p2')).resolves.toMatchObject({ id: 'p2', title: 'Studio' });
+  });
+
+  it('refuse un utilisateur qui ne possède pas l’annonce', async () => {
+    mockedGetDoc.mockResolvedValue({ exists: () => true, id: 'p3', data: () => ({ createdBy: 'uid-2' }) });
+    await expect(getOwnedListing('p3')).rejects.toThrow('pas autorisé');
+  });
+});
 
 describe('moderationLabel', () => {
   it('traduit chaque statut de modération (miroir MODERATION_STATUS_LABELS, web)', () => {

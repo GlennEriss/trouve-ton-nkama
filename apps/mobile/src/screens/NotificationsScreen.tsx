@@ -39,11 +39,12 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    // AppHeader handles the top safe area; do not apply it again below the navbar.
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
         {unreadCount > 0 && (
-          <TouchableOpacity onPress={() => markAllAsRead()}>
+          <TouchableOpacity style={styles.markAllButton} onPress={() => markAllAsRead()}>
             <Text style={styles.markAllText}>Tout marquer comme lu</Text>
           </TouchableOpacity>
         )}
@@ -75,9 +76,10 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  headerTitle: { fontSize: 20, fontWeight: '700' },
-  markAllText: { fontSize: 13, color: '#146B67', fontWeight: '600' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 24, gap: 12 },
+  headerTitle: { flexShrink: 1, fontSize: 20, fontWeight: '700' },
+  markAllButton: { flexShrink: 1 },
+  markAllText: { fontSize: 13, color: '#146B67', fontWeight: '600', textAlign: 'right' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: { color: '#666', fontSize: 14 },
   row: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },

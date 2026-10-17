@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/next-auth/auth';
+import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 import { createLogger } from '@/lib/logger';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import {
@@ -26,8 +26,7 @@ function isAccountActivityEventType(value: unknown): value is AccountActivityEve
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    const uid = session?.user?.uid;
+    const uid = await resolveAuthenticatedUid(request);
     if (!uid) {
       return jsonApiError(401, 'UNAUTHENTICATED', 'Authentification requise.');
     }
@@ -68,4 +67,3 @@ export async function POST(request: NextRequest) {
     });
   }
 }
-

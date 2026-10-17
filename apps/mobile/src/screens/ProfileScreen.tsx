@@ -34,8 +34,8 @@ type MenuItem = {
 // ProfilDetails.tsx, Logout.tsx (apps/location-maison/src/components/profil) et
 // [[feedback-mobile-reuse-pwa-design]] : mêmes libellés, même ordre, mêmes icônes (lucide),
 // même style de carte (fond blanc, bordure grise, coins arrondis, liste à séparateurs fins). Les
-// items sans écran mobile construit pour l'instant (Devenir annonceur, Paramètre, Connexion et
-// sécurité) restent présents pour la fidélité structurelle avec le web — comme "Réels"/"Publier"
+// items sans écran mobile construit pour l'instant (Devenir annonceur)
+// restent présents pour la fidélité structurelle avec le web — comme "Réels"/"Publier"
 // dans la barre du bas (voir MainTabParamList, types.ts) — et affichent "Bientôt disponible" au
 // tap plutôt que d'être omis. "Faire de la pub" et "Mon solde" sont en revanche masqués sur
 // mobile (demande explicite), pas juste des placeholders "Bientôt disponible".
@@ -81,8 +81,8 @@ export default function ProfileScreen() {
       Icon: Phone,
       onPress: () => navigation.navigate('PhoneVerify'),
     },
-    { key: 'settings', title: 'Paramètre', Icon: Settings, onPress: notAvailable('Paramètre') },
-    { key: 'security', title: 'Connexion et sécurité', Icon: Lock, onPress: notAvailable('Connexion et sécurité') },
+    { key: 'settings', title: 'Paramètre', Icon: Settings, onPress: () => navigation.navigate('Settings') },
+    { key: 'security', title: 'Connexion et sécurité', Icon: Lock, onPress: () => navigation.navigate('Security') },
     {
       key: 'privacy',
       title: 'Politique de confidentialité',

@@ -42,8 +42,8 @@ export async function generateMetadata({ params }: { params: AnnonceParams }): P
     const shareTitle = buildListingShareTitle(property);
     // Image composée (photo + bandeau prix/quartier), voir src/app/api/og/property/[id]/route.tsx.
     // Versionner l'URL invalide aussi le cache propre aux robots sociaux après
-    // un correctif du générateur (v2 ajoute la prise en charge des photos WebP).
-    const ogImage = absoluteUrl(`/api/og/property/${id}?v=2`);
+    // la migration des photos importées WebP vers JPEG.
+    const ogImage = absoluteUrl(`/api/og/property/${id}?v=3`);
 
     return {
       title: property.title,

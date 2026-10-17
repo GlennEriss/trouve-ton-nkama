@@ -5,6 +5,8 @@ import { getAuth } from '@react-native-firebase/auth';
 export type SocialProfiles = Partial<Record<'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'x', { handle?: string }>>;
 
 export type UserDoc = {
+  notificationParameter?: Partial<Record<import('../api/settings').NotificationSettingKey, boolean>>;
+  providers?: string[];
   phoneNumbers?: string[];
   callNumber?: string;
   phoneNumberVerified?: boolean;

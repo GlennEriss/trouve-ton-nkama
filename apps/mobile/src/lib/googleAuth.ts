@@ -34,7 +34,7 @@ export class GoogleSignInCancelledError extends Error {}
 // l'appareil, et c'est CETTE session Firebase qui devient l'état d'auth réel de l'app (comme
 // pour email/mot de passe et téléphone). Ce n'est pas une déviation du modèle web, juste
 // l'adaptation de la même logique à une architecture sans couche serveur intermédiaire.
-export async function signInWithGoogle(): Promise<{ uid: string; isNewUser: boolean }> {
+export async function requestGoogleIdentity() {
   ensureConfigured();
 
   await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
@@ -47,7 +47,11 @@ export async function signInWithGoogle(): Promise<{ uid: string; isNewUser: bool
     throw new Error('Google Sign-In : aucun idToken renvoyé.');
   }
 
-  const { idToken, user } = response.data;
+  return response.data;
+}
+
+export async function signInWithGoogle(): Promise<{ uid: string; isNewUser: boolean }> {
+  const { idToken, user } = await requestGoogleIdentity();
   const { email, photo } = user;
   // Pas de second argument (access token) : GoogleSignin ne fournit pas d'access token OAuth
   // classique par défaut (offlineAccess non activé) — l'idToken seul suffit à

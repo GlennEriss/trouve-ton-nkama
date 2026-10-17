@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowUpRight, FileText, Mail, ShieldCheck } from 'lucide-react-native';
 import { colors } from '../theme/colors';
+import { ScreenHeader } from '../components/ScreenHeader';
 import type { ProfileStackParamList } from '../navigation/types';
 
 // Contenu copié mot pour mot de PrivacyPolicyClientPage.tsx (apps/location-maison) — seule
@@ -80,19 +81,18 @@ export default function PrivacyPolicyScreen() {
   const navigation = useNavigation<Nav>();
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      testID="screen-legal-privacy"
-    >
+    <View style={styles.root}>
+      <ScreenHeader title="Politique de confidentialité" onBack={() => navigation.goBack()} />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        testID="screen-legal-privacy"
+      >
       <View style={styles.badge}>
         <ShieldCheck size={16} color={colors.primary} />
         <Text style={styles.badgeText}>Protection des données</Text>
       </View>
 
-      <Text style={styles.title} accessibilityRole="header">
-        Politique de confidentialité
-      </Text>
       <Text style={styles.subtitle}>
         Cette page explique quelles données sont collectées, pourquoi elles le sont, et comment
         elles sont protégées sur Trouve Ton Nkama.
@@ -168,11 +168,13 @@ export default function PrivacyPolicyScreen() {
         <FileText size={14} color={colors.mutedText} />
         <Text style={styles.footerText}>Ces informations sont publiées par Trouve Ton Nkama.</Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40, gap: 16 },
   badge: {

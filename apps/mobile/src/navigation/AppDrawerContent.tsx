@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { DrawerContentComponentProps } from '@react-navigation/drawer';
-import { X, ClipboardList, FileText, Home, Shield, Trash2 } from 'lucide-react-native';
+import { X, ClipboardList, FileText, Home, LayoutList, Shield, Trash2 } from 'lucide-react-native';
 import { colors } from '../theme/colors';
 import { Logo } from '../components/Logo';
 import type { DrawerParamList } from './types';
@@ -20,7 +20,7 @@ type LegalPage = 'terms' | 'privacy' | 'dataDeletion';
 
 function getActiveRoute(
   state: DrawerContentComponentProps['state'],
-): { name: keyof DrawerParamList; page?: LegalPage; tab?: string } {
+): { name: keyof DrawerParamList; page?: LegalPage; tab?: string; profileScreen?: string } {
   const route = state.routes[state.index];
   if (route.name === 'Legal') {
     const params = route.params as DrawerParamList['Legal'] | undefined;
@@ -30,9 +30,11 @@ function getActiveRoute(
     // route.state n'existe qu'une fois la pile d'onglets déjà initialisée (après une première
     // navigation dedans) ; tant que ce n'est pas le cas, le premier onglet (Accueil, voir
     // MainTabs.tsx) est celui actif par défaut.
-    const tabState = route.state as { routes: Array<{ name: string }>; index: number } | undefined;
-    const activeTab = tabState?.routes[tabState.index]?.name ?? 'Accueil';
-    return { name: 'MainTabs', tab: activeTab };
+    const tabState = route.state as { routes: Array<{ name: string; state?: { routes: Array<{ name: string }>; index: number } }>; index: number } | undefined;
+    const activeTabRoute = tabState?.routes[tabState.index];
+    const activeTab = activeTabRoute?.name ?? 'Accueil';
+    const profileScreen = activeTabRoute?.state?.routes[activeTabRoute.state.index]?.name;
+    return { name: 'MainTabs', tab: activeTab, profileScreen };
   }
   return { name: route.name as keyof DrawerParamList };
 }
@@ -40,6 +42,7 @@ function getActiveRoute(
 export function AppDrawerContent({ navigation, state }: DrawerContentComponentProps) {
   const active = getActiveRoute(state);
   const isAccueilActive = active.name === 'MainTabs' && active.tab === 'Accueil';
+  const isMyListingsActive = active.name === 'MainTabs' && active.tab === 'ProfilOuConnexion' && active.profileScreen === 'MyListings';
   const isSearchRequestsActive = active.name === 'SearchRequests';
   const isLegalActive = (page: LegalPage) => active.name === 'Legal' && active.page === page;
 
@@ -50,6 +53,10 @@ export function AppDrawerContent({ navigation, state }: DrawerContentComponentPr
   };
   const goSearchRequests = () => {
     navigation.navigate('SearchRequests');
+    close();
+  };
+  const goMyListings = () => {
+    navigation.navigate('MainTabs', { screen: 'ProfilOuConnexion', params: { screen: 'MyListings' } });
     close();
   };
   const goLegal = (page: LegalPage) => {
@@ -78,6 +85,18 @@ export function AppDrawerContent({ navigation, state }: DrawerContentComponentPr
         >
           <Home color={isAccueilActive ? colors.secondary : colors.mutedText} size={18} />
           <Text style={isAccueilActive ? styles.rowTextActive : styles.rowText}>Accueil</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          testID="drawer-link-my-listings"
+          accessibilityRole="button"
+          accessibilityLabel="Mes annonces"
+          accessibilityState={{ selected: isMyListingsActive }}
+          style={styles.row}
+          onPress={goMyListings}
+        >
+          <LayoutList color={isMyListingsActive ? colors.secondary : colors.mutedText} size={18} />
+          <Text style={isMyListingsActive ? styles.rowTextActive : styles.rowText}>Mes annonces</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
