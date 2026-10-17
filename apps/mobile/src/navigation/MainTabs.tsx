@@ -12,6 +12,7 @@ import { useFcmToken } from '../hooks/useFcmToken';
 import { useAuthState } from '../hooks/useAuthState';
 import { requireAuthOrRedirect } from '../lib/authGuard';
 import { colors } from '../theme/colors';
+import { useAppTheme } from '../theme/ThemeProvider';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -65,6 +66,7 @@ function ProfileTabButton(props: BottomTabBarButtonProps) {
 }
 
 export function MainTabs() {
+  const { palette } = useAppTheme();
   // Enregistré ici (racine post-authentification) plutôt que dans App.tsx : n'a de sens que
   // pour un utilisateur connecté (voir useFcmToken.ts, qui lit getAuth().currentUser).
   useFcmToken();
@@ -74,8 +76,8 @@ export function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedText,
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.mutedText,
       }}
     >
       <Tab.Screen

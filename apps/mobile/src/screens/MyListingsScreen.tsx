@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAuth } from '@react-native-firebase/auth';
 import {
@@ -36,6 +37,7 @@ import { deleteListing, listMyListings, moderationLabel, setListingState, type M
 import { formatListingZones } from '../lib/listingZones';
 import { getImageUrl } from '../lib/propertyImage';
 import { navigationRef } from '../navigation/navigationRef';
+import { ScreenHeader } from '../components/ScreenHeader';
 import { colors } from '../theme/colors';
 
 type StateFilter = 'ALL' | 'IN_PROGRESS' | 'ARCHIVED';
@@ -309,6 +311,7 @@ function ListingCard({
 // - Catégorie/Type ne sont pas des filtres séparés (la recherche texte couvre déjà ce besoin
 //   pour un nombre d'annonces par compte qui reste petit) ; Promue/Non promue et l'État restent.
 export default function MyListingsScreen() {
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const uid = getAuth().currentUser?.uid;
   const { data, isLoading } = useQuery({ queryKey: ['my-listings'], queryFn: listMyListings });
@@ -467,7 +470,9 @@ export default function MyListingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <View style={styles.root}>
+      <ScreenHeader title="Mes annonces" onBack={() => navigation.goBack()} />
+      <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.scopeRow}>
         <TouchableOpacity
           testID="my-listings-scope-immobilier"
@@ -681,11 +686,13 @@ export default function MyListingsScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   scopeRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 12 },

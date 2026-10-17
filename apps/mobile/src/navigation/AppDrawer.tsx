@@ -35,9 +35,12 @@ export function AppDrawer() {
         })}
       />
       <Drawer.Screen name="SearchRequests" component={SearchRequestsScreen} />
-      <Drawer.Screen name="Favoris" component={FavorisScreen} />
+      {/* headerShown: false — Favoris et Legal rendent leur propre ScreenHeader (flèche de
+          retour + titre), identique à l'en-tête de référence "Mes annonces" (ProfileStack), au
+          lieu du header hamburger/logo (AppHeader) utilisé par les autres écrans du drawer. */}
+      <Drawer.Screen name="Favoris" component={FavorisScreen} options={{ headerShown: false }} />
       <Drawer.Screen name="Notifications" component={NotificationsScreen} />
-      <Drawer.Screen name="Legal" component={LegalWebViewScreen} />
+      <Drawer.Screen name="Legal" component={LegalWebViewScreen} options={{ headerShown: false }} />
     </Drawer.Navigator>
   );
 }

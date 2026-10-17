@@ -7,6 +7,8 @@ export type ProfileStackParamList = {
   PhoneVerify: undefined;
   Legal: { page: 'terms' | 'privacy' | 'dataDeletion' };
   EditProfile: undefined;
+  Settings: undefined;
+  Security: undefined;
 };
 
 export type SearchStackParamList = {

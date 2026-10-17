@@ -8,6 +8,7 @@ import { queryClient } from './src/lib/queryClient';
 import { initSentry } from './src/lib/sentry';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { ThemeProvider } from './src/theme/ThemeProvider';
 import { usePushNotificationRouting } from './src/hooks/usePushNotificationRouting';
 import { useFonts } from 'expo-font';
 import {
@@ -44,7 +45,7 @@ export default function App() {
       <ErrorBoundary>
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
-            <RootNavigator />
+            <ThemeProvider><RootNavigator /></ThemeProvider>
             <StatusBar style="auto" />
           </QueryClientProvider>
         </SafeAreaProvider>

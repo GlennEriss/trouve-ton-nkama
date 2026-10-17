@@ -27,6 +27,8 @@ function renderScreen() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name="ProfileHome" component={ProfileScreen} />
+        <Stack.Screen name="Settings" component={Stub({ label: 'Écran Settings' })} />
+        <Stack.Screen name="Security" component={Stub({ label: 'Écran Security' })} />
         <Stack.Screen name="EditProfile" component={Stub({ label: 'Écran EditProfile' })} />
         <Stack.Screen name="MyListings" component={Stub({ label: 'Écran MyListings' })} />
         <Stack.Screen name="PhoneVerify" component={Stub({ label: 'Écran PhoneVerify' })} />
@@ -127,12 +129,16 @@ describe('ProfileScreen', () => {
     expect(mockedNavigationRefNavigate).toHaveBeenCalledWith('Main', { screen: 'Favoris' });
   });
 
-  it('les items sans écran construit affichent "Bientôt disponible" au tap', async () => {
-    const alertSpy = jest.spyOn(require('react-native').Alert, 'alert').mockImplementation(() => {});
+  it('ouvre les paramètres natifs', async () => {
     await renderScreen();
     await fireEvent.press(await screen.findByText('Paramètre'));
-    expect(alertSpy).toHaveBeenCalledWith('Bientôt disponible', 'Paramètre arrive prochainement.');
-    alertSpy.mockRestore();
+    expect(await screen.findByText('Écran Settings')).toBeTruthy();
+  });
+
+  it('ouvre la sécurité native', async () => {
+    await renderScreen();
+    await fireEvent.press(await screen.findByText('Connexion et sécurité'));
+    expect(await screen.findByText('Écran Security')).toBeTruthy();
   });
 
   it('déconnecte au tap sur "Se déconnecter"', async () => {
