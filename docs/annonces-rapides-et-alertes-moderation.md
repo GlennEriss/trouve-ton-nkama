@@ -132,3 +132,24 @@ Tests ciblés : politiques, échappement, choix SMTP, rejeu, bail actif/expiré,
 destinataire refusé, maximum de tentatives, annonce déjà traitée, activation et configuration.
 Mocks uniquement : pas de test SMTP réel ou de test de concurrence avec Firestore Emulator.
 La tâche ne sera marquée terminée qu'après test de réception et activation validés.
+
+### Déploiement du 27 octobre 2026
+
+`onListingPendingNotifyAdmin` déployée en génération 1, Node 22, us-central1 :
+
+- `location-maison-dev` : ACTIVE, version 2.
+- `location-maison-prod-167da` : ACTIVE, version 2.
+- Destinataire : `glenneriss@gmail.com`.
+- URL admin confirmée par l'utilisateur : `https://location-maison-admin.vercel.app` (commune aux deux environnements).
+- **Envoi désactivé** (`ADMIN_MODERATION_EMAIL_ENABLED=false`) dans les deux environnements.
+
+Blocage activation : les secrets SMTP Firebase existants désignent `contact@tonnkama.com`,
+et non Gmail. Versions liées : dev user/pass 2, display name 3 ; prod user/pass/display name 1.
+Aucun secret modifié. Configuration Gmail demandée à l'utilisateur, sans demander de mot de passe dans le chat.
+Aucun e-mail réel envoyé ni annonce de production modifiée.
+
+Déploiement ciblé gcloud depuis un répertoire temporaire contenant uniquement source compilée,
+sources TypeScript, manifests npm et tsconfig, sans `.env`. Le champ `main` du manifest de
+déploiement pointe vers `lib/email/moderation-alert.js` : cela évite de charger les autres
+triggers (le chargement global échouait sur le bucket requis par le module vidéo).
+Le manifest du repository n'a pas été modifié. Aucun autre service déployé.
