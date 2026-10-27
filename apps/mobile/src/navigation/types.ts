@@ -3,9 +3,12 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 export type ProfileStackParamList = {
   ProfileHome: undefined;
   MyListings: undefined;
+  MyListingDetail: { objectID: string; ownerView: true };
   PhoneVerify: undefined;
   Legal: { page: 'terms' | 'privacy' | 'dataDeletion' };
   EditProfile: undefined;
+  Settings: undefined;
+  Security: undefined;
 };
 
 export type SearchStackParamList = {
@@ -15,11 +18,22 @@ export type SearchStackParamList = {
   ListingDetail: { objectID: string };
 };
 
+// Le parcours de publication reprend /publish côté PWA. La V1 mobile expose uniquement
+// les deux actions validées par le produit : publier une annonce et créer un réel. La
+// demande de recherche reste accessible depuis son écran dédié dans le drawer.
+export type PublishStackParamList = {
+  PublishHome: undefined;
+  PublishCategory: undefined;
+  CreateListing: { categorySlug: string; categoryName: string };
+  EditListing: { listingId: string };
+  CreateReel: { propertyId?: string } | undefined;
+};
+
 // Reprend la structure exacte de BottomNavigation.tsx (web, état non-annonceur) : 5 items +
 // bouton central "Publier" — voir [[feedback-mobile-reuse-pwa-design]]. Le web distingue
 // annonceur/non-annonceur avec des listes différentes ; simplifié ici en une seule structure
-// pour la V1 mobile. "Réels" et "Publier" pointent vers un écran "Bientôt disponible" (V2/V1.1,
-// hors du scope V1 déjà verrouillé) mais restent présents pour la fidélité structurelle.
+// pour la V1 mobile. Publier possède désormais son propre stack natif afin que les écrans
+// internes conservent un retour prévisible sans perturber la barre d'onglets.
 // ProfilOuConnexion est un seul et même écran (ProfileScreen, qui redirige déjà lui-même vers
 // SignIn via useRequireAuth) — seul son libellé change selon l'état de connexion.
 export type MainTabParamList = {
@@ -28,9 +42,9 @@ export type MainTabParamList = {
     | { screen: 'ListingDetail'; params: SearchStackParamList['ListingDetail'] }
     | { screen: 'SearchHome'; params?: SearchStackParamList['SearchHome'] }
     | undefined;
-  Publier: undefined;
+  Publier: NavigatorScreenParams<PublishStackParamList> | undefined;
   Reels: undefined;
-  ProfilOuConnexion: undefined;
+  ProfilOuConnexion: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
 
 // Le menu hamburger (drawer) : Demandes de recherche (mis en avant côté web) + Favoris +

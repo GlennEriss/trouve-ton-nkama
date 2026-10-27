@@ -27,7 +27,7 @@ const CARD_WIDTH = (Dimensions.get('window').width - GRID_PADDING * 2 - GRID_GAP
 export default function HomeScreen() {
   const navigation = useNavigation<BottomTabNavigationProp<MainTabParamList, 'Accueil'>>();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['home-recent-properties'],
     queryFn: () => searchProperties('', 0),
   });
@@ -106,7 +106,14 @@ export default function HomeScreen() {
           <PropertyCard property={toPropertyListItem(item)} onPress={() => openListing(item.objectID)} width={CARD_WIDTH} />
         )}
         ListEmptyComponent={
-          isLoading ? null : (
+          isLoading ? null : isError ? (
+            <View style={styles.centered}>
+              <Text style={styles.emptyText}>Impossible de charger les annonces.</Text>
+              <TouchableOpacity onPress={() => refetch()} accessibilityRole="button">
+                <Text style={styles.retryText}>Réessayer</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
             <View style={styles.centered}>
               <Text style={styles.emptyText}>Aucune annonce pour l&apos;instant.</Text>
             </View>
@@ -126,6 +133,7 @@ const styles = StyleSheet.create({
   seeAll: { fontSize: 13, fontWeight: '600', color: colors.primary, paddingRight: 16 },
   centered: { alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: { color: colors.mutedText, fontSize: 14 },
+  retryText: { color: colors.primary, fontSize: 14, fontWeight: '600', marginTop: 8 },
   gridContent: { flexGrow: 1, paddingTop: 12, paddingBottom: 16 },
   // padding horizontal ici (pas sur gridContent) : le ListHeaderComponent gère déjà son propre
   // padding par section (searchBar, sectionTitle...) — un padding partagé aurait doublé leurs

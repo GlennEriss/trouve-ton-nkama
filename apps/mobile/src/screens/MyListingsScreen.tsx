@@ -4,7 +4,6 @@ import {
   Alert,
   FlatList,
   Image,
-  Linking,
   Modal,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAuth } from '@react-native-firebase/auth';
 import {
@@ -21,6 +21,7 @@ import {
   BadgeDollarSign,
   Building2,
   CalendarDays,
+  CircleCheck,
   Eye,
   Layers3,
   MapPin,
@@ -36,10 +37,8 @@ import { deleteListing, listMyListings, moderationLabel, setListingState, type M
 import { formatListingZones } from '../lib/listingZones';
 import { getImageUrl } from '../lib/propertyImage';
 import { navigationRef } from '../navigation/navigationRef';
-import { GradientButton } from '../components/GradientButton';
+import { ScreenHeader } from '../components/ScreenHeader';
 import { colors } from '../theme/colors';
-
-const WEB_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL ?? 'https://www.tonnkama.com';
 
 type StateFilter = 'ALL' | 'IN_PROGRESS' | 'ARCHIVED';
 type PromotedFilter = 'ALL' | 'PROMOTED' | 'NOT_PROMOTED';
@@ -129,16 +128,6 @@ function isMarketplaceItem(item: MyListingItem): boolean {
   return !item.typeProperty;
 }
 
-function editUrl(item: MyListingItem): string {
-  // Même discriminant que "Modifier" côté web (AdManagementPage.tsx) : `!typeProperty` seul
-  // distingue fiablement Mode d'immobilier — categoryId seul a été posé par erreur sur ~949/950
-  // annonces (backfill 2026-08-17), voir le commentaire équivalent côté web.
-  if (!item.typeProperty && item.categoryId) {
-    return `${WEB_BASE_URL}/category-listing/create/preview/${item.id}`;
-  }
-  return `${WEB_BASE_URL}/property/create/preview/${item.id}`;
-}
-
 function sortItems(items: MyListingItem[], sort: SortKey): MyListingItem[] {
   const sorted = [...items];
   switch (sort) {
@@ -158,11 +147,31 @@ function sortItems(items: MyListingItem[], sort: SortKey): MyListingItem[] {
   }
 }
 
-function StatCard({ title, value }: { title: string; value: number }) {
+function StatCard({
+  title,
+  value,
+  icon,
+  testID,
+}: {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+  testID: string;
+}) {
+  const formattedValue = value.toLocaleString('fr-FR');
+
   return (
-    <View style={styles.statCard}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
+    <View
+      testID={testID}
+      style={styles.statCard}
+      accessible
+      accessibilityLabel={`${formattedValue} ${title.toLocaleLowerCase('fr-FR')}`}
+    >
+      <View testID={`${testID}-header`} style={styles.statHeader}>
+        <View style={styles.statIcon}>{icon}</View>
+        <Text style={styles.statTitle}>{title}</Text>
+      </View>
+      <Text style={styles.statValue}>{formattedValue}</Text>
     </View>
   );
 }
@@ -296,12 +305,13 @@ function ListingCard({
 //   Firestore, pas d'appel serveur par filtre) — pas de bouton "Voir les résultats" séparé.
 // - Pas de pagination infinie : le nombre d'annonces d'un même compte reste modeste, tout est
 //   chargé d'un coup (même choix que listMyListings, déjà en place).
-// - "Modifier", "Publier une annonce" et "Ajouter un réel" pointent vers le site web ou une
-//   alerte "Bientôt disponible" — aucun écran de création/édition n'existe encore côté mobile
-//   (même décision produit déjà actée pour la V1 de cet écran).
+// - "Modifier" et "Publier une annonce" utilisent le parcours natif PublishStack.
+// - "Ajouter un réel" reste désactivé tant que CreateReel ne sait pas encore pré-sélectionner
+//   l'annonce source.
 // - Catégorie/Type ne sont pas des filtres séparés (la recherche texte couvre déjà ce besoin
 //   pour un nombre d'annonces par compte qui reste petit) ; Promue/Non promue et l'État restent.
 export default function MyListingsScreen() {
+  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const uid = getAuth().currentUser?.uid;
   const { data, isLoading } = useQuery({ queryKey: ['my-listings'], queryFn: listMyListings });
@@ -376,29 +386,31 @@ export default function MyListingsScreen() {
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['my-listings'] });
 
-  // Immobilier ET zone unique/absente : la fiche est visible publiquement (donc affichable
-  // nativement via ListingDetailScreen, qui appelle /api/property/id — cette route accepte les
-  // annonces PENDING/REJECTED/ARCHIVED uniquement avec une session NextAuth, que le mobile n'a
-  // jamais). Pour ses propres annonces non publiques, on ouvre plutôt la fiche web (authentifiée
-  // par cookie côté navigateur) plutôt que de dupliquer la logique d'auth côté mobile.
   const handleView = (item: MyListingItem) => {
-    const isPubliclyVisible = item.state === 'IN_PROGRESS' && item.moderationStatus === 'APPROVED';
-    if (isPubliclyVisible && navigationRef.isReady()) {
-      navigationRef.navigate('Main', {
-        screen: 'MainTabs',
-        params: { screen: 'Recherche', params: { screen: 'ListingDetail', params: { objectID: item.id } } },
-      });
-      return;
-    }
-    Linking.openURL(`${WEB_BASE_URL}/property/${item.id}`);
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: {
+        screen: 'ProfilOuConnexion',
+        params: { screen: 'MyListingDetail', params: { objectID: item.id, ownerView: true } },
+      },
+    });
   };
 
   const handleEdit = (item: MyListingItem) => {
-    Linking.openURL(editUrl(item));
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'EditListing', params: { listingId: item.id } } },
+    });
   };
 
-  const handleAddReel = () => {
-    Alert.alert('Bientôt disponible', 'Ajouter un réel depuis une annonce arrive prochainement.');
+  const handleAddReel = (item: MyListingItem) => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.navigate('Main', {
+      screen: 'MainTabs',
+      params: { screen: 'Publier', params: { screen: 'CreateReel', params: { propertyId: item.id } } },
+    });
   };
 
   const handleToggleState = (item: MyListingItem) => {
@@ -458,7 +470,9 @@ export default function MyListingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <View style={styles.root}>
+      <ScreenHeader title="Mes annonces" onBack={() => navigation.goBack()} />
+      <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.scopeRow}>
         <TouchableOpacity
           testID="my-listings-scope-immobilier"
@@ -482,11 +496,37 @@ export default function MyListingsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow} contentContainerStyle={styles.statsRowContent}>
-        <StatCard title="Total annonces" value={stats.total} />
-        <StatCard title="Actives" value={stats.active} />
-        <StatCard title="Archivées" value={stats.archived} />
-        <StatCard title="Promues" value={stats.promoted} />
+      <ScrollView
+        testID="my-listings-stats-strip"
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.statsScroller}
+        contentContainerStyle={styles.statsRowContent}
+      >
+        <StatCard
+          testID="my-listings-stat-total"
+          title="Total annonces"
+          value={stats.total}
+          icon={<Layers3 size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-active"
+          title="Actives"
+          value={stats.active}
+          icon={<CircleCheck size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-archived"
+          title="Archivées"
+          value={stats.archived}
+          icon={<Archive size={19} color={colors.primary} strokeWidth={2} />}
+        />
+        <StatCard
+          testID="my-listings-stat-promoted"
+          title="Promues"
+          value={stats.promoted}
+          icon={<TrendingUp size={19} color={colors.primary} strokeWidth={2} />}
+        />
       </ScrollView>
 
       <View style={styles.searchRow}>
@@ -519,6 +559,7 @@ export default function MyListingsScreen() {
         </View>
       ) : (
         <FlatList
+          testID="my-listings-list"
           data={filteredItems}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
@@ -538,17 +579,10 @@ export default function MyListingsScreen() {
                 <Building2 size={28} color={colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>Aucune annonce trouvée</Text>
-              <Text style={styles.emptyText}>Ajustez vos filtres ou publiez une nouvelle annonce.</Text>
-              <TouchableOpacity
-                testID="my-listings-empty-publish"
-                style={styles.emptyButton}
-                onPress={() => Linking.openURL(`${WEB_BASE_URL}/publish`)}
-              >
-                <Text style={styles.emptyButtonText}>Publier une annonce</Text>
-              </TouchableOpacity>
+              <Text style={styles.emptyText}>Ajustez vos filtres ou utilisez le bouton + pour publier.</Text>
             </View>
           }
-          contentContainerStyle={filteredItems.length === 0 ? { flexGrow: 1 } : styles.listContent}
+          contentContainerStyle={filteredItems.length === 0 ? styles.emptyListContent : styles.listContent}
         />
       )}
 
@@ -557,13 +591,6 @@ export default function MyListingsScreen() {
           <Text style={styles.sessionBannerText}>Session indisponible. Reconnectez-vous pour gérer vos annonces.</Text>
         </View>
       )}
-
-      <GradientButton
-        testID="my-listings-publish"
-        title="Publier une annonce"
-        onPress={() => Linking.openURL(`${WEB_BASE_URL}/publish`)}
-        style={styles.publishButton}
-      />
 
       <Modal visible={filtersVisible} animationType="slide" onRequestClose={() => setFiltersVisible(false)}>
         <SafeAreaView style={{ flex: 1 }} testID="my-listings-filters-modal">
@@ -659,11 +686,13 @@ export default function MyListingsScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   scopeRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingTop: 12 },
@@ -680,19 +709,40 @@ const styles = StyleSheet.create({
   scopePillActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   scopePillText: { fontSize: 13, fontWeight: '600', color: colors.foreground },
   scopePillTextActive: { color: '#fff' },
-  statsRow: { marginTop: 12 },
-  statsRowContent: { paddingHorizontal: 16, gap: 10 },
+  statsScroller: { height: 104, marginTop: 12, flexGrow: 0, flexShrink: 0 },
+  statsRowContent: { alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 6 },
   statCard: {
-    minWidth: 110,
+    width: 156,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    padding: 12,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
     backgroundColor: '#fff',
+    shadowColor: colors.foreground,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  statValue: { fontSize: 20, fontWeight: '800', color: colors.foreground },
-  statTitle: { fontSize: 12, color: colors.mutedText, marginTop: 2 },
-  searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 14 },
+  statHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  statIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E8F5F3',
+  },
+  statValue: {
+    fontSize: 22,
+    lineHeight: 26,
+    fontWeight: '800',
+    color: colors.foreground,
+    fontVariant: ['tabular-nums'],
+  },
+  statTitle: { flex: 1, fontSize: 12, lineHeight: 16, fontWeight: '500', color: colors.mutedText },
+  searchRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 12 },
   searchInput: {
     flex: 1,
     borderWidth: 1,
@@ -717,7 +767,8 @@ const styles = StyleSheet.create({
   filteredCountText: { fontSize: 12, color: colors.mutedText, paddingHorizontal: 16, marginTop: 10 },
   filteredCountStrong: { fontWeight: '700', color: colors.foreground },
   errorText: { color: colors.destructive, fontSize: 13, paddingHorizontal: 16, marginTop: 8 },
-  listContent: { padding: 16, gap: 14 },
+  listContent: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, gap: 14 },
+  emptyListContent: { flexGrow: 1, paddingBottom: 16 },
   card: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -795,8 +846,6 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { fontSize: 16, fontWeight: '700', color: colors.foreground },
   emptyText: { fontSize: 13, color: colors.mutedText, textAlign: 'center' },
-  emptyButton: { marginTop: 12, backgroundColor: colors.primary, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 12 },
-  emptyButtonText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   sessionBanner: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -807,7 +856,6 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   sessionBannerText: { fontSize: 12, color: '#92400E' },
-  publishButton: { marginHorizontal: 16, marginTop: 12, marginBottom: 4 },
   modalContent: { padding: 20, gap: 4 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   modalTitle: { fontSize: 20, fontWeight: '800' },

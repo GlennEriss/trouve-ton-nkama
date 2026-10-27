@@ -1,12 +1,14 @@
 import React from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useQueries } from '@tanstack/react-query';
 import { useFavoriteIds } from '../hooks/useFavoriteIds';
 import { useRequireAuth } from '../hooks/useRequireAuth';
 import { getPropertyById } from '../api/property';
 import { formatListingZones } from '../lib/listingZones';
 import { navigationRef } from '../navigation/navigationRef';
+import { ScreenHeader } from '../components/ScreenHeader';
 
 function formatPrice(price?: number): string {
   if (!price) return '';
@@ -23,6 +25,7 @@ function openListing(objectID: string) {
 }
 
 export default function FavorisScreen() {
+  const navigation = useNavigation();
   const { isChecking } = useRequireAuth();
   const { favoriteIds, isLoading: isLoadingIds } = useFavoriteIds();
   const propertyQueries = useQueries({
@@ -43,9 +46,9 @@ export default function FavorisScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.header}>Favoris</Text>
-
+    <View style={styles.root}>
+      <ScreenHeader title="Favoris" onBack={() => navigation.goBack()} />
+      <SafeAreaView style={styles.container} edges={['bottom']}>
       {isLoading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#146B67" />
@@ -76,13 +79,14 @@ export default function FavorisScreen() {
           contentContainerStyle={{ flexGrow: 1 }}
         />
       )}
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: '#fff' },
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { fontSize: 20, fontWeight: '700', padding: 16, paddingBottom: 8 },
   row: { paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f0f0f0', gap: 2 },
   rowTitle: { fontSize: 16, fontWeight: '600' },
   rowSubtitle: { fontSize: 13, color: '#666' },

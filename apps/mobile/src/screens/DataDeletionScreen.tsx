@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AlertTriangle, Mail } from 'lucide-react-native';
 import { colors } from '../theme/colors';
+import { ScreenHeader } from '../components/ScreenHeader';
 import type { ProfileStackParamList } from '../navigation/types';
 
 // Contenu copié mot pour mot de DataDeletionClientPage.tsx / DataDeletionMobilePage.tsx
@@ -21,14 +22,13 @@ export default function DataDeletionScreen() {
   const navigation = useNavigation<Nav>();
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      testID="screen-legal-dataDeletion"
-    >
-      <Text style={styles.title} accessibilityRole="header">
-        Suppression des Données
-      </Text>
+    <View style={styles.root}>
+      <ScreenHeader title="Suppression des Données" onBack={() => navigation.goBack()} />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        testID="screen-legal-dataDeletion"
+      >
       <Text style={styles.subtitle}>
         Nous respectons votre droit à la confidentialité et à la suppression de vos données
       </Text>
@@ -93,11 +93,13 @@ export default function DataDeletionScreen() {
         </Text>
         .
       </Text>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40, gap: 16 },
   title: { fontSize: 26, fontWeight: '800', color: colors.foreground, lineHeight: 32 },

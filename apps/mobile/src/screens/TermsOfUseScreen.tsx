@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ArrowUpRight, FileText, Mail, ShieldCheck } from 'lucide-react-native';
 import { colors } from '../theme/colors';
+import { ScreenHeader } from '../components/ScreenHeader';
 import type { ProfileStackParamList } from '../navigation/types';
 
 // Contenu copié mot pour mot de TermsOfUseClientPage.tsx (apps/location-maison) — seule source
@@ -77,19 +78,18 @@ export default function TermsOfUseScreen() {
   const navigation = useNavigation<Nav>();
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      testID="screen-legal-terms"
-    >
+    <View style={styles.root}>
+      <ScreenHeader title="Conditions d'utilisation" onBack={() => navigation.goBack()} />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        testID="screen-legal-terms"
+      >
       <View style={styles.badge}>
         <ShieldCheck size={16} color={colors.primary} />
         <Text style={styles.badgeText}>Cadre d&apos;utilisation</Text>
       </View>
 
-      <Text style={styles.title} accessibilityRole="header">
-        Conditions d&apos;utilisation
-      </Text>
       <Text style={styles.subtitle}>
         Ces règles définissent vos droits et obligations lors de l&apos;utilisation de Trouve Ton
         Nkama.
@@ -173,11 +173,13 @@ export default function TermsOfUseScreen() {
         <FileText size={14} color={colors.mutedText} />
         <Text style={styles.footerText}>Ces informations sont publiées par Trouve Ton Nkama.</Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: 20, paddingBottom: 40, gap: 16 },
   badge: {

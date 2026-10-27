@@ -3,6 +3,8 @@ import type { PropertyImage } from '../lib/propertyImage';
 
 export type PropertyDetail = {
   id: string;
+  createdBy?: string;
+  claimedBy?: string;
   title: string;
   description: string;
   price: number;

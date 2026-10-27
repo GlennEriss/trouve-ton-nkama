@@ -1,16 +1,18 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator, type BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { Home, Search, Plus, Video, UserCircle } from 'lucide-react-native';
 import HomeScreen from '../screens/HomeScreen';
-import PublishScreen from '../screens/PublishScreen';
 import ReelsScreen from '../screens/ReelsScreen';
 import { SearchStack } from './SearchStack';
 import { ProfileStack } from './ProfileStack';
+import { PublishStack } from './PublishStack';
 import { useFcmToken } from '../hooks/useFcmToken';
 import { useAuthState } from '../hooks/useAuthState';
 import { requireAuthOrRedirect } from '../lib/authGuard';
 import { colors } from '../theme/colors';
+import { useAppTheme } from '../theme/ThemeProvider';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -64,6 +66,7 @@ function ProfileTabButton(props: BottomTabBarButtonProps) {
 }
 
 export function MainTabs() {
+  const { palette } = useAppTheme();
   // Enregistré ici (racine post-authentification) plutôt que dans App.tsx : n'a de sens que
   // pour un utilisateur connecté (voir useFcmToken.ts, qui lit getAuth().currentUser).
   useFcmToken();
@@ -73,8 +76,8 @@ export function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.mutedText,
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.mutedText,
       }}
     >
       <Tab.Screen
@@ -89,13 +92,14 @@ export function MainTabs() {
       />
       <Tab.Screen
         name="Publier"
-        component={PublishScreen}
-        options={{
+        component={PublishStack}
+        options={({ route }) => ({
           tabBarButtonTestID: 'tab-publier',
           tabBarIcon: () => <Plus color="#fff" size={26} />,
           tabBarButton: (props) => <PublishTabButton {...props} />,
           tabBarLabel: () => null,
-        }}
+          tabBarStyle: getFocusedRouteNameFromRoute(route) === 'CreateReel' ? { display: 'none' } : undefined,
+        })}
       />
       <Tab.Screen
         name="Reels"

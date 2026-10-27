@@ -8,11 +8,14 @@ import { useAuthState } from '../hooks/useAuthState';
 import { navigationRef } from './navigationRef';
 import { colors } from '../theme/colors';
 import { Logo } from '../components/Logo';
+import { useAppTheme } from '../theme/ThemeProvider';
 
 // Reprend la structure exacte de home-page/Navbar.tsx (web, variante mobile) : hamburger ->
 // logo + wordmark -> bouton recherche -> "Se connecter" (déconnecté) ou notifications + avatar
 // (connecté) — voir [[feedback-mobile-reuse-pwa-design]].
 export function AppHeader(_props: DrawerHeaderProps) {
+  const { palette } = useAppTheme();
+  const colors = palette;
   const { user } = useAuthState();
 
   const openSearch = () => {
@@ -41,7 +44,7 @@ export function AppHeader(_props: DrawerHeaderProps) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: palette.surface, borderBottomColor: palette.border }]} edges={['top']}>
       <View style={styles.row}>
         {/* hamburger + logo groupés dans un seul conteneur flex : avec 3 enfants directs et
             justifyContent:'space-between' sur `row`, l'espace se répartissait entre CHAQUE
@@ -62,9 +65,9 @@ export function AppHeader(_props: DrawerHeaderProps) {
                 103-115) — pas un retour à la ligne accidentel : 3 <span> séparés, text-xs
                 font-black, dans une colonne étroite à côté du logo. */}
             <View style={styles.wordmarkColumn}>
-              <Text style={styles.wordmark}>Trouve</Text>
-              <Text style={styles.wordmark}>Ton</Text>
-              <Text style={styles.wordmark}>Nkama</Text>
+              <Text style={[styles.wordmark, { color: palette.primary }]}>Trouve</Text>
+              <Text style={[styles.wordmark, { color: palette.primary }]}>Ton</Text>
+              <Text style={[styles.wordmark, { color: palette.primary }]}>Nkama</Text>
             </View>
           </TouchableOpacity>
         </View>

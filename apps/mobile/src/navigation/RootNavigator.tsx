@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import { useAppTheme } from '../theme/ThemeProvider';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AppDrawer } from './AppDrawer';
 import { navigationRef } from './navigationRef';
@@ -21,6 +22,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 // une session persistée (initializing) : équivalent de l'hydratation de session côté web, pas
 // une exigence de connexion.
 export function RootNavigator() {
+  const { mode, palette } = useAppTheme();
   const { initializing } = useAuthState();
 
   if (initializing) {
@@ -32,7 +34,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer ref={navigationRef}>
+    <NavigationContainer ref={navigationRef} theme={{ ...(mode === 'dark' ? DarkTheme : DefaultTheme), colors: { ...(mode === 'dark' ? DarkTheme : DefaultTheme).colors, background: palette.background, card: palette.surface, text: palette.foreground, border: palette.border, primary: palette.primary } }}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={AppDrawer} />
         <Stack.Group screenOptions={{ presentation: 'modal', headerShown: true }}>

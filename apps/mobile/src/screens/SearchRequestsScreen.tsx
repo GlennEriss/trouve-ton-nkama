@@ -168,7 +168,8 @@ export default function SearchRequestsScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']} testID="screen-search-requests">
+    // AppHeader already handles the top safe area above this drawer screen.
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']} testID="screen-search-requests">
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Demandes de recherche</Text>
         <TouchableOpacity style={styles.newButton} onPress={() => requireAuthOrRedirect() && setIsModalVisible(true)}>
@@ -205,9 +206,9 @@ export default function SearchRequestsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
-  headerTitle: { fontSize: 20, fontWeight: '700' },
-  newButton: { backgroundColor: '#146B67', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 24, gap: 12 },
+  headerTitle: { flex: 1, fontSize: 20, fontWeight: '700' },
+  newButton: { flexShrink: 0, backgroundColor: '#146B67', borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 },
   newButtonText: { color: '#fff', fontWeight: '700', fontSize: 13 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emptyText: { color: '#666', fontSize: 14 },

@@ -22,10 +22,12 @@ export default function ForgotPasswordScreen() {
       const code = (err as { code?: string })?.code ?? '';
       if (code === 'auth/invalid-email') {
         setError("L'adresse email n'est pas valide.");
-      } else {
+      } else if (code === 'auth/user-not-found') {
         // Volontairement le même message générique pour auth/user-not-found : ne pas révéler
         // si un email existe ou non dans la base.
         setSent(true);
+      } else {
+        setError('Impossible d’envoyer le lien. Vérifiez votre connexion puis réessayez.');
       }
     } finally {
       setIsLoading(false);

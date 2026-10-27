@@ -1,4 +1,4 @@
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, getDoc, doc, updateDoc, deleteDoc } from '@react-native-firebase/firestore';
 import { getAuth } from '@react-native-firebase/auth';
 import type { PropertyImage } from '../lib/propertyImage';
 
@@ -14,18 +14,20 @@ import type { PropertyImage } from '../lib/propertyImage';
 export type MyListingItem = {
   id: string;
   title: string;
+  description?: string;
   price: number;
   area?: number;
   // Absent sur une annonce Mode (categoryId présent à la place) — voir la note juste plus bas
   // sur le discriminant `!typeProperty`.
   typeProperty?: string;
-  status: 'FOR_RENT' | 'FOR_SALE';
+  status?: 'FOR_RENT' | 'FOR_SALE';
   moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   rejectionReason?: string;
   state: 'IN_PROGRESS' | 'ARCHIVED';
   city: string;
   province?: string;
   street?: string;
+  contact?: string;
   // Zones multiples (Mode, etc.) — voir docs/marketplace-multi-categories/
   // 08-zones-multiples-mode.md. Absent sur l'immobilier et sur une annonce Mode créée avant
   // ce champ (repli sur `city` géré par formatListingZones, lib/listingZones.ts).
@@ -40,7 +42,32 @@ export type MyListingItem = {
   updatedAt?: unknown;
   createdBy?: string;
   claimedBy?: string;
+  tags?: string[];
+  attributes?: Record<string, string | number | boolean>;
+  additionnalInformation?: string;
+  whatsappContact?: string;
+  callContact?: string;
+  additionalContacts?: string[];
+  nbrRooms?: number;
+  nbrKitchens?: number;
+  nbrBathrooms?: number;
+  nbrToilets?: number;
+  nbrFloors?: number;
+  nbrGarages?: number;
+  nbrLivingRoom?: number;
+  nbrPiscine?: number;
+  nbrApartments?: number;
+  hasParking?: boolean;
+  nbrFloorApartment?: number;
+  nbrFloorStudio?: number;
+  numeroApartment?: string;
+  numeroStudio?: string;
+  nbrSections?: number;
+  nbrToilet?: number;
+  kioskType?: string;
+  roomType?: string;
   isPromoted?: boolean;
+  isOwner?: boolean;
 };
 
 function moderationLabel(status: MyListingItem['moderationStatus']): string {
@@ -68,6 +95,30 @@ export async function listMyListings(): Promise<MyListingItem[]> {
     byId.set(item.id, { id: item.id, ...(item.data() as Omit<MyListingItem, 'id'>) });
   }
   return Array.from(byId.values());
+}
+
+export async function getMyListing(id: string): Promise<MyListingItem> {
+  const snapshot = await getDoc(doc(getFirestore(), 'properties', id));
+  if (!snapshot.exists()) throw new Error('Annonce introuvable.');
+  return { id: snapshot.id, ...(snapshot.data() as Omit<MyListingItem, 'id'>) };
+}
+
+export async function getOwnedListing(id: string): Promise<MyListingItem> {
+  const uid = getAuth().currentUser?.uid;
+  if (!uid) throw new Error('Session indisponible. Reconnectez-vous.');
+  const listing = await getMyListing(id);
+  if (listing.createdBy !== uid && listing.claimedBy !== uid) {
+    throw new Error("Vous n’êtes pas autorisé à consulter cette annonce.");
+  }
+  return listing;
+}
+
+export async function updateMyListing(id: string, patch: Partial<MyListingItem>, wasRejected: boolean): Promise<void> {
+  await updateDoc(doc(getFirestore(), 'properties', id), {
+    ...patch,
+    ...(wasRejected ? { moderationStatus: 'PENDING', rejectionReason: null } : {}),
+    updatedAt: new Date(),
+  });
 }
 
 // Archiver/Réactiver (AdManagementPage.tsx, toggleAdState) : la patch ne doit JAMAIS inclure
