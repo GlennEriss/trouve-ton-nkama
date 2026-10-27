@@ -69,6 +69,12 @@ export default function ProfilDetails() {
     const isAnnouncer = Array.isArray(user?.roles) && user.roles.includes('Announcer');
 
     const menu = [
+        ...(isAnnouncer ? [{
+            title: 'Mes annonces',
+            icon: Building2,
+            link: routes.protected.properties,
+            description: 'Consultez et gérez vos annonces immobilières et vos articles de mode.'
+        }] : []),
         ...(!isAnnouncer ? [{
             title: 'Devenir annonceur',
             icon: Building2,

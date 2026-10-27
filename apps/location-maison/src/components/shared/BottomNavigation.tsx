@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Home, Search, Heart, UserCircle, Plus, LayoutGrid, Megaphone, Video } from 'lucide-react';
+import { Home, Search, Heart, UserCircle, Plus, Megaphone, Video } from 'lucide-react';
 import Link from 'next/link';
 import { routes } from '@/constantes/routes';
 import { usePathname } from 'next/navigation';
@@ -98,6 +98,7 @@ function BottomNavigationFrame({
 const NavItem: React.FC<{ item: NavItemDef; isActive: boolean }> = ({ item, isActive }) => (
     <Link
         href={item.link}
+        aria-current={isActive ? 'page' : undefined}
         className={clsx(
             'relative flex flex-col items-center gap-1 flex-1 pt-3 pb-2 transition-colors duration-200',
             isActive ? 'text-primary dark:text-secondary' : 'text-gray-600 dark:text-gray-300'
@@ -183,7 +184,7 @@ export const BottomNavigation: React.FC = () => {
 
     if (isAnnouncer) {
         const leftItems: NavItemDef[] = [
-            { title: 'Annonces', icon: LayoutGrid, link: routes.protected.properties },
+            { title: 'Accueil', icon: Home, link: routes.public.homePage },
             { title: 'Recherche', icon: Search, link: routes.public.search },
         ];
         const rightItems: NavItemDef[] = [

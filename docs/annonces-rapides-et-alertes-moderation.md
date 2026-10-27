@@ -87,7 +87,7 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | --- | --- | --- |
 | 🟡 | 1. Cadrage et audit | Règles consignées ; décisions ci-dessus et raccordement technique encore à finaliser |
 | 🟡 | 2. Alertes e-mail de modération — priorité remontée | Implémentation locale et tests ; réception réelle et activation non effectuées |
-| ⬜ | 3. Navigation Web connectée | Accueil et accès Mes annonces testés |
+| ✅ | 3. Navigation Web connectée | Implémentation locale : Accueil et accès Mes annonces testés ; non déployée |
 | ⬜ | 4. Demandes de recherche sur l'accueil | Aperçu et Voir tout vérifiés |
 | ⬜ | 5. Architecture annonces rapides | Modèle, sécurité et paiement documentés et validés |
 | ⬜ | 6. Avertissements et affichage | Cartes, détail et partage sans photo trompeuse |
@@ -153,3 +153,17 @@ sources TypeScript, manifests npm et tsconfig, sans `.env`. Le champ `main` du m
 déploiement pointe vers `lib/email/moderation-alert.js` : cela évite de charger les autres
 triggers (le chargement global échouait sur le bucket requis par le module vidéo).
 Le manifest du repository n'a pas été modifié. Aucun autre service déployé.
+
+## 7. Navigation Web — lot réalisé
+
+- `BottomNavigation.tsx` : Accueil (icône Home, lien `/`) remplace Annonces pour le rôle Announcer.
+  Bouton Publier, Recherche, Réels, Profil, safe areas et styles conservés.
+- `ProfilDetails.tsx` : entrée Mes annonces vers `/property`, pour les annonceurs,
+  dans les variantes mobile et desktop. Droits et parcours Devenir annonceur inchangés.
+- Les menus des visiteurs et comptes non annonceurs restent inchangés.
+- `aria-current` expose l'état actif sans changer le style (contrôle d'accessibilité issu du skill UI/UX).
+- Deux suites Jest ciblées : 17 tests réussis ; TypeScript et `git diff --check` réussis.
+  La première invocation ciblée avec couverture globale activée échouait au seuil global
+  malgré les 17 tests verts ; relance ciblée avec `--coverage=false`, sans changement des seuils du projet.
+- Pas de vérification visuelle navigateur/E2E, ni déploiement, commit ou push dans ce lot.
+- Suite prévue : aperçu des demandes de recherche sur l'accueil et bouton Voir tout.

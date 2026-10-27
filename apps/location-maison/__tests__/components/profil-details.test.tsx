@@ -16,6 +16,17 @@ jest.mock('next/link', () => ({
 const linkFor = (label: string) => screen.getByRole('link', { name: new RegExp(label) })
 
 describe('ProfilDetails', () => {
+  it.each([375, 1280])('donne accès à Mes annonces pour un annonceur à %s px', (width) => {
+    windowWidth = width
+    userState = { uid: 'u1', roles: ['User', 'Announcer'] }
+    render(<ProfilDetails />)
+    expect(linkFor('Mes annonces')).toHaveAttribute('href', '/property')
+  })
+
+  it('ne propose pas la gestion des annonces à un compte sans rôle annonceur', () => {
+    render(<ProfilDetails />)
+    expect(screen.queryByRole('link', { name: /Mes annonces/ })).not.toBeInTheDocument()
+  })
   beforeEach(() => {
     jest.clearAllMocks()
     windowWidth = 1280
