@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions/v1';
 import { adminAuth } from '../admin';
-import * as nodemailer from 'nodemailer';
+import { createEmailTransport } from './transport';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
 interface SendVerificationEmailRequest {
@@ -127,15 +127,7 @@ export const sendVerificationEmail = functions
       }
 
       console.log('Création du transporteur SMTP...');
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.hostinger.com',
-        port: 465,
-        secure: true,
-        auth: {
-          user: emailUser,
-          pass: emailPass,
-        },
-      });
+      const transporter = createEmailTransport(emailUser, emailPass);
 
       // Vérifier la connexion SMTP
       console.log('Vérification de la connexion SMTP...');

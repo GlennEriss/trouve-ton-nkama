@@ -262,6 +262,9 @@ describe('sendVerificationEmail - Tests unitaires', () => {
       // Ne devrait pas appeler Secret Manager si les secrets sont dans process.env
       expect(mockAccessSecretVersion).not.toHaveBeenCalled();
       expect(mockCreateTransport).toHaveBeenCalledWith({
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 30000,
         host: 'smtp.hostinger.com',
         port: 465,
         secure: true,

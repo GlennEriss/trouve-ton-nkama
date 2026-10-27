@@ -30,6 +30,7 @@ export { createCreditPayment } from './credit-payment';
 
 // Fonctions d'email
 export { sendVerificationEmail } from './email/verification';
+export { onListingPendingNotifyAdmin } from './email/moderation-alert';
 
 // Fonctions analytics (scheduler)
 export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';

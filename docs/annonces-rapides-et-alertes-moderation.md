@@ -86,7 +86,7 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | État | Lot | Condition de clôture |
 | --- | --- | --- |
 | 🟡 | 1. Cadrage et audit | Règles consignées ; décisions ci-dessus et raccordement technique encore à finaliser |
-| ⬜ | 2. Alertes e-mail de modération — priorité remontée | Tests + réception réelle contrôlée + activation vérifiée |
+| 🟡 | 2. Alertes e-mail de modération — priorité remontée | Implémentation locale et tests ; réception réelle et activation non effectuées |
 | ⬜ | 3. Navigation Web connectée | Accueil et accès Mes annonces testés |
 | ⬜ | 4. Demandes de recherche sur l'accueil | Aperçu et Voir tout vérifiés |
 | ⬜ | 5. Architecture annonces rapides | Modèle, sécurité et paiement documentés et validés |
@@ -96,3 +96,39 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | ⬜ | 9. Paiement MyPayGa 200 FCFA | Confirmation serveur, échecs et doublons testés |
 | ⬜ | 10. Validation complète | E2E dev avec nettoyage, non-régression puis déploiement autorisé |
 | ⬜ | 11. Brevo mobile | Canal défini, intégration backend auditée, secrets exclusivement serveur |
+
+## 6. Implémentation locale de l'alerte administrateur
+
+Le raccordement retenu évite un nouvel endpoint Web : transport Nodemailer extrait de
+la Cloud Function de vérification vers `functions/src/email/transport.ts`, réutilisé par
+celle-ci et par `onListingPendingNotifyAdmin`. Sélection Gmail/Hostinger identique au
+service Web ; délais SMTP bornés. Aucun changement du parcours de vérification utilisateur.
+
+Le trigger couvre uniquement `properties` (immobilier et mode), créations et entrées en
+PENDING. Pas d'alerte pour les archives, suppression, paiements en attente ou modifications
+ordinaires. Le texte est échappé et le lien mène à la file authentifiée, sans action d'approbation.
+
+Les suivis sont stockés dans `admin_moderation_email_dispatches`, accès Admin SDK uniquement
+(aucune règle client ajoutée). Clé SHA-256 de l'événement, acquisition transactionnelle avec
+bail 120 secondes, cinq tentatives maximum. Les retries sont ceux de Cloud Functions.
+Après cinq échecs : statut `failed`, reprise opérationnelle manuelle à prévoir après diagnostic.
+Un résultat SMTP accepté est enregistré `sent`, sans prétendre prouver la réception dans la boîte.
+Un crash après l'acceptation SMTP peut toujours causer un doublon ; le Message-ID stable aide
+au diagnostic mais ne constitue pas une garantie de déduplication SMTP.
+
+Configuration à appliquer uniquement lors du déploiement autorisé :
+
+- `ADMIN_MODERATION_EMAIL_ENABLED=true` (inactif par défaut).
+- `ADMIN_MODERATION_EMAIL_TO=glenneriss@gmail.com`.
+- `ADMIN_MODERATION_APP_URL` : origine HTTPS réelle du dashboard admin, à confirmer avant activation.
+- Secrets existants : `HOSTINGER_EMAIL_USER`, `HOSTINGER_EMAIL_PASS`, `EMAIL_DISPLAY_NAME`.
+  L'expéditeur attendu actuellement est glenneriss@gmail.com ; aucun secret n'est modifié ici.
+- Dans l'émulateur, pas d'envoi sauf activation explicite `FORCE_REAL_EMAILS=true`.
+
+Pas de rattrapage des annonces anciennes, pas de rappel périodique, pas d'extension aux réels
+ou demandes dans ce lot. Ces points nécessitent des décisions séparées.
+
+Tests ciblés : politiques, échappement, choix SMTP, rejeu, bail actif/expiré, échec et reprise,
+destinataire refusé, maximum de tentatives, annonce déjà traitée, activation et configuration.
+Mocks uniquement : pas de test SMTP réel ou de test de concurrence avec Firestore Emulator.
+La tâche ne sera marquée terminée qu'après test de réception et activation validés.
