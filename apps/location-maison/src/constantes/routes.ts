@@ -9,6 +9,7 @@ export const routes = {
         add_property_ai: '/property/create',
         add_category_listing: '/category-listing/create',
         publish: '/publish',
+        quick_listing_publish: '/annonces-rapides/publier',
         publish_category_choice: '/publish/category',
         reels: '/reels',
         reels_mine: '/reels/mine',

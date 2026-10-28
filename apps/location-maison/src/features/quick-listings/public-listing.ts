@@ -1,13 +1,13 @@
 import { z } from 'zod';
-import { toGabonWhatsappE164 } from '@/lib/phone/gabon-whatsapp';
+import { quickListingContactSchema, quickListingDescriptionSchema } from './draft';
 
 // Explicit public projection: never spread a Firestore document into a page.
 const publicFields = z.object({
-  description: z.string().trim().min(10).max(3000),
+  description: quickListingDescriptionSchema,
   province: z.string().trim().min(1).max(120),
   city: z.string().trim().min(1).max(120),
   neighborhood: z.string().trim().max(120).nullable().optional(),
-  contactPhone: z.string().transform(toGabonWhatsappE164).pipe(z.string().regex(/^\+241[67]\d{7}$/)),
+  contactPhone: quickListingContactSchema,
 });
 export type PublicQuickListing = z.infer<typeof publicFields> & { id: string };
 

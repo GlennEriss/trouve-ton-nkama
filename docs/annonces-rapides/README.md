@@ -7,6 +7,7 @@
 3. [Architecture](architecture/README.md)
 4. [Lot 6 : affichage, fichiers, tests et limites](LOT-6-AFFICHAGE.md)
 5. [Lot 7 : accueil et catalogue](LOT-7-CATALOGUE.md)
+6. [Lot 8 : formulaire et limites avant paiement](LOT-8-FORMULAIRE.md)
 
 La fonctionnalité est distincte des demandes de recherche : offre sans photo rédigée par un annonceur connecté, publication à **200 FCFA**, puis modération. Le montant des demandes de recherche reste inchangé.
 

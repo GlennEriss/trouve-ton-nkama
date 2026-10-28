@@ -83,6 +83,24 @@ describe('middleware — redirection /complete-profile', () => {
     middleware = mod.default as unknown as (req: MiddlewareRequest) => Promise<unknown>
   })
 
+  it('protège la création rapide sans fermer le catalogue public', async () => {
+    await middleware(makeRequest('/annonces-rapides/publier'))
+    expect(redirectMock).toHaveBeenCalledTimes(1)
+    jest.clearAllMocks()
+    await middleware(makeRequest('/annonces-rapides'))
+    expect(nextMock).toHaveBeenCalledTimes(1)
+    expect(redirectMock).not.toHaveBeenCalled()
+  })
+
+  it('autorise uniquement les annonceurs à créer une annonce rapide', async () => {
+    await middleware(makeRequest('/annonces-rapides/publier', COMPLETE_ANNOUNCER))
+    expect(nextMock).toHaveBeenCalledTimes(1)
+    jest.clearAllMocks()
+    await middleware(makeRequest('/annonces-rapides/publier', { ...COMPLETE_ANNOUNCER, roles: ['User'] }))
+    expect(redirectMock).toHaveBeenCalledTimes(1)
+    expect(nextMock).not.toHaveBeenCalled()
+  })
+
   it('redirige un compte téléphone fraîchement créé (profil incomplet) depuis une route PUBLIQUE', async () => {
     await middleware(makeRequest('/search', PHONE_SIGNUP_INCOMPLETE))
 

@@ -13,6 +13,7 @@ const GUEST_ONLY_ROUTES = [
 ] as const
 
 const PROTECTED_ROUTE_PREFIXES = [
+    '/annonces-rapides/publier',
     '/property',
     '/reels',
     '/profil',
@@ -44,6 +45,7 @@ type SessionUser = {
 }
 
 const ANNOUNCER_ONLY_ROUTE_PREFIXES = [
+    '/annonces-rapides/publier',
     '/property',
     '/reels',
 ] as const
