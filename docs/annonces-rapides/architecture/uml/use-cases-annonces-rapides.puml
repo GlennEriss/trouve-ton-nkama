@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+actor Visiteur
+actor Annonceur
+actor Administrateur
+rectangle "Annonces rapides" {
+  usecase "Consulter une offre publique" as Read
+  usecase "Soumettre et payer 200 FCFA" as Pay
+  usecase "Verifier identite et role" as Auth
+  usecase "Suivre son paiement" as Status
+  usecase "Approuver ou rejeter" as Moderate
+}
+Visiteur --> Read
+Annonceur --> Pay
+Annonceur --> Status
+Administrateur --> Moderate
+Pay .> Auth : <<include>>
+Status .> Auth : <<include>>
+Moderate .> Auth : <<include>>
+@enduml

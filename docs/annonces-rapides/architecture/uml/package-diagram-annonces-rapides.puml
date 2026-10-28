@@ -1,0 +1,23 @@
+@startuml
+package Presentation {
+  component Formulaire
+  component PaymentStatusModal
+}
+package Application {
+  component QuickListingService
+}
+package Domaine {
+  component Validation
+  component Transitions
+}
+package Infrastructure {
+  component FirestoreRepository
+  component MyPayGaAdapter
+}
+Formulaire --> QuickListingService
+Formulaire --> PaymentStatusModal
+QuickListingService --> Validation
+QuickListingService --> Transitions
+QuickListingService --> FirestoreRepository
+QuickListingService --> MyPayGaAdapter
+@enduml

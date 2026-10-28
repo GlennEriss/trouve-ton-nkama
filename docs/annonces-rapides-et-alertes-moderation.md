@@ -14,7 +14,10 @@ Document de cadrage — 27 octobre 2026. Aucune implémentation ni modification 
 - Catalogue : filtre rapide après Demandes.
 - Navigation connectée : Accueil remplace Annonces ; Mes annonces accessible dans Profil. Autres destinations inchangées.
 - E-mail administrateur : expédition et réception actuellement glenneriss@gmail.com. Elles doivent rester configurables indépendamment pour le futur changement de boîte.
-- Brevo mobile traité en dernier, après clarification du canal des messages.
+- Brevo mobile traité après les annonces rapides ; le nouveau lot facturation MyPayGa vient ensuite, en dernier.
+- Immobilier au lancement ; corrections et modifications gratuites avec nouvelle modération, selon validation utilisateur.
+- Aucune expiration automatique : conservation jusqu'à suppression par un administrateur. La visibilité reste soumise au paiement confirmé et à l'approbation.
+- Demande de remboursement à `glenneriss@gmail.com`, avec facture prouvant le paiement et motif. Adresse configurable ; pas de remboursement automatique garanti.
 
 ## 2. Existant réellement inspecté
 
@@ -73,11 +76,9 @@ Attention : les utilitaires SMTP de certaines Cloud Functions sont encore config
 
 ### Décisions encore attendues
 
-1. Après refus : correction possible sans second paiement ? Politique de remboursement ?
-2. Après publication : modification gratuite avec nouvelle modération ?
-3. Durée de visibilité et coût d'une republication ?
-4. Immobilier uniquement au lancement, et nom définitif « Annonces rapides » ?
-5. Alertes immédiates limitées aux annonces ou également aux réels/demandes ? Fréquence éventuelle des rappels ?
+1. Critères, délai et exécution des remboursements : à définir au lot 12 ; canal e-mail, facture et motif validés.
+2. Nom de travail « Annonces rapides ». Immobilier, corrections/modifications gratuites avec remodération et absence d'expiration validés.
+3. Alertes immédiates limitées aux annonces ou également aux réels/demandes ? Fréquence éventuelle des rappels ?
 
 ## 5. Suivi
 
@@ -89,13 +90,14 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | 🟡 | 2. Alertes e-mail de modération — priorité remontée | Implémentation locale et tests ; réception réelle et activation non effectuées |
 | ✅ | 3. Navigation Web connectée | Implémentation locale : Accueil et accès Mes annonces testés ; non déployée |
 | ✅ | 4. Demandes de recherche sur l'accueil | Implémentation locale et tests validés ; vérification visuelle et déploiement restants |
-| ⬜ | 5. Architecture annonces rapides | Modèle, sécurité et paiement documentés et validés |
+| ✅ | 5. Architecture annonces rapides | Architecture validée ; absence d'expiration et procédure de demande de remboursement consignées ; facturation reportée au lot 12 |
 | ⬜ | 6. Avertissements et affichage | Cartes, détail et partage sans photo trompeuse |
 | ⬜ | 7. Catalogue et accueil | Filtres compatibles, Voir tout et visibilité vérifiés |
 | ⬜ | 8. Publication en deux étapes | Composants réutilisés et validations testées |
 | ⬜ | 9. Paiement MyPayGa 200 FCFA | Confirmation serveur, échecs et doublons testés |
 | ⬜ | 10. Validation complète | E2E dev avec nettoyage, non-régression puis déploiement autorisé |
 | ⬜ | 11. Brevo mobile | Canal défini, intégration backend auditée, secrets exclusivement serveur |
+| ⬜ | 12. Factures MyPayGa et remboursements | Dernier lot : couverture des paiements confirmés, facture/e-mail idempotents et traitement contrôlé des demandes |
 
 ## 6. Implémentation locale de l'alerte administrateur
 
@@ -178,3 +180,35 @@ Le manifest du repository n'a pas été modifié. Aucun autre service déployé.
 - Validation : 6 suites ciblées, 50 tests réussis ; TypeScript sans erreur. Les tests d'assemblage vérifient l'ordre des sections sur les deux variantes.
 - Pas de validation visuelle navigateur ni de test Firebase réel dans ce lot. Aucun commit, push ou déploiement effectué.
 - Prochain lot : architecture détaillée des annonces rapides et réutilisation du paiement MyPayGa à 200 FCFA avant développement du formulaire.
+
+## Lot 5 — Architecture (28 octobre 2026)
+
+[Dossier développeur et index](annonces-rapides/README.md) : audit des composants réutilisables, modèle public/privé, contrats API, sécurité, transitions de paiement, index, plan de tests et quatre diagrammes PlantUML.
+
+Collection dédiée proposée, aucun champ immobilier fictif. Paiement 200 FCFA imposé serveur ; identité serveur et droit annonceur ; données payeur privées ; callbacks monotones et idempotents. Pas de copie du parcours anonyme des demandes de recherche. Aucun endpoint ni paiement activé dans ce lot.
+
+Architecture validée le 28 octobre. Les précisions utilisateur suivantes sont intégrées : aucune expiration automatique ; remboursement demandé par e-mail avec facture et motif ; réalisation de la facturation transversale en dernier.
+
+## Lot 12 — Factures MyPayGa et remboursement (à réaliser en dernier)
+
+- Inventorier tous les usages MyPayGa, notamment recharges, cadeaux, demandes de recherche et annonces rapides ; couvrir chaque paiement réel confirmé, pas seulement le nouveau module.
+- Générer une facture unique après confirmation serveur, puis l'envoyer par e-mail. Aucun justificatif de paiement pour une simple initiation, un timeout ou un refus.
+- Associer durablement facture et transaction ; callbacks rejoués ou concurrents et reprises SMTP ne créent pas de nouvelle facture. Une réémission conserve sa référence.
+- Réutiliser le transport e-mail existant après vérification de sa disponibilité. Échec d'envoi : conserver le paiement, tracer l'état et permettre une reprise bornée, jamais un nouveau débit.
+- Contenu proposé : numéro unique, date, référence transaction, service, montant/devise et identités disponibles. Mentions comptables/fiscales et éventuel avoir à valider avant réalisation ; aucune taxe ou identité légale inventée.
+- Auditer la collecte d'un e-mail de facturation pour les visiteurs anonymes et comptes téléphone sans e-mail. Ne pas utiliser d'adresse technique fictive. Ne pas ajouter ce champ au formulaire rapide maintenant : ce chantier est différé explicitement.
+- Factures privées, conservation financière définie séparément de la durée des annonces ; aucun secret fournisseur dans les documents ou logs.
+
+### Procédure demandée
+
+Écrire à **glenneriss@gmail.com** en joignant la facture prouvant le paiement et le motif de remboursement. Cette adresse doit être configurable pour le futur changement de boîte. Prévoir cette instruction dans la facture et l'e-mail.
+
+Rapprocher la facture de la transaction confirmée côté serveur avant toute décision : une pièce jointe seule ne suffit pas. Prévenir les remboursements multiples et conserver une trace des décisions/exécutions. Pas de remboursement automatique après rejet d'annonce ou réception d'un e-mail.
+
+Critères d'acceptation, délais, remboursement partiel éventuel et mécanisme effectif de remboursement restent à définir. La procédure ne promet pas une acceptation systématique.
+
+### Validation attendue
+
+Succès unique/rejoué/concurrent, échec/timeout, e-mail absent/invalide, panne/reprise SMTP, accès non autorisé à une facture, réémission, rapprochement facture/transaction, demande répétée de remboursement. Aucun envoi massif rétroactif ou remboursement réel sans instruction explicite.
+
+Lot 4 : rendu localhost validé visuellement par l'utilisateur (« c'est parfait »), sans déploiement.

@@ -1,0 +1,31 @@
+@startuml
+class QuickListing {
+  id: string
+  ownerUid: string
+  description: string
+  contactPhone: string
+  paymentStatus: string
+  moderationStatus: string
+  state: string
+}
+class QuickListingPayment {
+  id: string
+  listingId: string
+  ownerUid: string
+  amountXaf: 200
+  status: string
+  idempotencyKeyHash: string
+}
+class QuickListingService {
+  reserve()
+  initiate()
+  applyVerifiedCallback()
+}
+QuickListing "1" -- "0..*" QuickListingPayment
+QuickListingService ..> QuickListing
+QuickListingService ..> QuickListingPayment
+note bottom of QuickListingPayment
+  Prive. Une seule operation non resolue
+  par annonce. Pas de retry de debit aveugle.
+end note
+@enduml
