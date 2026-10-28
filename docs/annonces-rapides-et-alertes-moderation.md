@@ -91,7 +91,7 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | ✅ | 3. Navigation Web connectée | Implémentation locale : Accueil et accès Mes annonces testés ; non déployée |
 | ✅ | 4. Demandes de recherche sur l'accueil | Implémentation locale et tests validés ; vérification visuelle et déploiement restants |
 | ✅ | 5. Architecture annonces rapides | Architecture validée ; absence d'expiration et procédure de demande de remboursement consignées ; facturation reportée au lot 12 |
-| ⬜ | 6. Avertissements et affichage | Cartes, détail et partage sans photo trompeuse |
+| 🟡 | 6. Avertissements et affichage | Composants, détail serveur et métadonnées textuelles implémentés/testés ; validation visuelle et partage réel restants |
 | ⬜ | 7. Catalogue et accueil | Filtres compatibles, Voir tout et visibilité vérifiés |
 | ⬜ | 8. Publication en deux étapes | Composants réutilisés et validations testées |
 | ⬜ | 9. Paiement MyPayGa 200 FCFA | Confirmation serveur, échecs et doublons testés |

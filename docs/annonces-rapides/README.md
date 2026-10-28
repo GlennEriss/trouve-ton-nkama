@@ -5,6 +5,7 @@
 1. [Cadrage et suivi global](../annonces-rapides-et-alertes-moderation.md)
 2. [Périmètre v1 et décisions ouvertes](MVP-V1-FIGE.md)
 3. [Architecture](architecture/README.md)
+4. [Lot 6 : affichage, fichiers, tests et limites](LOT-6-AFFICHAGE.md)
 
 La fonctionnalité est distincte des demandes de recherche : offre sans photo rédigée par un annonceur connecté, publication à **200 FCFA**, puis modération. Le montant des demandes de recherche reste inchangé.
 
