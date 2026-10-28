@@ -1,4 +1,5 @@
 import React from 'react'
+jest.mock('@/components/quick-listings/QuickListingsFeed', () => ({ __esModule: true, default: () => <div data-testid="quick-listings" /> }));
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import SearchMobilePage from '@/components/search/SearchMobilePage'
@@ -193,4 +194,12 @@ describe('SearchMobilePage', () => {
     expect(screen.queryByText('Résultats de la recherche')).not.toBeInTheDocument()
     expect(screen.queryByTestId('category-leaf-filter-pills')).not.toBeInTheDocument()
   })
+  it('affiche Rapides sans recherche et filtres immobiliers', () => {
+    params = new URLSearchParams('category=Rapides');
+    render(<SearchMobilePage />);
+    expect(screen.getByTestId('quick-listings')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Logement, ville, quartier...')).not.toBeInTheDocument();
+    expect(screen.queryByText('Résultats de la recherche')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('category-leaf-filter-pills')).not.toBeInTheDocument();
+  });
 })

@@ -40,6 +40,7 @@ jest.mock('@/components/home-page/FeaturedSection', () => ({ __esModule: true, d
 jest.mock('@/components/home-page/TrendingSection', () => ({ __esModule: true, default: () => <div data-testid="trending" /> }))
 jest.mock('@/components/home-page/RecentSection', () => ({ __esModule: true, default: () => <div data-testid="recent" /> }))
 jest.mock('@/components/home-page/HomeSearchRequestsSection', () => ({ __esModule: true, default: () => <div data-testid="home-search-requests" /> }))
+jest.mock('@/components/quick-listings/QuickListingsFeed', () => ({ __esModule: true, default: () => <div data-testid="quick-listings" /> }))
 jest.mock('@/components/home-page/CategoryHomeSections', () => ({ __esModule: true, default: () => <div data-testid="category-home-sections" /> }))
 
 describe('HomePageDesktopComponent', () => {
@@ -55,6 +56,7 @@ describe('HomePageDesktopComponent', () => {
     expect(screen.getByTestId('carousel-type')).toBeInTheDocument()
     expect(screen.getByTestId('trending')).toBeInTheDocument()
     expect(screen.getByTestId('recent')).toBeInTheDocument()
+    expect(screen.getByTestId('home-search-requests').compareDocumentPosition(screen.getByTestId('quick-listings')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByTestId('recent').compareDocumentPosition(screen.getByTestId('home-search-requests')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByTestId('home-search-requests').compareDocumentPosition(screen.getByTestId('category-home-sections')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByTestId('by-province')).toBeInTheDocument()

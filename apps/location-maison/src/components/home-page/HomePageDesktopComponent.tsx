@@ -9,6 +9,7 @@ import FeaturedSection from './FeaturedSection'
 import TrendingSection from './TrendingSection'
 import RecentSection from './RecentSection'
 import HomeSearchRequestsSection from './HomeSearchRequestsSection'
+import QuickListingsFeed from '@/components/quick-listings/QuickListingsFeed';
 import CategoryHomeSections from './CategoryHomeSections'
 import { motion, useReducedMotion } from 'framer-motion'
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking'
@@ -174,6 +175,7 @@ export default function HomePageDesktopComponent() {
       </motion.section>
 
       <HomeSearchRequestsSection />
+      <div className="mx-5"><QuickListingsFeed preview /></div>
       <CategoryHomeSections />
 
       <motion.section className='space-y-5 m-5' {...getRevealProps(0.18)}>

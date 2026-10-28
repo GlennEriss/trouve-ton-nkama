@@ -92,7 +92,7 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | ✅ | 4. Demandes de recherche sur l'accueil | Implémentation locale et tests validés ; vérification visuelle et déploiement restants |
 | ✅ | 5. Architecture annonces rapides | Architecture validée ; absence d'expiration et procédure de demande de remboursement consignées ; facturation reportée au lot 12 |
 | 🟡 | 6. Avertissements et affichage | Composants, détail serveur et métadonnées textuelles implémentés/testés ; validation visuelle et partage réel restants |
-| ⬜ | 7. Catalogue et accueil | Filtres compatibles, Voir tout et visibilité vérifiés |
+| ✅ | 7. Catalogue et accueil | Implémentation locale testée ; deux fixtures dev visibles, navigation navigateur validée ; index dev READY, pas de déploiement prod |
 | ⬜ | 8. Publication en deux étapes | Composants réutilisés et validations testées |
 | ⬜ | 9. Paiement MyPayGa 200 FCFA | Confirmation serveur, échecs et doublons testés |
 | ⬜ | 10. Validation complète | E2E dev avec nettoyage, non-régression puis déploiement autorisé |

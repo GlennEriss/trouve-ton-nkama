@@ -1,4 +1,5 @@
 import React from 'react'
+jest.mock('@/components/quick-listings/QuickListingsFeed', () => ({ __esModule: true, default: () => <div data-testid="quick-listings" /> }));
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import SearchDesktopPage from '@/components/search/SearchDesktopPage'
@@ -191,4 +192,11 @@ describe('SearchDesktopPage', () => {
     expect(screen.queryByTestId('category-leaf-filter-pills')).not.toBeInTheDocument()
     expect(screen.queryByTestId('property-card')).not.toBeInTheDocument()
   })
+  it('affiche Rapides sans filtres immobiliers', () => {
+    searchParamsMap.set('category', 'Rapides');
+    render(<SearchDesktopPage />);
+    expect(screen.getByTestId('quick-listings')).toBeInTheDocument();
+    expect(screen.queryByTestId('filter-section')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('property-card')).not.toBeInTheDocument();
+  });
 })
