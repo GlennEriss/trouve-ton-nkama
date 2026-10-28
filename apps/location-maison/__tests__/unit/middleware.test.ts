@@ -83,22 +83,29 @@ describe('middleware — redirection /complete-profile', () => {
     middleware = mod.default as unknown as (req: MiddlewareRequest) => Promise<unknown>
   })
 
-  it('protège la création rapide sans fermer le catalogue public', async () => {
+  it('ouvre la création rapide et le catalogue aux visiteurs anonymes', async () => {
     await middleware(makeRequest('/annonces-rapides/publier'))
-    expect(redirectMock).toHaveBeenCalledTimes(1)
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(nextMock).toHaveBeenCalledTimes(1)
     jest.clearAllMocks()
     await middleware(makeRequest('/annonces-rapides'))
     expect(nextMock).toHaveBeenCalledTimes(1)
     expect(redirectMock).not.toHaveBeenCalled()
   })
 
-  it('autorise uniquement les annonceurs à créer une annonce rapide', async () => {
+  it('autorise les annonceurs et les comptes ordinaires à créer une annonce rapide', async () => {
     await middleware(makeRequest('/annonces-rapides/publier', COMPLETE_ANNOUNCER))
     expect(nextMock).toHaveBeenCalledTimes(1)
     jest.clearAllMocks()
     await middleware(makeRequest('/annonces-rapides/publier', { ...COMPLETE_ANNOUNCER, roles: ['User'] }))
-    expect(redirectMock).toHaveBeenCalledTimes(1)
-    expect(nextMock).not.toHaveBeenCalled()
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(nextMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('ne demande pas de compléter le profil pour le formulaire rapide', async () => {
+    await middleware(makeRequest('/annonces-rapides/publier', PHONE_SIGNUP_INCOMPLETE))
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(nextMock).toHaveBeenCalledTimes(1)
   })
 
   it('redirige un compte téléphone fraîchement créé (profil incomplet) depuis une route PUBLIQUE', async () => {

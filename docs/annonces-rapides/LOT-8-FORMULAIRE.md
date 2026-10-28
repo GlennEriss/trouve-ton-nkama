@@ -2,7 +2,7 @@
 
 ## Livraison locale
 
-Route `/annonces-rapides/publier`, accessible depuis Publier pour un annonceur connecté. Le middleware et la page serveur contrôlent l'accès. Les routes publiques restent publiques.
+Route `/annonces-rapides/publier`, accessible depuis Publier sans connexion ni rôle annonceur. La page est dans le groupe public. Un profil incomplet ne bloque pas ce formulaire. Voir [la décision d'accès anonyme](ACCES-ANONYME.md) pour le futur paiement.
 
 1. Texte libre (10 à 3 000 caractères).
 2. Province, ville, quartier et téléphone : réutilisation des combobox OSM et du composant téléphone existants. Vérification de l'appartenance des sélections à leur parent et normalisation du téléphone gabonais.
@@ -19,7 +19,7 @@ La validation locale devra être répétée côté serveur dans le lot 9 ; elle 
 
 - `src/components/quick-listings/QuickListingForm.tsx` : étapes, validation, récapitulatif.
 - `src/features/quick-listings/draft.ts` : schémas et tarif ; schémas description/contact également réutilisés par le DTO public.
-- `src/app/(protected)/annonces-rapides/publier/page.tsx` : garde serveur.
+- `src/app/(public)/annonces-rapides/publier/page.tsx` : formulaire public sans garde de session.
 - `src/middleware.ts`, `src/constantes/routes.ts`, `src/components/publish/PublishChoiceClient.tsx` : accès et navigation.
 
 ## Vérification

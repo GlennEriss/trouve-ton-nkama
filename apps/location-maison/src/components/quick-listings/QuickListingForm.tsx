@@ -50,6 +50,7 @@ export default function QuickListingForm() {
     <div className="mx-auto max-w-3xl space-y-6 px-5 pb-28 pt-6 text-gray-900 dark:text-gray-100">
       <header className="space-y-2">
         <h1 className="text-2xl font-bold text-primary">Créer une annonce rapide</h1>
+        <p>Accessible à tous, sans connexion ni création de compte.</p>
         <p>Une offre immobilière sans photo, en deux étapes. Publication : {QUICK_LISTING_PRICE_XAF} FCFA après raccordement du paiement.</p>
         <p className="text-sm">L’annonce sera visible après paiement confirmé et approbation. Elle n’expirera pas automatiquement ; un administrateur pourra la supprimer.</p>
       </header>

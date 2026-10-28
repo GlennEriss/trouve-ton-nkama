@@ -20,13 +20,13 @@ export default function PublishChoiceClient() {
         </p>
       </div>
 
-      <div className={`grid grid-cols-1 ${isAnnouncer ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4 items-stretch`}>
-        {isAnnouncer && <Link href={routes.protected.quick_listing_publish} className="block h-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+        <Link href={routes.public.quick_listing_publish} className="block h-full">
           <Card className="h-full flex flex-col items-center justify-center gap-3 p-8 text-center cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all">
             <FileText className="h-10 w-10 text-emerald-600" aria-hidden="true" />
             <div><p className="font-semibold text-slate-800 dark:text-slate-100">Créer une annonce rapide</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Immobilier sans photo · 200 FCFA · Paiement bientôt disponible</p></div>
           </Card>
-        </Link>}
+        </Link>
         {/* "Publier une annonce" mène au choix de catégorie (/publish/category), pas
             directement à l'immobilier — ce bouton n'est plus restreint à un seul
             vertical (voir docs/marketplace-multi-categories/07-lots-et-sequencement.md). */}

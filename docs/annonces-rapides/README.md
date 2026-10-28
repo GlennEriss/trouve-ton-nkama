@@ -1,5 +1,7 @@
 # Annonces rapides — dossier développeur
 
+**Décision actuelle : publication ouverte sans compte.** Voir [accès anonyme et impacts paiement](ACCES-ANONYME.md), qui remplace les exigences d'authentification obligatoire de la conception initiale ci-dessous.
+
 28 octobre 2026 — lot 5, conception technique. **Aucun paiement ni endpoint nouveau implémenté dans ce lot.**
 
 1. [Cadrage et suivi global](../annonces-rapides-et-alertes-moderation.md)
@@ -9,7 +11,7 @@
 5. [Lot 7 : accueil et catalogue](LOT-7-CATALOGUE.md)
 6. [Lot 8 : formulaire et limites avant paiement](LOT-8-FORMULAIRE.md)
 
-La fonctionnalité est distincte des demandes de recherche : offre sans photo rédigée par un annonceur connecté, publication à **200 FCFA**, puis modération. Le montant des demandes de recherche reste inchangé.
+La fonctionnalité est distincte des demandes de recherche : offre sans photo rédigée avec ou sans compte, publication à **200 FCFA**, puis modération. Le montant des demandes de recherche reste inchangé.
 
 ## Références réellement inspectées
 

@@ -4,7 +4,7 @@
 
 ## IN confirmé
 
-- Annonceurs authentifiés ; 200 FCFA par nouvelle annonce, montant imposé serveur.
+- Avec ou sans compte ; 200 FCFA par nouvelle annonce, montant imposé serveur. Voir [accès anonyme](ACCES-ANONYME.md), qui remplace l'ancienne restriction aux annonceurs authentifiés.
 - Étape 1 : un champ texte. Étape 2 : province, ville, quartier, téléphone. Pas de titre/prix/type de bien obligatoire ajouté.
 - Paiement via MyPayGa et modales existantes. Confirmation serveur puis modération ; paiement ≠ publication.
 - Jamais de photos ; une offre avec photos nécessite une autre annonce classique.
