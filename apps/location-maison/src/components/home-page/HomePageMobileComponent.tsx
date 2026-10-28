@@ -18,6 +18,7 @@ import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
 import TrendingSection from './TrendingSection';
 import RecentSection from './RecentSection';
+import HomeSearchRequestsSection from './HomeSearchRequestsSection';
 import CategoryHomeSections from './CategoryHomeSections';
 import { motion, useReducedMotion } from 'framer-motion';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
@@ -227,6 +228,7 @@ export default function HomePageMobileComponent() {
                     <RecentSection />
                 </motion.section>
 
+                <HomeSearchRequestsSection />
                 <CategoryHomeSections />
 
                 <motion.section className='space-y-5 m-5' {...getRevealProps(0.13)}>
