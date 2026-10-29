@@ -1,5 +1,7 @@
 # Lot 8 — formulaire deux étapes
 
+**Mise à jour : le raccordement code du paiement est réalisé au [lot 9](LOT-9-PAIEMENT.md). Les limites « vérification locale uniquement » ci-dessous décrivent la livraison initiale du lot 8, pas le nouveau parcours. L'activation fournisseur reste distincte.**
+
 ## Livraison locale
 
 Route `/annonces-rapides/publier`, accessible depuis Publier sans connexion ni rôle annonceur. La page est dans le groupe public. Un profil incomplet ne bloque pas ce formulaire. Voir [la décision d'accès anonyme](ACCES-ANONYME.md) pour le futur paiement.

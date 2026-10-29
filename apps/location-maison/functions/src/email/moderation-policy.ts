@@ -11,8 +11,8 @@ export function enteredModeration(before: Data | undefined, after: Data | undefi
 export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]!));
 }
-export function moderationMessage(id: string, data: Data, submittedAt: string, adminUrl: string) {
-  const url = new URL('/dashboard/moderation', adminUrl);
+export function moderationMessage(id: string, data: Data, submittedAt: string, adminUrl: string, path = '/dashboard/moderation') {
+  const url = new URL(path, adminUrl);
   if (url.protocol !== 'https:') throw new Error('URL administrateur HTTPS requise');
   const title = String(data.title || 'Annonce sans titre').slice(0, 250);
   const text = `Une annonce attend votre modération.\n\n${title}\nRéférence : ${id}\nCatégorie : ${String(data.categoryId || data.typeProperty || 'Non renseignée')}\nSoumission : ${submittedAt}\n\nOuvrir la file administrateur : ${url.href}\nUne connexion administrateur est nécessaire.`;

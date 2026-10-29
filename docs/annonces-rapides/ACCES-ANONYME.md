@@ -1,5 +1,7 @@
 # Décision : publication sans compte
 
+**État actuel : raccordement code réalisé, voir [lot 9](LOT-9-PAIEMENT.md). Les éléments « à implémenter » ci-dessous constituent le contrat de référence initial ; les limites d'activation et tests réels figurent au lot 9.**
+
 Cette décision remplace les exigences « annonceur authentifié », rôle Announcer et ownerUid obligatoire de la conception initiale, y compris les diagrammes d'architecture historiques. Ces derniers ne doivent pas être implémentés tels quels pour le lot paiement.
 
 ## Implémenté

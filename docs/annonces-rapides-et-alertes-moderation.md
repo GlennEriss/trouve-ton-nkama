@@ -93,8 +93,8 @@ Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 | ✅ | 5. Architecture annonces rapides | Architecture validée ; absence d'expiration et procédure de demande de remboursement consignées ; facturation reportée au lot 12 |
 | 🟡 | 6. Avertissements et affichage | Composants, détail serveur et métadonnées textuelles implémentés/testés ; validation visuelle et partage réel restants |
 | ✅ | 7. Catalogue et accueil | Implémentation locale testée ; deux fixtures dev visibles, navigation navigateur validée ; index dev READY, pas de déploiement prod |
-| 🟡 | 8. Publication en deux étapes | Formulaire local et validations implémentés ; contrôle visuel navigateur restant. Aucune publication avant lot 9. Voir [lot 8](annonces-rapides/LOT-8-FORMULAIRE.md) |
-| ⬜ | 9. Paiement MyPayGa 200 FCFA | Confirmation serveur, échecs et doublons testés |
+| ✅ | 8. Publication en deux étapes | Formulaire public sans compte, validations et parcours navigateur mobile/desktop testés. Voir [lot 8](annonces-rapides/LOT-8-FORMULAIRE.md) |
+| 🟡 | 9. Paiement MyPayGa 200 FCFA | Raccordement code et modération testés ; déploiement et validation fournisseur sandbox/réelle restants. Voir [lot 9](annonces-rapides/LOT-9-PAIEMENT.md) |
 | ⬜ | 10. Validation complète | E2E dev avec nettoyage, non-régression puis déploiement autorisé |
 | ⬜ | 11. Brevo mobile | Canal défini, intégration backend auditée, secrets exclusivement serveur |
 | ⬜ | 12. Factures MyPayGa et remboursements | Dernier lot : couverture des paiements confirmés, facture/e-mail idempotents et traitement contrôlé des demandes |

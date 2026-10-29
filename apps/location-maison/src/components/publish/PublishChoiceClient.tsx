@@ -24,7 +24,7 @@ export default function PublishChoiceClient() {
         <Link href={routes.public.quick_listing_publish} className="block h-full">
           <Card className="h-full flex flex-col items-center justify-center gap-3 p-8 text-center cursor-pointer hover:border-emerald-500 hover:shadow-md transition-all">
             <FileText className="h-10 w-10 text-emerald-600" aria-hidden="true" />
-            <div><p className="font-semibold text-slate-800 dark:text-slate-100">Créer une annonce rapide</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Immobilier sans photo · 200 FCFA · Paiement bientôt disponible</p></div>
+            <div><p className="font-semibold text-slate-800 dark:text-slate-100">Créer une annonce rapide</p><p className="mt-1 text-xs text-slate-500 dark:text-slate-300">Immobilier sans photo · 200 FCFA · Sans compte</p></div>
           </Card>
         </Link>
         {/* "Publier une annonce" mène au choix de catégorie (/publish/category), pas

@@ -10,6 +10,7 @@
 4. [Lot 6 : affichage, fichiers, tests et limites](LOT-6-AFFICHAGE.md)
 5. [Lot 7 : accueil et catalogue](LOT-7-CATALOGUE.md)
 6. [Lot 8 : formulaire et limites avant paiement](LOT-8-FORMULAIRE.md)
+7. [Lot 9 : paiement, modération, tests et activation](LOT-9-PAIEMENT.md)
 
 La fonctionnalité est distincte des demandes de recherche : offre sans photo rédigée avec ou sans compte, publication à **200 FCFA**, puis modération. Le montant des demandes de recherche reste inchangé.
 

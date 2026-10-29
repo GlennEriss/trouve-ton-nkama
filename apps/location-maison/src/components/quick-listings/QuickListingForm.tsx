@@ -11,8 +11,11 @@ import { PhoneNumberFormAppSimple } from '@/components/shared/form/PhoneNumberFo
 import { useOSMLocations } from '@/hooks/useOSMLocations';
 import { quickListingDraftSchema, QUICK_LISTING_DESCRIPTION_MAX, QUICK_LISTING_PRICE_XAF, type QuickListingDraft } from '@/features/quick-listings/draft';
 import QuickListingSafetyNotice from './QuickListingSafetyNotice';
+import { useQuickListingPayment } from '@/hooks/use-quick-listing-payment';
+import QuickListingPayment from './QuickListingPayment';
 
 export default function QuickListingForm() {
+  const payment = useQuickListingPayment();
   const [step, setStep] = useState<1 | 2>(1);
   const [review, setReview] = useState<QuickListingDraft | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -51,7 +54,7 @@ export default function QuickListingForm() {
       <header className="space-y-2">
         <h1 className="text-2xl font-bold text-primary">Créer une annonce rapide</h1>
         <p>Accessible à tous, sans connexion ni création de compte.</p>
-        <p>Une offre immobilière sans photo, en deux étapes. Publication : {QUICK_LISTING_PRICE_XAF} FCFA après raccordement du paiement.</p>
+        <p>Une offre immobilière sans photo, en deux étapes. Publication : {QUICK_LISTING_PRICE_XAF} FCFA.</p>
         <p className="text-sm">L’annonce sera visible après paiement confirmé et approbation. Elle n’expirera pas automatiquement ; un administrateur pourra la supprimer.</p>
       </header>
       <ol aria-label="Étapes de création" className="grid grid-cols-2 gap-3 text-sm">
@@ -59,6 +62,7 @@ export default function QuickListingForm() {
         <li aria-current={step === 2 ? 'step' : undefined} className={step === 2 ? 'font-semibold text-primary' : ''}>2. Localisation et contact</li>
       </ol>
       <FormProvider {...form}>
+        <fieldset disabled={payment.hasOperation || !payment.ready} className="min-w-0">
         <form noValidate onSubmit={event => { event.preventDefault(); if (step === 1) void next(); else void handleSubmit(checkDraft)(event); }} className="space-y-6 rounded-2xl border bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
           <h2 ref={headingRef} tabIndex={-1} className="text-lg font-semibold">{step === 1 ? 'Votre annonce' : 'Localisation et contact'}</h2>
           {step === 1 ? (
@@ -92,10 +96,12 @@ export default function QuickListingForm() {
             <p className="whitespace-pre-wrap break-words">{review.description}</p>
             <p>{review.address.province} · {review.address.city} · {review.address.district}</p>
             <p>{review.contactPhone}</p>
-            <p>Le paiement MyPayGa de {QUICK_LISTING_PRICE_XAF} FCFA n’est pas encore disponible pour les annonces rapides. Aucun débit ni enregistrement sur la plateforme n’a été effectué.</p>
+            <p>Vérifiez ces informations avant de payer {QUICK_LISTING_PRICE_XAF} FCFA. Le paiement confirmé transmettra l’annonce à la modération.</p>
           </div>}
         </form>
+        </fieldset>
       </FormProvider>
+      {(review || payment.hasOperation) && <QuickListingPayment draft={review} payment={payment} />}
       <QuickListingSafetyNotice />
     </div>
   );
