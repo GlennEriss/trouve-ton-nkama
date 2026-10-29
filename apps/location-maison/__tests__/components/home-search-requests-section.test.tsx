@@ -1,5 +1,6 @@
+import '../helpers/carousel-media';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomeSearchRequestsSection from '@/components/home-page/HomeSearchRequestsSection';
 import { getSearchRequests } from '@/db/search-request.db';
@@ -19,7 +20,14 @@ beforeEach(() => jest.resetAllMocks());
 it('charge quatre demandes et conserve le lien vers la liste complète', async () => {
   getRequests.mockResolvedValue({ searchRequests: [1, 2, 3, 4].map(id => ({ id: String(id), description: `Demande ${id}` })), lastDoc: null, limitPerPage: 4 } as Awaited<ReturnType<typeof getSearchRequests>>);
   mount();
-  expect(await screen.findAllByRole('article')).toHaveLength(4);
+  expect(await screen.findAllByRole('article', { hidden: true })).toHaveLength(4);
+  expect(screen.getAllByRole('article')).toHaveLength(3);
+  expect(screen.getByRole('group', { name: 'Demandes de recherche' })).toHaveAttribute('aria-roledescription', 'carrousel');
+  expect(screen.getByRole('button', { name: 'Précédent' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Suivant' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: 'Suivant' }));
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Suivant' })).toBeDisabled());
+  expect(screen.getAllByRole('article').at(-1)).toHaveTextContent('Demande 4');
   expect(getRequests).toHaveBeenCalledWith({ limitPerPage: 4, lastDoc: null });
   expect(screen.getByRole('link', { name: /Voir tout/ })).toHaveAttribute('href', '/demandes-recherche');
 });

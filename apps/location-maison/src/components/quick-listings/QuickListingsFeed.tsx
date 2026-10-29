@@ -4,6 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import type { PublicQuickListing } from '@/features/quick-listings/public-listing';
 import QuickListingCard from './QuickListingCard';
 import QuickListingSafetyNotice from './QuickListingSafetyNotice';
+import HomeCardsCarousel from '@/components/home-page/HomeCardsCarousel';
 
 export default function QuickListingsFeed({ preview = false }: { preview?: boolean }) {
   const limit = preview ? 4 : 20;
@@ -33,7 +34,11 @@ export default function QuickListingsFeed({ preview = false }: { preview?: boole
       {isPending && <p role="status">Chargement des annonces rapides…</p>}
       {isError && <div role="alert"><p>Impossible de charger les annonces rapides.</p><button type="button" disabled={isFetching} onClick={() => void refetch()} className="min-h-11 px-4 text-primary underline">Réessayer</button></div>}
       {!isPending && !isError && !items.length && <p>Aucune annonce rapide disponible pour le moment.</p>}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">{items.map(item => <QuickListingCard key={item.id} item={item} />)}</div>
+      {preview ? (
+        <HomeCardsCarousel label="Annonces rapides">{items.map(item => <QuickListingCard key={item.id} item={item} />)}</HomeCardsCarousel>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">{items.map(item => <QuickListingCard key={item.id} item={item} />)}</div>
+      )}
       {!preview && hasNextPage && <button type="button" disabled={isFetching} onClick={() => void fetchNextPage()} className="min-h-11 rounded-full bg-primary px-5 py-3 text-white disabled:opacity-50">{isFetching ? 'Chargement…' : 'Afficher plus'}</button>}
     </section>
   );
