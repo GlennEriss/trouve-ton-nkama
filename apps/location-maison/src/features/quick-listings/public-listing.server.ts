@@ -12,7 +12,7 @@ export async function getPublicQuickListing(id: string) {
 export async function listPublicQuickListings(limit: number, cursor?: { seconds: number; nanoseconds: number; id: string }) {
   if (!Number.isInteger(limit) || limit < 1 || limit > 50) throw new Error('invalid_limit');
   let query = getFirestore(adminApp!).collection('quick_listings')
-    .where('paymentStatus', '==', 'confirmed')
+    .where('paymentStatus', 'in', ['confirmed', 'not_required'])
     .where('moderationStatus', '==', 'APPROVED')
     .where('state', '==', 'IN_PROGRESS')
     .orderBy('publishedAt', 'desc').orderBy(FieldPath.documentId(), 'desc');

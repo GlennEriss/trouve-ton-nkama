@@ -8,6 +8,11 @@ const raw = { description: 'Maison à louer\nContactez-moi pour visiter.', provi
 const item = toPublicQuickListing('test-quick', raw)!;
 
 describe('public quick listings', () => {
+  it('affiche les imports administratifs exemptés sans exposer les données internes', () => {
+    expect(toPublicQuickListing('apify-test', { ...raw, paymentStatus: 'not_required' })).toMatchObject({ id: 'apify-test', city: 'Libreville' });
+    expect(toPublicQuickListing('apify-test', { ...raw, paymentStatus: 'not_required', moderationStatus: 'PENDING' })).toBeNull();
+    expect(toPublicQuickListing('apify-test', { ...raw, paymentStatus: 'not_required', state: 'ARCHIVED' })).toBeNull();
+  });
   it('ne projette que les champs publics et normalise le contact', () => {
     expect(item.contactPhone).toBe('+24174124961');
     expect(item).not.toHaveProperty('payerPhone');

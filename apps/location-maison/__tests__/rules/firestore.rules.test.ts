@@ -97,6 +97,16 @@ afterAll(async () => {
 })
 
 describe('firestore.rules quick listings', () => {
+  it('autorise une exemption admin approuvée mais interdit de la créer côté client', async () => {
+    const data = { paymentStatus: 'not_required', moderationStatus: 'APPROVED', state: 'IN_PROGRESS' };
+    await seed('quick_listings/apify', data);
+    await assertSucceeds(getDoc(doc(anonDb(), 'quick_listings/apify')));
+    await assertFails(setDoc(doc(authedDb('announcer'), 'quick_listings/forged'), data));
+    for (const patch of [{ moderationStatus: 'PENDING' }, { moderationStatus: 'REJECTED' }, { state: 'ARCHIVED' }]) {
+      await seed('quick_listings/apify', { ...data, ...patch });
+      await assertFails(getDoc(doc(anonDb(), 'quick_listings/apify')));
+    }
+  });
   it('ne rend publique que l’annonce payée, approuvée et active', async () => {
     const base = { paymentStatus: 'confirmed', moderationStatus: 'APPROVED', state: 'IN_PROGRESS' };
     await seed('quick_listings/public', base);

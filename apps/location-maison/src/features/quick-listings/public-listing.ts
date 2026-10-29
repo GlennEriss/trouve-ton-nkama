@@ -14,7 +14,7 @@ export type PublicQuickListing = z.infer<typeof publicFields> & { id: string };
 export function toPublicQuickListing(id: string, raw: unknown): PublicQuickListing | null {
   if (!raw || typeof raw !== 'object') return null;
   const data = raw as Record<string, unknown>;
-  if (data.paymentStatus !== 'confirmed' || data.moderationStatus !== 'APPROVED' || data.state !== 'IN_PROGRESS') return null;
+  if (!['confirmed', 'not_required'].includes(String(data.paymentStatus)) || data.moderationStatus !== 'APPROVED' || data.state !== 'IN_PROGRESS') return null;
   const parsed = publicFields.safeParse(data);
   return parsed.success ? { id, ...parsed.data } : null;
 }

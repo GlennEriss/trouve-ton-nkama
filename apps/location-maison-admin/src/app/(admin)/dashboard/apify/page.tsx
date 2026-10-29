@@ -67,7 +67,7 @@ const SCRAPE_MAX_POLL_MS = 10 * 60 * 1000;
 type GeoState = { status: GeoStatus; source?: GeoSource; message?: string };
 
 type ImportStatus = "idle" | "loading" | "created" | "error";
-type ImportState = { status: ImportStatus; propertyId?: string; error?: string };
+type ImportState = { status: ImportStatus; propertyId?: string; quickListingId?: string; error?: string };
 type ReelImportState = { status: ImportStatus; reelId?: string; error?: string };
 
 type AnnouncerOption = { uid: string; fullName: string; email: string | null; phoneNumbers: string[] };
@@ -79,7 +79,7 @@ const PLATFORM_KIND_LABELS: Record<string, string> = {
   person: "Particuliers",
 };
 
-type ImportResult = { index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string };
+type ImportResult = { index: number; ok: boolean; propertyId?: string; quickListingId?: string; imageCount: number; error?: string };
 type ReelImportResult = { index: number; ok: boolean; reelId?: string; error?: string };
 
 type DraftEditImage = { fileURL: string; filePATH: string };
@@ -326,6 +326,7 @@ function hasCoords(draft: ApifyListingDraft): boolean {
 function visibleMissing(meta: ApifyDraftMeta): string[] {
   const draft = meta.draft;
   return meta.missingFields.filter((field) => {
+    if (draft.images.length === 0 && ["Images", "Type de bien", "Statut (location/vente)", "Prix", "Coordonnées GPS"].includes(field)) return false;
     if (field === "Type de bien") return !draft.typeProperty;
     if (field === "Statut (location/vente)") return !draft.status;
     if (field === "Prix") return !draft.price || draft.price <= 0;
@@ -1009,7 +1010,7 @@ function DraftEditDialog({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">Aucune image. Ajoute-en depuis ton ordinateur ou colle une URL.</p>
+                <p className="text-xs text-muted-foreground">Sans photo : publication en annonce rapide. Ajouter une photo permet de créer une annonce classique.</p>
               )}
 
               <div className="flex flex-wrap items-center gap-2">
@@ -1127,7 +1128,7 @@ function DraftCard({
             {draft.status === "FOR_RENT" ? "Location" : "Vente"}
           </Badge>
           {isEdited ? <Badge variant="success">Modifiée manuellement</Badge> : null}
-          <Badge variant="secondary">{draft.images.length} image(s)</Badge>
+          <Badge variant="secondary">{draft.images.length === 0 ? "Annonce rapide · sans photo" : `${draft.images.length} image(s)`}</Badge>
         </div>
         <h3 className="text-base font-semibold text-foreground">{draft.title || "Sans titre"}</h3>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
@@ -1258,16 +1259,19 @@ function DraftCard({
         </div>
 
         {/* Création de l'annonce */}
+        {draft.images.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Publication en annonce rapide après votre validation, sans paiement pour cet import administratif. Texte, province, ville et contact valides requis.</p>
+        ) : null}
         <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
           {imp.status === "created" ? (
-            <Badge variant="success">Annonce créée{imp.propertyId ? ` · ${imp.propertyId}` : ""}</Badge>
+            <Badge variant="success">{imp.quickListingId ? "Annonce rapide enregistrée" : "Annonce créée"}{imp.quickListingId || imp.propertyId ? ` · ${imp.quickListingId || imp.propertyId}` : ""}</Badge>
           ) : (
             <Button
               size="sm"
               disabled={!canCreate || imp.status === "loading"}
               onClick={() => onCreate(index)}
             >
-              {imp.status === "loading" ? "Création…" : "Créer l'annonce"}
+              {imp.status === "loading" ? "Création…" : draft.images.length === 0 ? "Créer l'annonce rapide" : "Créer l'annonce"}
             </Button>
           )}
           <Button
@@ -1716,7 +1720,7 @@ export default function ApifyPage() {
         setImp((prev) => ({
           ...prev,
           [index]: result?.ok
-            ? { status: "created", propertyId: result.propertyId }
+            ? { status: "created", propertyId: result.propertyId, quickListingId: result.quickListingId }
             : { status: "error", error: result?.error ?? "Échec." },
         }));
         // Post has both images and a video → attach the reel to the listing
@@ -1756,7 +1760,7 @@ export default function ApifyPage() {
         for (const result of data.results) {
           const originalIndex = targets[result.index];
           next[originalIndex] = result.ok
-            ? { status: "created", propertyId: result.propertyId }
+            ? { status: "created", propertyId: result.propertyId, quickListingId: result.quickListingId }
             : { status: "error", error: result.error ?? "Échec." };
         }
         return next;

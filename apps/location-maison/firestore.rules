@@ -3,7 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /quick_listings/{id} {
-      allow read: if resource.data.paymentStatus == 'confirmed' && resource.data.moderationStatus == 'APPROVED' && resource.data.state == 'IN_PROGRESS';
+      // not_required is an administrative exemption; all client writes remain forbidden.
+      allow read: if resource.data.paymentStatus in ['confirmed', 'not_required'] && resource.data.moderationStatus == 'APPROVED' && resource.data.state == 'IN_PROGRESS';
       allow write: if false;
     }
     match /quick_listing_payments/{id} { allow read, write: if false; }

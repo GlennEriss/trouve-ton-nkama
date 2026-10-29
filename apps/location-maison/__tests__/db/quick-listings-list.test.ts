@@ -9,7 +9,7 @@ beforeEach(() => jest.clearAllMocks());
 it('filtre serveur, trie et lit uniquement limite + 1', async () => {
   mockQuery.get.mockResolvedValue({ docs: [doc('a'), doc('b')], size: 2 });
   const page = await listPublicQuickListings(1);
-  expect(mockQuery.where.mock.calls).toEqual([['paymentStatus', '==', 'confirmed'], ['moderationStatus', '==', 'APPROVED'], ['state', '==', 'IN_PROGRESS']]);
+  expect(mockQuery.where.mock.calls).toEqual([['paymentStatus', 'in', ['confirmed', 'not_required']], ['moderationStatus', '==', 'APPROVED'], ['state', '==', 'IN_PROGRESS']]);
   expect(mockQuery.orderBy.mock.calls).toEqual([['publishedAt', 'desc'], ['__name__', 'desc']]);
   expect(mockQuery.limit).toHaveBeenCalledWith(2);
   expect(page.items.map(item => item.id)).toEqual(['a']);
