@@ -26,11 +26,12 @@ export {
 export { initiatePurchase, mypaygaPaymentCallback } from './payments/mypayga';
 export { initiateGiftPayment, giftPaymentCallback } from './payments/gifts';
 export { initiateSearchRequestPayment, searchRequestPaymentCallback } from './payments/search-requests';
+export { initiateQuickListingPayment, quickListingPaymentCallback } from './payments/quick-listings';
 export { createCreditPayment } from './credit-payment';
 
 // Fonctions d'email
 export { sendVerificationEmail } from './email/verification';
-export { onListingPendingNotifyAdmin } from './email/moderation-alert';
+export { onListingPendingNotifyAdmin, onQuickListingPendingNotifyAdmin } from './email/moderation-alert';
 
 // Fonctions analytics (scheduler)
 export { syncAdSenseToAdminAnalytics } from './analytics/adsense-sync';

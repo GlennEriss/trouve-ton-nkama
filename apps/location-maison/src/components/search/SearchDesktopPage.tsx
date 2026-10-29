@@ -13,6 +13,7 @@ import FilterSearchDesktopPageSection from './FilterSearchDesktopPageSection'
 import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills'
 import CategoryLeafFilterPills from './CategoryLeafFilterPills'
 import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient'
+import QuickListingsFeed from '@/components/quick-listings/QuickListingsFeed'
 import { useTrackSearchAnalytics } from '@/features/analytics/search/hooks/useTrackSearchAnalytics';
 import SponsoredSlot from '@/components/ads/SponsoredSlot';
 import { ADSENSE_SLOTS } from '@/lib/ads/config';
@@ -220,7 +221,7 @@ SearchDesktopPage() {
         return groups;
     }, [feedItems]);
 
-    if (isDemandesTab) {
+    if (isDemandesTab || searchParams.get('category') === 'Rapides') {
         // Pleine largeur, pas de FilterSearchDesktopPageSection : ses champs (province, prix,
         // surface immobilier...) n'ont aucune prise sur les demandes de recherche, qui ont
         // leurs propres filtres intégrés (SearchRequestsListClient) — les montrer côte à côte
@@ -228,7 +229,7 @@ SearchDesktopPage() {
         return (
             <div className="flex h-screen flex-col overflow-auto p-5 pb-20">
                 <CategoryFilterPills />
-                <SearchRequestsListClient />
+                {isDemandesTab ? <SearchRequestsListClient /> : <QuickListingsFeed />}
             </div>
         );
     }

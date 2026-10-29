@@ -12,7 +12,7 @@ jest.mock('../../src/admin', () => ({ adminDB: {
   }),
 } }));
 jest.mock('../../src/email/transport', () => ({ createEmailTransport: () => ({ sendMail: mockSend, close: jest.fn() }) }));
-import { onListingPendingNotifyAdmin } from '../../src/email/moderation-alert';
+import { onListingPendingNotifyAdmin, onQuickListingPendingNotifyAdmin } from '../../src/email/moderation-alert';
 const pending = { moderationStatus: 'PENDING' };
 const change = { before: { data: () => undefined }, after: { data: () => pending, ref: { get: mockGet } } };
 const invoke = () => (onListingPendingNotifyAdmin as any)(change, { params: { propertyId: 'p1' }, eventId: 'event1', timestamp: '2026-10-27' });
@@ -32,6 +32,13 @@ afterAll(() => { process.env = originalEnv; });
 it('envoie puis ignore le rejeu', async () => {
   await invoke(); await invoke();
   expect(mockSend).toHaveBeenCalledTimes(1); expect(job.status).toBe('sent');
+});
+it('alerte pour une annonce rapide payée et utilise la bonne file admin', async () => {
+  const data = { moderationStatus: 'PENDING', paymentStatus: 'confirmed', description: 'Studio test' };
+  mockGet.mockResolvedValue({ data: () => data });
+  await (onQuickListingPendingNotifyAdmin as any)({ before: { data: () => ({ moderationStatus: null }) }, after: { data: () => data, ref: { get: mockGet } } }, { params: { propertyId: 'quick-test' }, eventId: 'quick-event', timestamp: '2026-10-29' });
+  expect(mockSend.mock.calls[0][0].text).toContain('/dashboard/quick-listings-moderation');
+  expect(mockSend.mock.calls[0][0].text).toContain('Studio test');
 });
 it('ne renvoie pas pendant un bail actif', async () => {
   job = { status: 'processing', leaseUntil: Date.now() + 60000 };

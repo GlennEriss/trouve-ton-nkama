@@ -59,6 +59,7 @@ const navItems = [
   { href: "/dashboard/moderation", label: "File de modération", icon: ShieldCheck },
   { href: "/dashboard/reels-moderation", label: "Modération réels", icon: Video },
   { href: "/dashboard/search-requests-moderation", label: "Demandes de recherche", icon: Search },
+  { href: "/dashboard/quick-listings-moderation", label: "Annonces rapides", icon: Search },
   { href: "/dashboard/listings/duplicates", label: "Doublons annonces", icon: CopyCheck },
   { href: "/dashboard/finance", label: "Finance crédits", icon: Wallet },
   { href: "/dashboard/gift-withdrawals", label: "Retraits cadeaux", icon: Gift },

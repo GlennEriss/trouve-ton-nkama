@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { createApifyQuickListing } from "@/modules/apify/application/apify-quick-listing.service";
 
 import { NextRequest } from "next/server";
 
@@ -205,10 +206,28 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const results: Array<{ index: number; ok: boolean; propertyId?: string; imageCount: number; error?: string }> = [];
+  // Publishing an administrative quick listing also requires moderation rights.
+  if (drafts.some(draft => draft && Array.isArray(draft.images) && draft.images.length === 0)) {
+    const approval = await requireAdmin(request, "listings.approve");
+    if (!approval.ok) return approval.response;
+  }
+  const results: Array<{ index: number; ok: boolean; propertyId?: string; quickListingId?: string; alreadyExists?: boolean; imageCount: number; error?: string }> = [];
 
   for (let index = 0; index < drafts.length; index += 1) {
     const draft = drafts[index];
+    if (!draft || typeof draft !== "object" || !Array.isArray(draft.images)) {
+      results.push({ index, ok: false, imageCount: 0, error: "Brouillon invalide : images doit être un tableau." });
+      continue;
+    }
+    if (draft.images.length === 0) {
+      try {
+        const created = await createApifyQuickListing(draft, announcerUid, auth.admin.uid);
+        results.push({ index, ok: true, imageCount: 0, ...created });
+      } catch (cause) {
+        results.push({ index, ok: false, imageCount: 0, error: cause instanceof Error ? cause.message : "Échec de l'annonce rapide." });
+      }
+      continue;
+    }
     const imageUrls = Array.isArray(draft.images)
       ? (draft.images as Array<{ fileURL?: string }>).map((image) => image?.fileURL).filter((url): url is string => Boolean(url))
       : [];

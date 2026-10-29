@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+actor Annonceur
+actor Administrateur
+component "Web / formulaire" as Web
+component "API Next.js authentifiee" as API
+component "Functions paiement" as Functions
+component "Dashboard admin" as Admin
+database "Firestore\nquick_listings / quick_listing_payments" as DB
+cloud MyPayGa
+Annonceur --> Web
+Web --> API
+API --> DB : reservation privee
+API --> Functions : appel serveur authentifie
+Functions --> MyPayGa : initiation
+MyPayGa --> Functions : callback signe
+Functions --> DB : confirmation atomique
+Administrateur --> Admin
+Admin --> DB : moderation autorisee
+@enduml

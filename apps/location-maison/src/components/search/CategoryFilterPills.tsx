@@ -27,6 +27,7 @@ async function fetchActiveCategories(): Promise<ActiveCategory[]> {
 // apparaître dans l'agrégat "Toutes catégories", qui ne doit rester qu'Immobilier + Mode
 // (demande explicite de l'utilisateur). D'où ce pill codé en dur, séparé de `categories`.
 export const DEMANDES_CATEGORY_NAME = "Demandes";
+export const RAPIDES_CATEGORY_NAME = "Rapides";
 
 /**
  * Sélecteur de catégorie racine (Lot 4) + le pill fixe "Demandes" ci-dessus. S'affiche dès
@@ -61,7 +62,7 @@ export default function CategoryFilterPills() {
   const selectCategory = (name: string) => {
     const params = new URLSearchParams();
     const query = searchParams.get("query");
-    if (query) params.set("query", query);
+    if (query && name !== RAPIDES_CATEGORY_NAME) params.set("query", query);
     if (name) params.set("category", name);
     router.push(`/search?${params.toString()}`);
   };
@@ -95,6 +96,9 @@ export default function CategoryFilterPills() {
         onClick={() => selectCategory(DEMANDES_CATEGORY_NAME)}
       >
         {DEMANDES_CATEGORY_NAME}
+      </button>
+      <button type="button" aria-pressed={currentCategory === RAPIDES_CATEGORY_NAME} className={pillClass(currentCategory === RAPIDES_CATEGORY_NAME)} onClick={() => selectCategory(RAPIDES_CATEGORY_NAME)}>
+        Rapides
       </button>
     </div>
   );

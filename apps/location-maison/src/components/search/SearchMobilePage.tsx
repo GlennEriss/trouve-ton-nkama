@@ -15,6 +15,7 @@ import { toRecommendationCandidate } from '@/features/recommendation/scoring/can
 import CategoryFilterPills, { DEMANDES_CATEGORY_NAME } from './CategoryFilterPills';
 import CategoryLeafFilterPills from './CategoryLeafFilterPills';
 import SearchRequestsListClient from '@/components/search-requests/SearchRequestsListClient';
+import QuickListingsFeed from '@/components/quick-listings/QuickListingsFeed';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { trackingEvents, useTrackEvent } from '@/features/analytics/tracking';
 import { useSession } from 'next-auth/react';
@@ -59,6 +60,7 @@ export default function SearchMobilePage() {
     // le concernent pas. Les hooks react-instantsearch continuent de s'exécuter normalement
     // (règle des Hooks), seul le rendu de la section résultats bascule.
     const isDemandesTab = searchParams.get('category') === DEMANDES_CATEGORY_NAME;
+    const isRapidesTab = searchParams.get('category') === 'Rapides';
     const searchWithAIHref = React.useMemo(() => {
         const params = new URLSearchParams(searchParams.toString());
         params.set('entry', 'search_cta');
@@ -233,7 +235,7 @@ export default function SearchMobilePage() {
         <>
             <div className='px-4 py-5 space-y-5 h-full pb-20 sm:px-5' ref={topRef}>
                 {/* Barre de recherche identique à la homepage */}
-                <section className='space-y-4'>
+                {!isRapidesTab && <section className='space-y-4'>
                     <div className='space-y-1'>
                         <p className='text-xs text-gray-600 dark:text-gray-300'>Votre futur chez-vous grâce à Trouve Ton Nkama</p>
                         <div className='flex text-xl font-bold text-primary items-center gap-2'>
@@ -300,10 +302,10 @@ export default function SearchMobilePage() {
                     >
                         Rechercher avec IA
                     </Link>
-                </section>
+                </section>}
 
                 <section className='space-y-5'>
-                    {!isDemandesTab && (
+                    {!isDemandesTab && !isRapidesTab && (
                         <div className='flex items-center justify-between'>
                             <div>
                                 <h1 className='text-2xl font-bold text-primary'>
@@ -326,7 +328,7 @@ export default function SearchMobilePage() {
 
                     <CategoryFilterPills />
 
-                    {isDemandesTab ? (
+                    {isRapidesTab ? <QuickListingsFeed /> : isDemandesTab ? (
                         // Pas de FilterModalHomePage/CategoryLeafFilterPills/pagination Algolia
                         // ici : une demande de recherche a ses propres filtres intégrés
                         // (SearchRequestsListClient), les montrer côte à côte laisserait croire
@@ -447,7 +449,7 @@ export default function SearchMobilePage() {
                     )}
 
                     {/* Boutons de scroll haut/bas */}
-                    <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
+                    {!isRapidesTab && <div className="fixed bottom-24 right-6 flex flex-col gap-2 z-50">
                         <button
                             onClick={scrollToTop}
                             className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-200 shadow transition hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
@@ -462,7 +464,7 @@ export default function SearchMobilePage() {
                         >
                             <ChevronDown size={20} />
                         </button>
-                    </div>
+                    </div>}
                 </section>
             </div>
             <SearchWithAIAccessNoticeDialog

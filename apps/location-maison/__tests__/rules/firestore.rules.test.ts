@@ -96,6 +96,39 @@ afterAll(async () => {
   }
 })
 
+describe('firestore.rules quick listings', () => {
+  it('autorise une exemption admin approuvée mais interdit de la créer côté client', async () => {
+    const data = { paymentStatus: 'not_required', moderationStatus: 'APPROVED', state: 'IN_PROGRESS' };
+    await seed('quick_listings/apify', data);
+    await assertSucceeds(getDoc(doc(anonDb(), 'quick_listings/apify')));
+    await assertFails(setDoc(doc(authedDb('announcer'), 'quick_listings/forged'), data));
+    for (const patch of [{ moderationStatus: 'PENDING' }, { moderationStatus: 'REJECTED' }, { state: 'ARCHIVED' }]) {
+      await seed('quick_listings/apify', { ...data, ...patch });
+      await assertFails(getDoc(doc(anonDb(), 'quick_listings/apify')));
+    }
+  });
+  it('ne rend publique que l’annonce payée, approuvée et active', async () => {
+    const base = { paymentStatus: 'confirmed', moderationStatus: 'APPROVED', state: 'IN_PROGRESS' };
+    await seed('quick_listings/public', base);
+    await assertSucceeds(getDoc(doc(anonDb(), 'quick_listings/public')));
+    for (const patch of [{ paymentStatus: 'pending_confirmation' }, { moderationStatus: 'PENDING' }, { moderationStatus: 'REJECTED' }, { state: 'ARCHIVED' }]) {
+      await seed('quick_listings/private', { ...base, ...patch });
+      await assertFails(getDoc(doc(anonDb(), 'quick_listings/private')));
+      await assertFails(getDoc(doc(authedDb('announcer'), 'quick_listings/private')));
+    }
+  });
+  it('interdit les écritures et les documents financiers même avec un compte', async () => {
+    await assertFails(setDoc(doc(anonDb(), 'quick_listings/new'), { moderationStatus: 'APPROVED' }));
+    await assertFails(setDoc(doc(authedDb('announcer'), 'quick_listings/new'), { moderationStatus: 'APPROVED' }));
+    for (const collection of ['quick_listing_payments', 'quick_listing_moderation', 'quick_listing_payment_limits']) {
+      await seed(`${collection}/private`, { secret: 'test-only' });
+      await assertFails(getDoc(doc(anonDb(), `${collection}/private`)));
+      await assertFails(getDoc(doc(authedDb('announcer'), `${collection}/private`)));
+      await assertFails(setDoc(doc(authedDb('announcer'), `${collection}/private`), { status: 'confirmed' }));
+    }
+  });
+});
+
 describe('firestore.rules users', () => {
   it('autorise la creation d un profil utilisateur standard', async () => {
     await assertSucceeds(

@@ -14,6 +14,7 @@
 | Complexité algorithmique | [Index performance](./location-maison/performance/README.md) | Audit intégral et guide développeur des correctifs |
 | Performance des publications | [Audit annonces et réels](./performance-creation-modification-annonces-reels.md) | Analyse technique |
 | Administration | [Documentation admin](./location-maison-admin/README.md) | Référence admin |
+| Annonces rapides | [Dossier développeur](./annonces-rapides/README.md) | Architecture et paiement 200 FCFA ; arbitrages métier ouverts |
 
 Pour travailler sur le système de recommandation, commencer exclusivement par
 [docs/recommendation-ml/README.md](./recommendation-ml/README.md). Ce document donne l'ordre de

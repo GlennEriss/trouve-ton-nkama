@@ -8,9 +8,9 @@ const COLLECTION = 'admin_moderation_email_dispatches';
 const LEASE_MS = 120000;
 const MAX_ATTEMPTS = 5;
 
-export const onListingPendingNotifyAdmin = functions
+const createModerationAlert = (collection: string, quick = false) => functions
   .runWith({ timeoutSeconds: 60, failurePolicy: true, secrets: ['HOSTINGER_EMAIL_USER', 'HOSTINGER_EMAIL_PASS', 'EMAIL_DISPLAY_NAME'] })
-  .firestore.document('properties/{propertyId}')
+  .firestore.document(`${collection}/{propertyId}`)
   .onWrite(async (change, context) => {
     if (process.env.ADMIN_MODERATION_EMAIL_ENABLED !== 'true') return;
     if (process.env.FUNCTIONS_EMULATOR === 'true' && process.env.FORCE_REAL_EMAILS !== 'true') return;
@@ -23,7 +23,8 @@ export const onListingPendingNotifyAdmin = functions
     if (!user || !pass || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to) || !adminUrl) {
       throw new Error('Configuration alerte administrateur incomplète');
     }
-    const message = moderationMessage(context.params.propertyId, after!, context.timestamp, adminUrl);
+    const message = moderationMessage(context.params.propertyId, quick ? { ...after, title: after?.description, categoryId: 'Annonce rapide' } : after!, context.timestamp, adminUrl,
+      quick ? '/dashboard/quick-listings-moderation' : '/dashboard/moderation');
     const key = createHash('sha256').update(context.eventId).digest('hex');
     const ref = adminDB.collection(COLLECTION).doc(key);
     const token = randomUUID();
@@ -65,3 +66,6 @@ export const onListingPendingNotifyAdmin = functions
       throw new Error('Échec alerte modération');
     }
   });
+
+export const onListingPendingNotifyAdmin = createModerationAlert('properties');
+export const onQuickListingPendingNotifyAdmin = createModerationAlert('quick_listings', true);

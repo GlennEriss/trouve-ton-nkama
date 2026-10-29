@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getSearchRequests } from "@/db/search-request.db";
 import SearchRequestCard from "@/components/search-requests/SearchRequestCard";
+import HomeCardsCarousel from './HomeCardsCarousel';
 
 export default function HomeSearchRequestsSection() {
   const { data, isPending, isError, refetch, isFetching } = useQuery({
@@ -33,9 +34,9 @@ export default function HomeSearchRequestsSection() {
           </button>
         </div>
       ) : data?.searchRequests.length ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <HomeCardsCarousel label="Demandes de recherche">
           {data.searchRequests.map((item) => <SearchRequestCard key={item.id} item={item} />)}
-        </div>
+        </HomeCardsCarousel>
       ) : (
         <p>Aucune demande de recherche disponible pour le moment.</p>
       )}

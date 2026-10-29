@@ -164,7 +164,9 @@ export default auth(async (req) => {
     // être complété avant TOUTE navigation, pas seulement sur les routes protégées. Sans ça,
     // un compte fraîchement créé par téléphone (redirection par défaut vers /search, une route
     // publique — voir PhoneAuthModal.tsx) traversait ce garde-fou sans jamais être redirigé.
-    if (userNeedsProfileCompletion && !isProfileCompletionRoute) {
+    // Ce formulaire est ouvert sans compte, y compris aux comptes incomplets.
+    const isAnonymousQuickListingFlow = pathname.replace(/\/$/, '') === routes.public.quick_listing_publish
+    if (userNeedsProfileCompletion && !isProfileCompletionRoute && !isAnonymousQuickListingFlow) {
         return NextResponse.redirect(new URL(routes.public.completeProfile, nextUrl))
     }
 

@@ -17,6 +17,13 @@ jest.mock('@tanstack/react-query', () => ({
 }))
 
 describe('CategoryFilterPills', () => {
+  it('place Rapides après Demandes et retire les filtres incompatibles', () => {
+    searchParamsString = 'category=Mode&query=robe&minPrice=1000';
+    render(<CategoryFilterPills />);
+    expect(screen.getByText('Demandes').compareDocumentPosition(screen.getByText('Rapides')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    fireEvent.click(screen.getByText('Rapides'));
+    expect(push).toHaveBeenCalledWith('/search?category=Rapides');
+  });
   beforeEach(() => {
     jest.clearAllMocks()
     searchParamsString = ''
