@@ -24,8 +24,11 @@ export default function QuickListingsFeed({ preview = false }: { preview?: boole
   });
   const items = [...new Map(data?.pages.flatMap(page => page.items).map(item => [item.id, item]) ?? []).values()];
   const Heading = preview ? 'h2' : 'h1';
+  // The homepage is a showcase: render nothing until usable offers are available.
+  // Keep loading, empty and retry states on the dedicated listing/catalogue pages.
+  if (preview && (isPending || isError || items.length === 0)) return null;
   return (
-    <section aria-label="Annonces rapides" className="space-y-6 py-6">
+    <section aria-label="Annonces rapides" className={`space-y-6 py-6${preview ? ' mx-5' : ''}`}>
       <header className="flex flex-wrap items-center justify-between gap-3">
         <Heading className="text-xl font-bold text-primary lg:text-2xl">Annonces rapides</Heading>
         {preview && <Link href="/search?category=Rapides" className="inline-flex min-h-11 items-center rounded-lg px-4 font-semibold text-primary hover:underline">Voir tout<span className="sr-only"> : annonces rapides</span></Link>}

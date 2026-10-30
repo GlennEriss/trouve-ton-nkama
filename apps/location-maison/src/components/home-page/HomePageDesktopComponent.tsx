@@ -175,7 +175,7 @@ export default function HomePageDesktopComponent() {
       </motion.section>
 
       <HomeSearchRequestsSection />
-      <div className="mx-5"><QuickListingsFeed preview /></div>
+      <QuickListingsFeed preview />
       <CategoryHomeSections />
 
       <motion.section className='space-y-5 m-5' {...getRevealProps(0.18)}>
