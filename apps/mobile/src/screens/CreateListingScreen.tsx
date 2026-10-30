@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ImagePlus, Sparkles, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { getPublishableLeaves } from '../api/categories';
+import { getPublishableLeaves, type PublishableCategoryLeaf } from '../api/categories';
+import { isGeminiEnabled } from '../api/aiCapabilities';
+import { buildManualListingDraft, manualListingFields } from '../lib/manualListing';
 import { createMobileListing, requestCategoryDraft, requestPropertyDraft, uploadListingImages, type GenerationPhase } from '../api/publishing';
 import { colors } from '../theme/colors';
 import type { PublishStackParamList } from '../navigation/types';
@@ -17,6 +19,24 @@ const PHASE_LABELS: Record<GenerationPhase, string> = {
 
 export default function CreateListingScreen({ route, navigation }: Props) {
   const isRealEstate = route.params.categorySlug === 'immobilier';
+  const [aiEnabled, setAIEnabled] = useState(false);
+  const [capabilitiesLoading, setCapabilitiesLoading] = useState(true);
+  const [leaves, setLeaves] = useState<PublishableCategoryLeaf[]>([]);
+  const [manual, setManual] = useState<Record<string, string>>({});
+  const submitting = useRef(false);
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const enabled = await isGeminiEnabled();
+      try {
+        const categories = !enabled && !isRealEstate ? await getPublishableLeaves() : [];
+        if (active) { setLeaves(categories); setAIEnabled(enabled); }
+      } catch {
+        if (active) setError('Impossible de charger les catégories. Réouvre le formulaire pour réessayer.');
+      } finally { if (active) setCapabilitiesLoading(false); }
+    })();
+    return () => { active = false; };
+  }, [isRealEstate]);
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
   const [province, setProvince] = useState('Estuaire');
@@ -46,13 +66,16 @@ export default function CreateListingScreen({ route, navigation }: Props) {
   };
 
   const generate = async () => {
+    if (capabilitiesLoading || submitting.current) return;
     setError(null);
     if (missing.length > 0) return setError(`Complète d'abord : ${missing.join(', ')}.`);
+    submitting.current = true;
     try {
+      const manualDraft = aiEnabled ? null : buildManualListingDraft(isRealEstate, manual, description, leaves);
       setPhase('photos');
       const uploadedImages = await uploadListingImages(images);
-      setPhase('generation');
-      let draft = isRealEstate ? await requestPropertyDraft(description.trim()) : await requestCategoryDraft(description.trim());
+      setPhase(aiEnabled ? 'generation' : 'validation');
+      let draft = manualDraft ?? (isRealEstate ? await requestPropertyDraft(description.trim()) : await requestCategoryDraft(description.trim()));
 
       if (!isRealEstate) {
         setPhase('validation');
@@ -73,13 +96,17 @@ export default function CreateListingScreen({ route, navigation }: Props) {
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Échec de la création de l'annonce.");
     } finally {
+      submitting.current = false;
       setPhase('idle');
     }
   };
 
   return (
     <ScrollView contentContainerStyle={[styles.content, !isRealEstate && styles.modeBackground]} keyboardShouldPersistTaps="handled" testID="screen-create-listing">
-      {isRealEstate ? (
+      {!aiEnabled ? <>
+        <Text style={styles.realEstateTitle}>Créer une annonce</Text>
+        <Text style={styles.intro}>Saisie manuelle — aucun crédit IA débité. Renseigne les informations de ton annonce.</Text>
+      </> : isRealEstate ? (
         <>
           <View style={styles.titleRow}><Sparkles size={24} color={colors.primary} /><Text style={styles.realEstateTitle}>Créer une annonce avec l&apos;IA</Text></View>
           <Text style={styles.intro}>Décris ton bien, ajoute des photos et un quartier — l&apos;IA détermine le type de bien et rédige le reste. Tu pourras tout corriger juste après.</Text>
@@ -87,6 +114,17 @@ export default function CreateListingScreen({ route, navigation }: Props) {
       ) : (
         <Text style={styles.modeTitle}>Décrivez votre annonce et laissez l&apos;IA faire le reste</Text>
       )}
+
+      {capabilitiesLoading ? <ActivityIndicator accessibilityLabel="Chargement du formulaire" /> : !aiEnabled ? <View style={styles.card}>
+        {manualListingFields(isRealEstate, manual, leaves).map((field) => <View key={field.key}>
+          <Text style={styles.label}>{field.label}{field.required ? ' *' : ''}</Text>
+          {field.options ? <View style={{ gap: 8, marginVertical: 8 }}>
+            {field.options.map((option) => <TouchableOpacity key={option.value} testID={`manual-${field.key}-${option.value}`} accessibilityRole="radio" accessibilityState={{ checked: manual[field.key] === option.value }} disabled={isSubmitting} onPress={() => setManual((value) => ({ ...value, [field.key]: option.value }))} style={[styles.input, { justifyContent: 'center', borderColor: manual[field.key] === option.value ? colors.primary : colors.border }]}>
+              <Text style={styles.label}>{manual[field.key] === option.value ? '✓ ' : ''}{option.label}</Text>
+            </TouchableOpacity>)}
+          </View> : <TextInput testID={`manual-${field.key}`} accessibilityLabel={field.label} keyboardType={field.numeric ? 'numeric' : field.key === 'contact' ? 'phone-pad' : 'default'} value={manual[field.key] ?? ''} editable={!isSubmitting} onChangeText={(text) => setManual((value) => ({ ...value, [field.key]: text }))} style={styles.input} />}
+        </View>)}
+      </View> : null}
 
       <View style={[styles.card, !isRealEstate && styles.modeComposer]}>
         {isRealEstate ? <Text style={styles.label}>Description du bien</Text> : null}
@@ -136,11 +174,11 @@ export default function CreateListingScreen({ route, navigation }: Props) {
       ) : null}
 
       {error ? <View testID="listing-error" accessible><Text accessibilityRole="alert" style={styles.error}>{error}</Text></View> : null}
-      <TouchableOpacity testID="listing-submit" accessibilityRole="button" disabled={isSubmitting} onPress={generate} style={[styles.submit, isSubmitting && styles.disabled]}>
+      <TouchableOpacity testID="listing-submit" accessibilityRole="button" disabled={isSubmitting || capabilitiesLoading} onPress={generate} style={[styles.submit, (isSubmitting || capabilitiesLoading) && styles.disabled]}>
         {isSubmitting ? <ActivityIndicator color="#fff" /> : <Sparkles size={20} color="#fff" />}
-        <Text style={styles.submitText}>{PHASE_LABELS[phase]}</Text>
+        <Text style={styles.submitText}>{phase === 'idle' && !aiEnabled ? "Créer l'annonce" : PHASE_LABELS[phase]}</Text>
       </TouchableOpacity>
-      <Text style={styles.creditNote}>Coût : 1 crédit</Text>
+      <Text style={styles.creditNote}>{aiEnabled ? 'Coût : 1 crédit' : 'Sans frais d’assistance IA'}</Text>
     </ScrollView>
   );
 }

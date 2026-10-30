@@ -118,7 +118,7 @@ export function useAISearchAssistant(options?: UseAISearchAssistantOptions) {
       id: `system-${Date.now()}`,
       role: 'system',
       content:
-        "Assistant IA Recherche prêt. Donnez vos critères (budget, zone, type de bien, chambres) et je lance la recherche utile.",
+        "Recherche assistée prête. Donnez vos critères (budget, zone, type de bien, chambres) pour lancer la recherche.",
       createdAt: new Date().toISOString(),
     },
   ]);

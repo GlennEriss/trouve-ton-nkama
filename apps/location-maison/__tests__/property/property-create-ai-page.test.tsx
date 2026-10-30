@@ -1,4 +1,6 @@
 import React from 'react'
+let mockAIEnabled = true
+jest.mock('@/hooks/use-ai-capabilities', () => ({ useAICapabilities: () => ({ enabled: mockAIEnabled, loading: false }) }))
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 if (typeof URL.createObjectURL !== 'function') {
@@ -124,6 +126,7 @@ async function generate() {
 
 describe('CreatePropertyWithAIPage — fusion des champs de contact IA', () => {
   beforeEach(() => {
+    mockAIEnabled = true
     jest.clearAllMocks()
     mockUploadPropertyImages.mockResolvedValue([{ fileURL: 'https://cdn.test/photo.jpg', filePATH: 'photo.jpg' }])
     mockCreateProperty.mockResolvedValue('property-1')

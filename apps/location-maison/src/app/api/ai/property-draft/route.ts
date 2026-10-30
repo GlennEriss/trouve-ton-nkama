@@ -8,6 +8,7 @@ import AIPromptsService from '@/services/ai-prompts.service';
 import AIFormService, { ProcessedFormData } from '@/services/ai-form.service';
 import { auth } from '@/next-auth/auth';
 import { resolveGeminiModel } from '@/lib/ai/gemini-model';
+import { requireGemini } from '@/lib/ai/provider';
 import type { TypeProperty } from '@/models/annonce';
 import { resolveAuthenticatedUid } from '@/lib/server/authenticated-uid';
 
@@ -139,6 +140,7 @@ async function findUserDocumentByUID(db: any, uid: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    requireGemini();
     const bodyValidation = bodySchema.safeParse(await request.json());
     if (!bodyValidation.success) {
       return jsonApiError(400, 'VALIDATION_ERROR', 'Décris ton bien avant de générer.', {

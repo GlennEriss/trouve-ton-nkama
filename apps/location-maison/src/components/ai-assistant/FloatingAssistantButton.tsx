@@ -1,4 +1,5 @@
 'use client'
+import { useAICapabilities } from '@/hooks/use-ai-capabilities';
 
 import React, { useState } from 'react';
 import { Bot } from 'lucide-react';
@@ -57,6 +58,7 @@ const saveFormToLocalStorage = (data: any) => {
 };
 
 const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formContext }) => {
+  const { enabled } = useAICapabilities();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(true);
   const [isWelcomeMessageFading, setIsWelcomeMessageFading] = useState(false);
@@ -211,6 +213,7 @@ const FloatingAssistantButton: React.FC<FloatingAssistantButtonProps> = ({ formC
     return null;
   }
 
+  if (!enabled) return null;
   return (
     <>
       <div className="fixed top-6 right-6 md:top-auto md:bottom-6 z-50">

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { auth } from '@/firebase/auth';
 import type { FormContext } from '@/services/ai-prompts.service';
 import { createLogger } from '@/lib/logger';
+import { isGeminiEnabled } from '@/hooks/use-ai-capabilities';
 
 interface AIResponse {
   success: boolean;
@@ -25,6 +26,7 @@ const MAX_MESSAGE_LENGTH = 40000;
 const ENABLE_FIREBASE_AI_FALLBACK = process.env.NEXT_PUBLIC_ENABLE_FIREBASE_AI_FALLBACK === 'true';
 
 async function sendToFirebaseAI(message: string, context?: FormContext): Promise<{ success: boolean; text?: string; error?: string }> {
+  if (!(await isGeminiEnabled())) return { success: false, error: 'L’assistance IA est désactivée. Utilisez la saisie manuelle.' };
   try {
     const [{ model }, { default: AIPromptsService }] = await Promise.all([
       import('@/firebase/ai'),
@@ -62,6 +64,7 @@ export const useAIAssistant = (): AIAssistantHook => {
   const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async (message: string, context?: FormContext): Promise<AIResponse> => {
+    if (!(await isGeminiEnabled())) return { success: false, error: 'L’assistance IA est désactivée. Utilisez la saisie manuelle.' };
     if (!session?.user) {
       return {
         success: false,

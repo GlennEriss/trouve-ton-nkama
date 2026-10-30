@@ -6,6 +6,7 @@ import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import { auth } from '@/next-auth/auth';
 import { resolveGeminiModel } from '@/lib/ai/gemini-model';
+import { requireGemini } from '@/lib/ai/provider';
 import {
   buildCategoryListingDraftPrompt,
   CategoryListingDraftError,
@@ -138,6 +139,7 @@ async function loadPublishableLeaves(db: any): Promise<PublishableCategoryLeaf[]
 
 export async function POST(request: NextRequest) {
   try {
+    requireGemini();
     const bodyValidation = bodySchema.safeParse(await request.json());
     if (!bodyValidation.success) {
       return jsonApiError(400, 'VALIDATION_ERROR', 'Décris ton article avant de générer.', {

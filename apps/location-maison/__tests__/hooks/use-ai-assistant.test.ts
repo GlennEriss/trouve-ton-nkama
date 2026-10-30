@@ -1,6 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
 
 import useAIAssistant from '@/hooks/useAIAssistant'
+import { isGeminiEnabled } from '@/hooks/use-ai-capabilities'
+jest.mock('@/hooks/use-ai-capabilities', () => ({ isGeminiEnabled: jest.fn() }))
 
 const mockUpdate = jest.fn()
 const mockGetIdToken = jest.fn()
@@ -13,10 +15,19 @@ jest.mock('@/lib/logger', () => ({ createLogger: () => ({ warn: jest.fn(), error
 describe('useAIAssistant', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(isGeminiEnabled as jest.Mock).mockResolvedValue(true)
     mockSession = { user: { uid: 'u1', credits: 3, firstname: 'Glenn' } }
     mockGetIdToken.mockResolvedValue('firebase-token')
     mockUpdate.mockResolvedValue(undefined)
     global.fetch = jest.fn()
+  })
+
+  it('ne lance aucun appel ni débit lorsque le fournisseur est désactivé', async () => {
+    ;(isGeminiEnabled as jest.Mock).mockResolvedValue(false)
+    const { result } = renderHook(() => useAIAssistant())
+    await expect(result.current.sendMessage('Maison à louer')).resolves.toMatchObject({ success: false, error: expect.stringContaining('désactivée') })
+    expect(fetch).not.toHaveBeenCalled()
+    expect(mockUpdate).not.toHaveBeenCalled()
   })
 
   it('refuse les visiteurs, les crédits épuisés et les messages trop courts', async () => {

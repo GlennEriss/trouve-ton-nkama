@@ -69,6 +69,41 @@ le pattern Strategy plutôt que de créer une 3e chaîne de conditions par type 
   fait, coût nul. Réactivation de l'optimiseur Next/Vercel Pro et CDN restent ouvertes ; le module
   Réels posera de toute façon la question du stockage/CDN vidéo, à trancher à ce moment-là.
 
+## Chantier transversal — Migration vers un backend commun (à planifier)
+
+Ajout demandé le **30 octobre 2026**. **Statut : ⬜ à faire**, aucune implémentation engagée par cette inscription. Priorité et calendrier à confirmer, sans réordonner les lots déjà convenus (notamment Brevo et facturation MyPayGa).
+
+### Orientation retenue
+
+- Backend **NestJS / Node.js en TypeScript**, commun au Web/PWA, au mobile et au dashboard admin.
+- Conserver **Firebase Auth, Firestore et Storage** ; déplacer progressivement les responsabilités métier et l'accès aux données vers le backend.
+- Une application backend modulaire au départ, **pas de microservices**.
+- Une **gateway / reverse proxy** comme entrée API commune. Solution et hébergement à choisir après audit ; pas de seconde application personnalisée sans besoin démontré.
+- **Pas de serveur discovery au démarrage** : les modules vivent dans la même application. À réévaluer uniquement si des services indépendants apparaissent.
+- Les frontends gardent vues, navigation, état d'interface et validations ergonomiques ; le backend fait autorité pour les validations métier, permissions, paiements, modération et données exposées.
+
+### Tâches à réaliser
+
+- [ ] Auditer Web, mobile, admin, API Next.js et Cloud Functions : cartographier règles, accès Firebase, intégrations, duplications et consommateurs.
+- [ ] Définir les modules, contrats API versionnés et projections publiques/propriétaire/admin ; distinguer les contrats partagés des modèles de stockage privés.
+- [ ] Concevoir l'authentification compatible avec les sessions actuelles et les jetons Firebase ; autorisations côté backend obligatoires, car l'Admin SDK ne dépend pas des Security Rules clientes.
+- [ ] Choisir gateway, hébergement, configuration dev/prod, gestion des secrets, observabilité et limites de trafic ; conserver l'autorisation métier dans NestJS.
+- [ ] Examiner séparément le temps réel, les uploads directs sécurisés et les traitements asynchrones ; ne pas supprimer automatiquement tous les usages clients de Firebase.
+- [ ] Établir l'ordre de migration par domaine, les tests de référence, les critères de bascule et le retour arrière avant d'implémenter le socle.
+- [ ] Migrer progressivement les responsabilités vers le backend et raccorder les trois frontends, sans double logique métier durable ni double exécution des paiements/notifications.
+- [ ] Fermer les anciens chemins d'écriture et retirer le code devenu inutile après validation de chaque domaine ; conserver les contrôles nécessaires pendant la coexistence.
+- [ ] Valider sécurité, non-régression fonctionnelle, performances, coûts et E2E sur dev ; déployer progressivement sur autorisation explicite.
+
+**Condition de clôture :** périmètre migré documenté et testé sur les trois applications, autorisations et règles métier centralisées pour ce périmètre, anciens chemins désactivés, surveillance et procédure de retour arrière vérifiées. L'audit détaillé et le choix de gateway restent à faire ; ce suivi n'est pas une architecture technique finalisée.
+
+## Chantier long terme — NexaSearch, alternative à Algolia
+
+- [ ] **Construire notre SDK multi-provider puis notre moteur de recherche**, en TypeScript, avec Firebase conservé comme source métier initiale. Statut : ⬜ à faire, ajouté le 30 octobre 2026.
+- [ ] Encapsuler d'abord Algolia sans régression ; conserver son fonctionnement jusqu'à qualification et validation du remplacement.
+- [ ] Décomposer et réaliser les phases P0–P7 du [backlog NexaSearch](nexasearch-backlog.md), avec tests de sécurité, synchronisation, pertinence et performances avant bascule.
+
+Chantier coordonné avec le backend NestJS/gateway, sans modifier les priorités déjà convenues. Le SDK et le moteur sont deux livrables distincts ; aucun développement ni retrait d'Algolia n'est engagé par cette inscription.
+
 ## Ce qui n'est volontairement pas dans cette roadmap
 
 - Refonte visuelle globale, nouveau prestataire de paiement générique, big-bang refactor — voir

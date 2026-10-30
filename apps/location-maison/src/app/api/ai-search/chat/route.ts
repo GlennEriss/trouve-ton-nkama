@@ -8,6 +8,7 @@ import { AppError } from '@/lib/errors/app-error';
 import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import { getDynamicTagNamesServer } from '@/lib/tags/dynamic-tags.server';
 import { resolveGeminiModel } from '@/lib/ai/gemini-model';
+import { getAIProviderName, withAIProvider } from '@/lib/ai/provider';
 
 const logger = createLogger('api.ai-search.chat');
 
@@ -500,6 +501,7 @@ function computeCreditsToDebit(
   previousCreditsDebited: number,
   searchCallsDelta: number
 ): number {
+  if (getAIProviderName() === 'none') return 0;
   if (searchCallsDelta <= 0) return 0;
 
   const nextSearchCalls = previousSearchCalls + searchCallsDelta;
@@ -711,7 +713,7 @@ async function buildAssistantReply(params: {
     'Si aucune annonce exacte n’existe dans la zone demandée, dis-le explicitement avant de proposer des alternatives.',
   ].join('\n');
 
-  const generated = await generateWithGemini(prompt);
+  const generated = await withAIProvider(() => generateWithGemini(prompt), () => null);
   if (!generated || containsUnsafeLanguage(generated)) {
     return fallback;
   }
@@ -1075,8 +1077,8 @@ export async function POST(request: NextRequest) {
       searchCallsTotal = nextSearchCalls;
     });
 
-    const inputTokens = estimateTokens(`${body.message}\n${JSON.stringify(mergedFilters)}`);
-    const outputTokens = estimateTokens(assistantMessage);
+    const inputTokens = getAIProviderName() === 'none' ? 0 : estimateTokens(`${body.message}\n${JSON.stringify(mergedFilters)}`);
+    const outputTokens = getAIProviderName() === 'none' ? 0 : estimateTokens(assistantMessage);
     const costEstimatedFcfa = estimateCosts(inputTokens, outputTokens, searchCallsDelta);
     const revenueEstimatedFcfa = Number((creditsDebited * CREDIT_REFERENCE_VALUE_FCFA).toFixed(2));
     const marginRate =

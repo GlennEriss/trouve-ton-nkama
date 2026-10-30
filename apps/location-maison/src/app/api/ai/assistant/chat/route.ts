@@ -7,6 +7,7 @@ import { handleApiError, jsonApiError } from '@/lib/api/error-response';
 import AIPromptsService, { FormContext } from '@/services/ai-prompts.service';
 import { auth } from '@/next-auth/auth';
 import { resolveGeminiModel } from '@/lib/ai/gemini-model';
+import { requireGemini } from '@/lib/ai/provider';
 
 // L'appel Gemini (surtout pour la génération auto-fill, prompt+JSON volumineux)
 // peut dépasser la limite par défaut de 10s des fonctions Vercel — d'où les
@@ -101,6 +102,7 @@ function buildAssistantPrompt(message: string, context?: FormContext): string {
 
 export async function POST(request: NextRequest) {
   try {
+    requireGemini();
     const authHeader = request.headers.get('authorization');
     const bodyValidation = bodySchema.safeParse(await request.json());
     if (!bodyValidation.success) {

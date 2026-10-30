@@ -84,6 +84,8 @@ Attention : les utilitaires SMTP de certaines Cloud Functions sont encore config
 
 Marqueurs : ⬜ à faire · 🟡 en cours · ✅ terminé · ⛔ bloqué.
 
+**Chantier transversal ajouté le 30 octobre 2026 : ⬜ migration vers un backend NestJS commun, gateway et Firebase conservé.** Voir la [roadmap et sa checklist](10-roadmap.md#chantier-transversal--migration-vers-un-backend-commun-à-planifier). Priorité à confirmer ; ne modifie pas l'ordre des lots ci-dessous ni la position finale de la facturation dans cette série.
+
 | État | Lot | Condition de clôture |
 | --- | --- | --- |
 | 🟡 | 1. Cadrage et audit | Règles consignées ; décisions ci-dessus et raccordement technique encore à finaliser |

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
+import { useAICapabilities } from '@/hooks/use-ai-capabilities';
 import usePropertyType from '@/hooks/usePropertyType';
 import { useFormAIHandler } from '@/hooks/useFormAIHandler';
 import FlatBotAvatar from './FlatBotAvatar';
@@ -16,6 +17,7 @@ interface FlatBotAssistantProps {
 const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({ 
     isUpdate = false 
 }) => {
+    const { enabled } = useAICapabilities();
     const MOBILE_LAUNCHER_OFFSET_PX = 16;
     // Le nav Annonceur a un bouton "+" flottant +24px au-dessus de la barre (~64px)
     // + safe-area-inset-bottom (~34px iPhone) → il faut dégager ~122px minimum
@@ -66,7 +68,7 @@ const FlatBotAssistant: React.FC<FlatBotAssistantProps> = ({
     };
 
     // N'afficher le bouton que si on est sur un formulaire de propriété
-    if (!isPropertyForm || !propertyType || !propertyLabel) {
+    if (!enabled || !isPropertyForm || !propertyType || !propertyLabel) {
         return null;
     }
 
