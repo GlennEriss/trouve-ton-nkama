@@ -1,14 +1,32 @@
 import '../helpers/carousel-media';
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import QuickListingsFeed from '@/components/quick-listings/QuickListingsFeed';
 const mockFetch = jest.fn();
 const item = { id: 'first', description: 'Maison de test à louer', city: 'Libreville', province: 'Estuaire', contactPhone: '+24160000000' };
-function mount(preview = false) {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } })}><QuickListingsFeed preview={preview} /></QueryClientProvider>);
+function mount(preview = false, client = new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } })) {
+  return render(<QueryClientProvider client={client}><QuickListingsFeed preview={preview} /></QueryClientProvider>);
 }
 beforeEach(() => { mockFetch.mockReset(); global.fetch = mockFetch; });
+it('ne rend aucun bloc sur l’accueil pendant le chargement', () => {
+  mockFetch.mockReturnValue(new Promise(() => {}));
+  const { container } = mount(true);
+  expect(container).toBeEmptyDOMElement();
+});
+it.each(['empty', 'error'])('masque toute la section accueil si %s', async state => {
+  mockFetch.mockResolvedValue(state === 'error' ? { ok: false } : { ok: true, json: async () => ({ items: [], nextCursor: null }) });
+  const client = new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } });
+  const { container } = mount(true, client);
+  await waitFor(() => expect(client.getQueryState(['quick-listings', 4])?.status).toBe(state === 'error' ? 'error' : 'success'));
+  expect(container).toBeEmptyDOMElement();
+  expect(screen.queryByText('Annonces rapides')).not.toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  // A later successful refresh must restore the section automatically.
+  mockFetch.mockResolvedValue({ ok: true, json: async () => ({ items: [item], nextCursor: null }) });
+  void client.invalidateQueries({ queryKey: ['quick-listings', 4] });
+  expect(await screen.findByText(item.description)).toBeInTheDocument();
+});
 it('affiche plusieurs offres dans un carousel uniquement sur l’accueil', async () => {
   mockFetch.mockResolvedValue({ ok: true, json: async () => ({ items: [item, { ...item, id: 'second', description: 'Seconde annonce rapide' }], nextCursor: null }) });
   const view = mount(true);
