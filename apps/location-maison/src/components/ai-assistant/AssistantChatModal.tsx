@@ -1,4 +1,5 @@
 'use client'
+import { useAICapabilities } from '@/hooks/use-ai-capabilities';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, CreditCard, Sparkles, RefreshCw } from 'lucide-react';
@@ -117,6 +118,7 @@ const AssistantChatModal: React.FC<AssistantChatModalProps> = ({
   onClose,
   formContext
 }) => {
+  const { enabled } = useAICapabilities();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -347,6 +349,7 @@ ${generatedData.suggestions?.map((s: string) => `• ${s}`).join('\n') ?? ''}
 📝 *Le formulaire a été automatiquement rempli ! Vous pouvez maintenant le réviser et l'ajuster selon vos besoins.*`;
   };
 
+  if (!enabled) return null;
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>

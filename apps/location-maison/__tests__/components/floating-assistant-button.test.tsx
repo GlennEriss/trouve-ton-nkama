@@ -1,4 +1,5 @@
 import React from 'react'
+jest.mock('@/hooks/use-ai-capabilities', () => ({ useAICapabilities: () => ({ enabled: true, loading: false }) }))
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import FloatingAssistantButton from '@/components/ai-assistant/FloatingAssistantButton'

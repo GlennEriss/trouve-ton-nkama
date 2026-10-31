@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { useAICapabilities } from '@/hooks/use-ai-capabilities'
+import ManualPropertyPage from '../add/page'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { FormProvider, useForm } from 'react-hook-form'
@@ -83,7 +85,13 @@ async function requestPropertyDraft(description: string): Promise<PropertyDraftR
   return body.data as PropertyDraftResponse
 }
 
-export default function CreatePropertyWithAIPage() {
+export default function CreatePropertyPage() {
+  const { enabled, loading } = useAICapabilities()
+  if (loading) return <p role="status" className="p-6">Chargement du formulaire…</p>
+  return enabled ? <CreatePropertyWithAIPage /> : <ManualPropertyPage />
+}
+
+function CreatePropertyWithAIPage() {
   const router = useRouter()
   const { data: session } = useSession()
   const { user } = useCurrentUser()

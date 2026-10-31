@@ -7,6 +7,8 @@
 | Contexte produit | [Contexte actuel](./00-contexte-actuel.md) | Référence |
 | Vision globale | [Vision](./01-vision.md) | Référence |
 | Roadmap | [Roadmap](./10-roadmap.md) | Évolutif |
+| Recherche indépendante d'Algolia | [Backlog NexaSearch SDK et moteur](./nexasearch-backlog.md) | ⬜ À faire — chantier long terme, Algolia conservé pendant la transition |
+| Migration backend commun | [Suivi NestJS, gateway et Firebase](./10-roadmap.md#chantier-transversal--migration-vers-un-backend-commun-à-planifier) | ⬜ À faire — audit et migration progressive à planifier |
 | Marketplace multi-catégories | [Index marketplace](./marketplace-multi-categories/README.md) | Architecture produit |
 | Recommandation Machine Learning | [Index ML](./recommendation-ml/README.md) | Prêt pour arbitrages pré-implémentation |
 | Publicité et revenus AdSense | [Index Publicité](./location-maison/feature/publicite/README.md) | Audit et architecture monétisation |

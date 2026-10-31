@@ -17,7 +17,7 @@ export async function getActiveCategories(): Promise<ActiveCategory[]> {
 export type AttributeField = {
   key: string;
   label: string;
-  type: 'enum' | 'text';
+  type: 'enum' | 'text' | 'number' | 'boolean';
   options?: string[];
   required: boolean;
   facetable: boolean;

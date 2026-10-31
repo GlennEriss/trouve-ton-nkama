@@ -85,7 +85,7 @@ describe('/api/ai/assistant/chat', () => {
   })
   beforeEach(() => {
     jest.clearAllMocks()
-    process.env = { ...originalEnv, GEMINI_API_KEY: 'gemini-secret' }
+    process.env = { ...originalEnv, AI_PROVIDER: 'gemini', GEMINI_API_KEY: 'gemini-secret' }
     authResult = { user: { uid: 'user-1', email: 'u@test.ga' } }
     geminiText = 'Reponse IA utile'
     geminiThrows = null
@@ -99,6 +99,15 @@ describe('/api/ai/assistant/chat', () => {
     const response = await POST(request({ message: 'x' }))
     expect(response.status).toBe(400)
     expect(await response.json()).toMatchObject({ error: { code: 'VALIDATION_ERROR' } })
+  })
+
+  it('désactive Gemini sans accès DB ni débit, même avec une clé configurée', async () => {
+    process.env.AI_PROVIDER = 'none'
+    const response = await POST(request(validBody))
+    expect(response.status).toBe(409)
+    expect(await response.json()).toMatchObject({ error: { code: 'AI_DISABLED' } })
+    expect(generateContent).not.toHaveBeenCalled()
+    expect(currentDb.collection).not.toHaveBeenCalled()
   })
 
   it('exige une authentification', async () => {

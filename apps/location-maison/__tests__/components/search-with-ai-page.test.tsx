@@ -1,4 +1,6 @@
 import React from 'react'
+let mockAIEnabled = true
+jest.mock('@/hooks/use-ai-capabilities', () => ({ useAICapabilities: () => ({ enabled: mockAIEnabled, loading: false }) }))
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import SearchWithAIPage from '@/components/search-ai/SearchWithAIPage'
@@ -19,6 +21,7 @@ jest.mock('@/components/ads/InlineAdUnit', () => ({ __esModule: true, default: (
 
 describe('SearchWithAIPage', () => {
   beforeEach(() => {
+    mockAIEnabled = true
     jest.clearAllMocks()
     mockParams = new URLSearchParams('entry=search_cta&query=maison&city=Libreville&minPrice=40000&maxPrice=bad&typeProperty=Home,Villa&status=FOR_RENT&tags=Meuble,Parking')
     mockHook = {

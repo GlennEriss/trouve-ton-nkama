@@ -1,4 +1,6 @@
 import React from 'react'
+let mockAIEnabled = true
+jest.mock('@/hooks/use-ai-capabilities', () => ({ useAICapabilities: () => ({ enabled: mockAIEnabled, loading: false }) }))
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 if (typeof URL.createObjectURL !== 'function') {
@@ -27,6 +29,7 @@ let aiResponseData: Record<string, unknown> = {}
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => '/property/create',
 }))
 jest.mock('next-auth/react', () => ({
   useSession: () => ({ data: { user: { credits: 10 } } }),
@@ -123,7 +126,18 @@ async function generate() {
 }
 
 describe('CreatePropertyWithAIPage — fusion des champs de contact IA', () => {
+  it('affiche le choix manuel des biens sans upload ni génération lorsque Gemini est désactivé', () => {
+    mockAIEnabled = false
+    render(<CreatePropertyWithAIPage />)
+    expect(screen.getByRole('heading', { name: 'Ajouter un logement' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Maison' })).toHaveAttribute('href', '/property/add/home')
+    expect(screen.queryByRole('button', { name: /Générer l'annonce/ })).not.toBeInTheDocument()
+    expect(mockUploadPropertyImages).not.toHaveBeenCalled()
+    expect(mockCreateProperty).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalled()
+  })
   beforeEach(() => {
+    mockAIEnabled = true
     jest.clearAllMocks()
     mockUploadPropertyImages.mockResolvedValue([{ fileURL: 'https://cdn.test/photo.jpg', filePATH: 'photo.jpg' }])
     mockCreateProperty.mockResolvedValue('property-1')

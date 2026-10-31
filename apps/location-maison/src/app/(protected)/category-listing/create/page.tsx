@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import { useAICapabilities } from '@/hooks/use-ai-capabilities'
+import ManualCategoryFields, { buildManualCategoryDraft, emptyManualCategory } from '@/components/publish/ManualCategoryFields'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { ImagePlus, Loader2, Sparkles, X } from 'lucide-react'
@@ -68,6 +70,8 @@ async function requestCategoryListingDraft(description: string): Promise<AIDraft
 }
 
 export default function CreateCategoryListingPage() {
+  const { enabled: aiEnabled, loading: capabilitiesLoading } = useAICapabilities()
+  const [manual, setManual] = useState(emptyManualCategory)
   const router = useRouter()
   const { user } = useCurrentUser()
   const { toast } = useToast()
@@ -128,6 +132,7 @@ export default function CreateCategoryListingPage() {
   }, [description, images])
 
   const handleGenerate = useCallback(async () => {
+    if (capabilitiesLoading) return
     setError(null)
 
     // Interdire la soumission tant que l'état de la requête de catégories n'est pas connu
@@ -160,6 +165,8 @@ export default function CreateCategoryListingPage() {
       dimensions: { journeyType: 'category_listing', mode: 'create', fileCount: images.length },
     })
     try {
+      // Validate explicit inputs before uploading any media; no extraction in manual mode.
+      const manualDraft = aiEnabled ? null : buildManualCategoryDraft(manual, description, leaves)
       // Les images sont uploadées AVANT l'appel IA, qui est ce qui débite le crédit
       // (voir /api/ai/category-listing-draft). Dans l'autre sens, un upload qui échoue
       // laisse l'annonceur facturé sans annonce — constaté en prod le 2026-08-17.
@@ -168,8 +175,8 @@ export default function CreateCategoryListingPage() {
       setPhase('photos')
       const uploadedImages = await perf.measure('image_upload', () => uploadPropertyImages(images, user!.uid, 'property'))
 
-      setPhase('generation')
-      const draft = await perf.measure('ai', () => requestCategoryListingDraft(description))
+      setPhase(aiEnabled ? 'generation' : 'validation')
+      const draft = manualDraft ?? await perf.measure('ai', () => requestCategoryListingDraft(description))
       const matchedCategory = leaves.find((leaf) => leaf.id === draft.categoryId)
       if (!matchedCategory) {
         throw new Error("Catégorie détectée introuvable. Réessaie.")
@@ -232,14 +239,16 @@ export default function CreateCategoryListingPage() {
       setIsGenerating(false)
       setPhase('idle')
     }
-  }, [description, images, leaves, leavesErrored, leavesLoading, missingUpfrontFields, router, user])
+  }, [aiEnabled, capabilitiesLoading, manual, description, images, leaves, leavesErrored, leavesLoading, missingUpfrontFields, router, user])
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-slate-900 dark:text-white leading-tight">
-          Décrivez votre annonce et laissez l&apos;IA faire le reste
+          {aiEnabled ? "Décrivez votre annonce et laissez l’IA faire le reste" : 'Créer une annonce'}
         </h1>
+
+        {!aiEnabled && !capabilitiesLoading && <ManualCategoryFields value={manual} onChange={setManual} leaves={leaves} disabled={isGenerating} />}
 
         <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
           <textarea
@@ -299,12 +308,12 @@ export default function CreateCategoryListingPage() {
 
         <Button
           onClick={() => void handleGenerate()}
-          disabled={isGenerating || leavesLoading}
+          disabled={isGenerating || leavesLoading || capabilitiesLoading}
           size="lg"
           className="w-full gap-2"
         >
           {isGenerating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
-          {isGenerating ? PHASE_LABELS[phase] : "Générer l'annonce"}
+          {isGenerating ? PHASE_LABELS[phase] : aiEnabled ? "Générer l'annonce" : "Créer l'annonce"}
         </Button>
       </div>
     </div>

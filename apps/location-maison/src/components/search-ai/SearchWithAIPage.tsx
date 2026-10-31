@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useAICapabilities } from '@/hooks/use-ai-capabilities';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ArrowLeft, Bot, Loader2, Search } from 'lucide-react';
@@ -97,6 +98,7 @@ function MessageItem({
 }
 
 export default function SearchWithAIPage() {
+  const { enabled: aiEnabled } = useAICapabilities();
   const searchParams = useSearchParams();
   const { trackEvent } = useTrackEvent();
 
@@ -157,10 +159,10 @@ export default function SearchWithAIPage() {
           <div className="space-y-1">
             <h1 className="text-2xl md:text-3xl font-bold text-primary flex items-center gap-2">
               <Bot className="w-6 h-6" />
-              Recherche avec IA
+              {aiEnabled ? 'Recherche avec IA' : 'Recherche assistée'}
             </h1>
             <p className="text-sm text-gray-600">
-              Assistance conversationnelle dédiée pour trouver un logement et ajuster les filtres automatiquement.
+              {aiEnabled ? 'Assistance conversationnelle dédiée pour trouver un logement et ajuster les filtres automatiquement.' : 'Recherche par critères, sans Gemini et sans débit de crédit IA.'}
             </p>
           </div>
 
@@ -180,7 +182,7 @@ export default function SearchWithAIPage() {
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm">
-                  <p className="font-semibold text-gray-900">Session IA</p>
+                  <p className="font-semibold text-gray-900">{aiEnabled ? 'Session IA' : 'Session de recherche'}</p>
                   <p className="text-gray-500">
                     {searchCallsTotal} recherche(s) • {creditsDebitedTotal} crédit(s) débité(s)
                   </p>
@@ -259,7 +261,7 @@ export default function SearchWithAIPage() {
           <section className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden flex flex-col min-h-[420px] xl:min-h-0">
             <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Résultats IA</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Résultats</h2>
                 <p className="text-sm text-gray-500">
                   {nbHits} résultat(s) • statut {resultStatus === 'none' ? 'aucun' : resultStatus === 'few' ? 'peu' : 'suffisant'}
                 </p>
@@ -279,7 +281,7 @@ export default function SearchWithAIPage() {
 
               {results.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-center text-gray-500 text-sm px-6">
-                  Lance une recherche dans le chat IA pour afficher des logements ici.
+                  Lance une recherche pour afficher des logements ici.
                 </div>
               ) : (
                 <>

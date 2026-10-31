@@ -171,6 +171,7 @@ describe('/api/ai-search/chat', () => {
   })
 
   beforeEach(() => {
+    process.env.AI_PROVIDER = 'gemini'
     jest.clearAllMocks()
     ;(adminAuth.verifyIdToken as jest.Mock).mockResolvedValue({ uid: 'user-ai-9c' })
     ;(getDynamicTagNamesServer as jest.Mock).mockResolvedValue(['Meublé', 'Piscine', 'Parking'])
@@ -178,7 +179,23 @@ describe('/api/ai-search/chat', () => {
   })
 
   afterAll(() => {
+    delete process.env.AI_PROVIDER
     delete process.env.GEMINI_API_KEY
+  })
+
+  it('recherche sans Gemini ni débit IA en mode none', async () => {
+    process.env.AI_PROVIDER = 'none'
+    const { db, transaction, addTurn } = makeDb()
+    ;(getFirestore as jest.Mock).mockReturnValue(db)
+    global.fetch = jest.fn()
+      .mockResolvedValueOnce(algoliaResponse({ hits: [{ objectID: 'p1', title: 'Maison', city: 'Akanda', price: 450000 }], nbHits: 1 }))
+      .mockResolvedValueOnce(analyticsResponse(true))
+    const response = await postChat(request(validBody))
+    expect(response.status).toBe(200)
+    expect((await response.json()).billing.creditsDebited).toBe(0)
+    expect(generateContentMock).not.toHaveBeenCalled()
+    expect(transaction.update).not.toHaveBeenCalled()
+    expect(addTurn).toHaveBeenCalledWith(expect.objectContaining({ inputTokens: 0, outputTokens: 0 }))
   })
 
   it('refuse les requêtes anonymes et les corps invalides', async () => {

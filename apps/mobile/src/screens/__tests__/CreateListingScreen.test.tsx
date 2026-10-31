@@ -1,5 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { Alert } from 'react-native';
+import { isGeminiEnabled } from '../../api/aiCapabilities';
+jest.mock('../../api/aiCapabilities', () => ({ isGeminiEnabled: jest.fn() }));
 import * as ImagePicker from 'expo-image-picker';
 import CreateListingScreen from '../CreateListingScreen';
 import { getPublishableLeaves } from '../../api/categories';
@@ -46,12 +48,54 @@ describe('CreateListingScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (isGeminiEnabled as jest.Mock).mockResolvedValue(true);
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     mockedUploadImages.mockResolvedValue([uploadedImage]);
     mockedCreateListing.mockResolvedValue({ success: true, id: 'listing-e2e-1' });
   });
 
   afterEach(() => alertSpy.mockRestore());
+
+  it('publie en mode manuel Immobilier sans génération IA', async () => {
+    (isGeminiEnabled as jest.Mock).mockResolvedValue(false);
+    await renderScreen('immobilier', 'Immobilier');
+    await waitFor(() => expect(screen.getByTestId('manual-title')).toBeTruthy());
+    await fireEvent.changeText(screen.getByTestId('manual-title'), 'Chambre à louer');
+    await fireEvent.changeText(screen.getByTestId('manual-price'), '80000');
+    await fireEvent.press(screen.getByTestId('manual-typeProperty-Room'));
+    await fireEvent.press(screen.getByTestId('manual-status-FOR_RENT'));
+    await fireEvent.changeText(screen.getByTestId('manual-contact'), '+24174123456');
+    await fireEvent.changeText(screen.getByTestId('manual-area'), '20');
+    await fireEvent.changeText(screen.getByTestId('manual-tags'), 'Calme');
+    await fireEvent.changeText(screen.getByTestId('manual-roomType'), 'Simple');
+    await fireEvent.changeText(screen.getByTestId('listing-description'), 'Chambre avec douche intérieure.');
+    await fireEvent.changeText(screen.getByTestId('listing-district'), 'Glass');
+    await selectOneImage();
+    await fireEvent.press(screen.getByTestId('listing-submit'));
+    await waitFor(() => expect(mockedCreateListing).toHaveBeenCalledTimes(1));
+    expect(mockedCreateListing).toHaveBeenCalledWith(expect.objectContaining({ kind: 'immobilier', draft: expect.objectContaining({ title: 'Chambre à louer', typeProperty: 'Room', price: 80000, tags: ['Calme'] }) }));
+    expect(mockedPropertyDraft).not.toHaveBeenCalled();
+    expect(mockedCategoryDraft).not.toHaveBeenCalled();
+  });
+
+  it('publie en mode manuel Mode avec les attributs sélectionnés', async () => {
+    (isGeminiEnabled as jest.Mock).mockResolvedValue(false);
+    mockedLeaves.mockResolvedValue([{ id: 'robes', name: 'Robes', rootName: 'Mode', attributeSchema: [{ key: 'size', label: 'Taille', type: 'enum', options: ['M'], required: true }] }]);
+    await renderScreen('mode', 'Mode');
+    await waitFor(() => expect(screen.getByTestId('manual-title')).toBeTruthy());
+    await fireEvent.changeText(screen.getByTestId('manual-title'), 'Robe');
+    await fireEvent.changeText(screen.getByTestId('manual-price'), '8000');
+    await fireEvent.press(screen.getByTestId('manual-categoryId-robes'));
+    await fireEvent.press(screen.getByTestId('manual-attribute:size-M'));
+    await fireEvent.changeText(screen.getByTestId('manual-cities'), 'Libreville');
+    await fireEvent.changeText(screen.getByTestId('listing-description'), 'Robe en très bon état.');
+    await selectOneImage();
+    await fireEvent.press(screen.getByTestId('listing-submit'));
+    await waitFor(() => expect(mockedCreateListing).toHaveBeenCalledTimes(1));
+    expect(mockedCreateListing).toHaveBeenCalledWith(expect.objectContaining({ kind: 'category', draft: expect.objectContaining({ attributes: { size: 'M' }, categoryId: 'robes', categoryPath: { lvl0: 'Mode', lvl1: 'Mode > Robes' } }) }));
+    expect(mockedPropertyDraft).not.toHaveBeenCalled();
+    expect(mockedCategoryDraft).not.toHaveBeenCalled();
+  });
 
   it("bloque une annonce immobilière incomplète sans appeler l'API", async () => {
     await renderScreen('immobilier', 'Immobilier');
